@@ -1,4 +1,14 @@
-const { kv } = require('@vercel/kv');
+javascript
+
+const { createClient } = require('@vercel/kv');
+
+const kv = createClient({
+
+url: process.env.KV_REST_API_URL,
+
+token: process.env.KV_REST_API_TOKEN
+
+});
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
