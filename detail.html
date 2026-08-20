@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI Agent Radar product details.">
+  <title>Agent Details · AI Agent Radar</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header compact-header">
+    <a class="brand" href="/">AI Agent Radar</a>
+    <p>Daily top AI agents from Product Hunt</p>
+  </header>
+
+  <main class="page-shell detail-shell">
+    <a class="back-link" href="/">← Back to radar</a>
+    <section id="detail-card" class="detail-card" aria-live="polite" aria-busy="true">
+      <div class="loading-state">Loading agent...</div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const card = document.getElementById('detail-card');
+      const id = new URLSearchParams(window.location.search).get('id');
+
+      const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      })[char]);
+
+      const safeUrl = (value) => {
+        try {
+          const url = new URL(value);
+          return ['http:', 'https:'].includes(url.protocol) ? url.href : '#';
+        } catch { return '#'; }
+      };
+
+      async function loadAgent() {
+        if (!id) {
+          card.innerHTML = '<div class="error-state"><h1>Missing agent ID</h1><p>Return to the radar and choose an agent.</p></div>';
+          card.setAttribute('aria-busy', 'false');
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/get-agents');
+          if (!response.ok) throw new Error(`Request failed (${response.status})`);
+          const data = await response.json();
+          const agent = (data.agents || []).find((item) => String(item.id) === id || item.slug === id);
+          if (!agent) throw new Error('Agent not found');
+
+          const topics = (agent.topics || []).map((topic) => `<span class="topic">${escapeHtml(topic)}</span>`).join('');
+          const image = agent.thumbnail ? `<img class="detail-logo" src="${safeUrl(agent.thumbnail)}" alt="${escapeHtml(agent.name)} logo">` : '<div class="detail-logo placeholder">AI</div>';
+          document.title = `${agent.name} · AI Agent Radar`;
+          card.innerHTML = `
+            <div class="detail-heading">
+              ${image}
+              <div>
+                <span class="rank-label">PRODUCT HUNT AGENT</span>
+                <h1>${escapeHtml(agent.name)}</h1>
+                <p class="detail-tagline">${escapeHtml(agent.tagline)}</p>
+              </div>
+            </div>
+            <div class="detail-stats">
+              <div><strong>▲ ${Number(agent.votes || 0).toLocaleString()}</strong><span>Votes</span></div>
+              <div><strong>${escapeHtml(agent.createdAt ? new Date(agent.createdAt).toLocaleDateString() : '—')}</strong><span>Published</span></div>
+            </div>
+            <div class="topics detail-topics">${topics || '<span class="topic">AI Agent</span>'}</div>
+            ${agent.description ? `<div class="description"><h2>About</h2><p>${escapeHtml(agent.description)}</p></div>` : ''}
+            <a class="button button-primary detail-visit" href="${safeUrl(agent.url)}" target="_blank" rel="noopener noreferrer">Visit on Product Hunt ↗</a>`;
+        } catch (error) {
+          card.innerHTML = `<div class="error-state"><h1>Unable to load agent</h1><p>${escapeHtml(error.message)}</p><a class="button button-secondary" href="/">Return home</a></div>`;
+        } finally {
+          card.setAttribute('aria-busy', 'false');
+        }
+      }
+
+      loadAgent();
+    })();
+  </script>
+</body>
+</html>

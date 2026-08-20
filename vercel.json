@@ -1,0 +1,19 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/fetch-agents",
+      "schedule": "0 */6 * * *"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/agent/:id",
+      "destination": "/detail.html?id=:id"
+    },
+    {
+      "source": "/app/:path*",
+      "destination": "/index.html"
+    }
+  ]
+}
