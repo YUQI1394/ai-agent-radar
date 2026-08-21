@@ -72,6 +72,20 @@ button, input { font: inherit; }
 .filter-button:hover:not(:disabled), .filter-button.active { color: white; border-color: var(--purple); background: rgba(124,58,237,.16); }
 .filter-button:disabled { opacity: .55; cursor: not-allowed; }
 .locked-note { flex-basis: 100%; margin: 0; color: #777787; font-size: .78rem; }
+.trending-widget { margin: 24px 0; padding: 22px; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(135deg, rgba(249,115,22,.1), transparent 55%), var(--card); }
+.trending-widget[hidden] { display: none; }
+.trending-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.trending-header h2 { margin: 4px 0 0; font-size: 1.25rem; }
+.trending-eyebrow { color: #fb923c; font-size: .7rem; font-weight: 700; letter-spacing: .12em; }
+.trending-badge { padding: 5px 10px; color: #fed7aa; background: rgba(249,115,22,.14); border-radius: 999px; font-size: .75rem; }
+.trending-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.trending-item { display: grid; grid-template-columns: 32px minmax(0,1fr) auto; align-items: center; gap: 10px; padding: 11px 12px; border-radius: 12px; background: rgba(255,255,255,.035); }
+.trending-rank { color: #fb923c; font-weight: 800; text-align: center; }
+.trending-name { overflow: hidden; color: var(--text); font-weight: 600; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.trending-name:hover { color: var(--cyan); }
+.trending-votes { color: var(--muted); font-size: .82rem; }
+.agent-card { scroll-margin-top: 24px; }
+.agent-card-highlighted { border-color: #fb923c; box-shadow: 0 0 0 3px rgba(249,115,22,.18); }
 .feed-meta { display: flex; justify-content: space-between; gap: 20px; color: var(--muted); font-size: .82rem; }
 
 .agent-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 12px 0 30px; }
@@ -125,6 +139,8 @@ button, input { font: inherit; }
 
 @media (max-width: 900px) { .agent-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media (max-width: 640px) {
+  .trending-widget { padding: 16px; }
+  .trending-item { grid-template-columns: 26px minmax(0,1fr) auto; }
   .site-header { width: min(100% - 28px, 1180px); align-items: flex-start; gap: 5px; flex-direction: column; }
   .page-shell { width: min(100% - 28px, 1180px); }
   .hero { padding: 64px 0 44px; text-align: left; }
