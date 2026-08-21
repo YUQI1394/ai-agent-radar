@@ -16,6 +16,8 @@
     resultCount: document.getElementById('result-count'),
     updatedAt: document.getElementById('updated-at'),
     paywall: document.getElementById('paywall'),
+    trendingWidget: document.getElementById('trending-widget'),
+    trendingList: document.getElementById('trending-list'),
     empty: document.getElementById('empty-state')
   };
 
@@ -50,7 +52,7 @@
       : `<div class="agent-logo placeholder" aria-hidden="true">${escapeHtml((agent.name || 'AI').slice(0, 2).toUpperCase())}</div>`;
     const detailId = encodeURIComponent(agent.id || agent.slug || '');
 
-    return `<article class="agent-card">
+    return `<article id="agent-${detailId}" class="agent-card">
       <div class="card-top">
         ${thumbnail}
         <span class="votes" title="Product Hunt votes">▲ ${Number(agent.votes || 0).toLocaleString()}</span>
@@ -63,6 +65,23 @@
         <a class="card-link visit-link" href="${safeUrl(agent.url)}" target="_blank" rel="noopener noreferrer">Visit ↗</a>
       </div>
     </article>`;
+  }
+
+  function renderTrending() {
+    const trendingAgents = [...state.agents]
+      .sort((a, b) => Number(b.votes || 0) - Number(a.votes || 0))
+      .slice(0, 5);
+
+    elements.trendingList.innerHTML = trendingAgents.map((agent, index) => {
+      const detailId = encodeURIComponent(agent.id || agent.slug || agent.name || '');
+      return `<li class="trending-item">
+        <span class="trending-rank">${index + 1}</span>
+        <a class="trending-name" href="#agent-${detailId}" data-agent-target="agent-${detailId}">${escapeHtml(agent.name)}</a>
+        <span class="trending-votes">▲ ${Number(agent.votes || 0).toLocaleString()}</span>
+      </li>`;
+    }).join('');
+
+    elements.trendingWidget.hidden = trendingAgents.length === 0;
   }
 
   function render() {
@@ -94,6 +113,7 @@
       const data = await response.json();
       state.agents = (data.agents || []).sort((a, b) => Number(b.votes || 0) - Number(a.votes || 0));
       elements.updatedAt.textContent = data.updatedAt ? `Updated ${new Date(data.updatedAt).toLocaleString()}` : 'Waiting for first update';
+      renderTrending();
       render();
     } catch (error) {
       elements.grid.setAttribute('aria-busy', 'false');
@@ -108,6 +128,18 @@
     elements.filters.forEach((item) => item.classList.toggle('active', item === button));
     render();
   }));
+  elements.trendingList.addEventListener('click', (event) => {
+    const link = event.target.closest('[data-agent-target]');
+    if (!link) return;
+
+    const target = document.getElementById(link.dataset.agentTarget);
+    if (!target) return;
+
+    event.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target.classList.add('agent-card-highlighted');
+    window.setTimeout(() => target.classList.remove('agent-card-highlighted'), 1600);
+  });
 
   configureAccess();
   loadAgents();
