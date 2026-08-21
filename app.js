@@ -16,7 +16,6 @@
     resultCount: document.getElementById('result-count'),
     updatedAt: document.getElementById('updated-at'),
     paywall: document.getElementById('paywall'),
-    lockedNote: document.getElementById('locked-note'),
     empty: document.getElementById('empty-state')
   };
 
@@ -33,11 +32,15 @@
 
   function categoryMatches(agent, selected) {
     if (selected === 'All') return true;
-    const topics = (agent.topics || []).join(' ').toLowerCase();
-    if (selected === 'AI Agents') return /artificial intelligence|ai|agent|assistant|copilot/.test(topics);
-    if (selected === 'Dev Tools') return /developer|programming|software|code|devtool/.test(topics);
-    if (selected === 'Automation') return /automation|workflow|productivity|no-code/.test(topics);
-    return false;
+    const tags = [...(agent.tags || []), ...(agent.topics || [])]
+      .map((tag) => String(tag).toLowerCase());
+    const aliases = {
+      Marketing: /marketing|advertising|growth|sales|social media/,
+      Coding: /coding|code|developer|programming|software|github|api/,
+      Design: /design|creative|graphics|ui|ux|image|video/,
+      Productivity: /productivity|workflow|automation|task|calendar|collaboration/
+    };
+    return tags.some((tag) => aliases[selected]?.test(tag));
   }
 
   function createCard(agent, index) {
@@ -64,25 +67,24 @@
 
   function render() {
     const query = state.search.trim().toLowerCase();
-    let visible = state.agents.filter((agent) => {
-      const textMatch = !query || `${agent.name || ''} ${agent.tagline || ''}`.toLowerCase().includes(query);
+    const filtered = state.agents.filter((agent) => {
+      const textMatch = !query || `${agent.name || ''} ${agent.description || ''} ${agent.tagline || ''}`
+        .toLowerCase()
+        .includes(query);
       return textMatch && categoryMatches(agent, state.filter);
     });
 
-    if (!state.unlocked) visible = visible.slice(0, FREE_LIMIT);
+    const visible = state.unlocked ? filtered : filtered.slice(0, FREE_LIMIT);
     elements.grid.innerHTML = visible.map(createCard).join('');
     elements.grid.setAttribute('aria-busy', 'false');
     elements.empty.hidden = visible.length > 0;
     elements.resultCount.textContent = state.unlocked
       ? `${visible.length} agent${visible.length === 1 ? '' : 's'} found`
-      : `Showing ${Math.min(state.agents.length, FREE_LIMIT)} of ${state.agents.length} agents`;
+      : `Showing ${visible.length} of ${filtered.length} matching agents`;
   }
 
   function configureAccess() {
-    elements.search.disabled = !state.unlocked;
-    elements.filters.forEach((button) => { button.disabled = !state.unlocked; });
     elements.paywall.hidden = state.unlocked;
-    elements.lockedNote.hidden = state.unlocked;
   }
 
   async function loadAgents() {
@@ -110,3 +112,4 @@
   configureAccess();
   loadAgents();
 })();
+
