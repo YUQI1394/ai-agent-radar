@@ -1,16 +1,6 @@
-javascript
+import { kv } from '@vercel/kv';
 
-const { createClient } = require('@vercel/kv');
-
-const kv = createClient({
-
-url: process.env.KV_REST_API_URL,
-
-token: process.env.KV_REST_API_TOKEN
-
-});
-
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'Method not allowed' });
@@ -33,4 +23,4 @@ module.exports = async function handler(req, res) {
     console.error('KV read failed:', error);
     return res.status(500).json({ error: 'Unable to read the agent feed' });
   }
-};
+}
