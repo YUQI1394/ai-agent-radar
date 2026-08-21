@@ -33,7 +33,7 @@ async function fetchTopic(topic) {
       'Content-Type': 'application/json',
       Accept: 'application/json'
     },
-    body: JSON.stringify({ query: QUERY, variables: { topic, first: 100 } })
+    body: JSON.stringify({ query: QUERY, variables: { topic, first: 25 } })
   });
 
   if (!response.ok) throw new Error(`Product Hunt returned ${response.status}`);
