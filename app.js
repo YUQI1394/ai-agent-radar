@@ -83,6 +83,7 @@
       : `<div class="agent-logo placeholder" aria-hidden="true">${escapeHtml((agent.name || 'AI').slice(0, 2).toUpperCase())}</div>`;
     const key = agentKey(agent);
     const detailId = encodeURIComponent(key);
+    const detailSlug = encodeURIComponent(agent.slug || agent.id || key);
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Just discovered ${agent.name || 'an AI Agent'} on AI Agent Radar 🚀 https://ai-agent-radar.vercel.app`)}`;
     const signal = signalFor(agent);
     const isSaved = state.saved.has(key);
@@ -93,15 +94,15 @@
       <p class="tagline">${escapeHtml(agent.tagline)}</p>
       <p class="best-for">Best for: <strong>${escapeHtml(primaryCategory(agent))}</strong></p>
       <div class="topics">${topics || '<span class="topic">AI Agent</span>'}</div>
-      <div class="card-actions"><a class="card-link details-link" href="/detail.html?id=${detailId}">Details</a><a class="card-link visit-link" href="${safeUrl(agent.url)}" target="_blank" rel="noopener noreferrer">Visit ↗</a><a class="card-link share-link" href="${shareUrl}" target="_blank" rel="noopener noreferrer" aria-label="Share ${escapeHtml(agent.name)} on X">Share on X</a></div>
+      <div class="card-actions"><a class="card-link details-link" href="/agent/${detailSlug}">Details</a><a class="card-link visit-link" href="${safeUrl(agent.url)}" target="_blank" rel="noopener noreferrer">Visit ↗</a><a class="card-link share-link" href="${shareUrl}" target="_blank" rel="noopener noreferrer" aria-label="Share ${escapeHtml(agent.name)} on X">Share on X</a></div>
     </article>`;
   }
 
   function renderTrending() {
     const leaders = [...state.agents].sort((a, b) => b.radarScore - a.radarScore).slice(0, 5);
     elements.trendingList.innerHTML = leaders.map((agent, index) => {
-      const detailId = encodeURIComponent(agentKey(agent));
-      return `<li class="trending-item"><span class="trending-rank">${index + 1}</span><a class="trending-name" href="#agent-${detailId}" data-agent-target="agent-${detailId}">${escapeHtml(agent.name)}</a><span class="trending-votes">Score ${agent.radarScore}</span></li>`;
+      const detailSlug = encodeURIComponent(agent.slug || agent.id || agentKey(agent));
+      return `<li class="trending-item"><span class="trending-rank">${index + 1}</span><a class="trending-name" href="/agent/${detailSlug}">${escapeHtml(agent.name)}</a><span class="trending-votes">Score ${agent.radarScore}</span></li>`;
     }).join('');
     elements.trendingWidget.hidden = leaders.length === 0;
   }
@@ -136,9 +137,9 @@
   function showUpdatedAt(value) {
     const timestamp = new Date(value).getTime();
     const hours = Number.isFinite(timestamp) ? Math.max(0, Math.floor((Date.now() - timestamp) / 3600000)) : null;
-    const relative = hours === null ? 'Waiting for first update' : `Updated ${hours} hour${hours === 1 ? '' : 's'} ago`;
+    const relative = hours === null ? 'Waiting for first update' : hours === 0 ? 'Updated just now' : `Updated ${hours} hour${hours === 1 ? '' : 's'} ago`;
     elements.updatedAt.textContent = relative;
-    elements.heroUpdatedAt.textContent = hours === null ? 'Updated every 6 hours • Last updated: pending' : `Updated every 6 hours • Last updated: ${hours} hour${hours === 1 ? '' : 's'} ago`;
+    elements.heroUpdatedAt.textContent = hours === null ? 'Updated every 6 hours • Last updated: pending' : hours === 0 ? 'Updated every 6 hours • Last updated: just now' : `Updated every 6 hours • Last updated: ${hours} hour${hours === 1 ? '' : 's'} ago`;
     document.title = hours === null ? 'AI Agent Radar' : `AI Agent Radar — ${relative}`;
   }
 
@@ -170,14 +171,5 @@
     const shareLink = event.target.closest('.share-link');
     if (shareLink) { event.preventDefault(); window.open(shareLink.href, 'share-on-x', 'popup,width=680,height=520,noopener,noreferrer'); }
   });
-  elements.trendingList.addEventListener('click', (event) => {
-    const link = event.target.closest('[data-agent-target]');
-    if (!link) return;
-    const target = document.getElementById(link.dataset.agentTarget);
-    if (!target) return;
-    event.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    target.classList.add('agent-card-highlighted'); window.setTimeout(() => target.classList.remove('agent-card-highlighted'), 1600);
-  });
-
   loadAgents();
 })();

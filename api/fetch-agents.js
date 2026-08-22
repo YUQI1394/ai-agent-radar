@@ -1,8 +1,15 @@
 const { kv } = require('@vercel/kv');
+const crypto = require('crypto');
 
 const PH_ENDPOINT = 'https://api.producthunt.com/v2/api/graphql';
 const KEYWORDS = /\b(agent|agents|autonomous|workflow|workflows|mcp|copilot|assistant|assistants)\b/i;
 const TOPIC_SLUGS = ['artificial-intelligence', 'developer-tools'];
+const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
+const OIDC_AUDIENCE = 'ai-agent-radar-refresh';
+const TRUSTED_REPOSITORY = 'YUQI1394/ai-agent-radar';
+const TRUSTED_WORKFLOW = `${TRUSTED_REPOSITORY}/.github/workflows/refresh-agents.yml@refs/heads/main`;
+let cachedJwks = null;
+let jwksExpiresAt = 0;
 
 const QUERY = `
   query RadarPosts($topic: String!, $first: Int!) {
@@ -58,13 +65,62 @@ function normalize(post) {
   };
 }
 
+function decodeBase64Url(value) {
+  return Buffer.from(value, 'base64url');
+}
+
+async function getGithubJwks() {
+  if (cachedJwks && Date.now() < jwksExpiresAt) return cachedJwks;
+  const configurationResponse = await fetch(`${OIDC_ISSUER}/.well-known/openid-configuration`);
+  if (!configurationResponse.ok) throw new Error('Unable to load GitHub OIDC configuration');
+  const configuration = await configurationResponse.json();
+  const jwksResponse = await fetch(configuration.jwks_uri);
+  if (!jwksResponse.ok) throw new Error('Unable to load GitHub OIDC keys');
+  cachedJwks = await jwksResponse.json();
+  jwksExpiresAt = Date.now() + 6 * 60 * 60 * 1000;
+  return cachedJwks;
+}
+
+async function verifyGithubOidc(token) {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return false;
+    const header = JSON.parse(decodeBase64Url(parts[0]).toString('utf8'));
+    const payload = JSON.parse(decodeBase64Url(parts[1]).toString('utf8'));
+    if (header.alg !== 'RS256' || !header.kid) return false;
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.iss !== OIDC_ISSUER || payload.aud !== OIDC_AUDIENCE || payload.exp < now || payload.nbf > now) return false;
+    if (payload.repository !== TRUSTED_REPOSITORY || payload.workflow_ref !== TRUSTED_WORKFLOW || payload.ref !== 'refs/heads/main') return false;
+    const jwks = await getGithubJwks();
+    const jwk = jwks.keys?.find((key) => key.kid === header.kid && key.use === 'sig');
+    if (!jwk) return false;
+    const publicKey = crypto.createPublicKey({ key: jwk, format: 'jwk' });
+    return crypto.verify('RSA-SHA256', Buffer.from(`${parts[0]}.${parts[1]}`), publicKey, decodeBase64Url(parts[2]));
+  } catch (error) {
+    console.error('GitHub OIDC verification failed:', { name: error?.name, message: error?.message });
+    return false;
+  }
+}
+
+async function isAuthorized(req) {
+  const authorization = String(req.headers.authorization || '');
+  const token = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+  if (!token) return false;
+  if (process.env.CRON_SECRET) {
+    const provided = Buffer.from(token);
+    const expected = Buffer.from(process.env.CRON_SECRET);
+    if (provided.length === expected.length && crypto.timingSafeEqual(provided, expected)) return true;
+  }
+  return verifyGithubOidc(token);
+}
+
 module.exports = async function handler(req, res) {
   if (!['GET', 'POST'].includes(req.method)) {
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  if (process.env.CRON_SECRET && req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!(await isAuthorized(req))) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   if (!process.env.PH_TOKEN) return res.status(500).json({ error: 'PH_TOKEN is not configured' });

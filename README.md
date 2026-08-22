@@ -5,13 +5,14 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 ## Features
 
 - Responsive dark neon UI with a three-column desktop and single-column mobile layout
-- Product cards ordered by Product Hunt votes
+- Independent Radar Score plus newest and vote-based sorting
 - Every agent is available for free
 - Instant client-side search and combinable topic filtering
 - Share-on-X links for every agent
 - Skeleton loading states and ad-ready legal pages
-- Dedicated agent detail page
-- Scheduled Product Hunt GraphQL ingestion into Vercel KV
+- Server-rendered, indexable agent detail pages
+- Dynamic XML sitemap, robots.txt, structured data, About and Contact pages
+- OIDC-authenticated Product Hunt ingestion every six hours
 - Cache-friendly public feed API
 
 ## Project structure
@@ -22,9 +23,13 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 │   └── refresh-agents.yml # Six-hour refresh schedule
 ├── api/
 │   ├── fetch-agents.js   # Product Hunt ingestion cron endpoint
-│   └── get-agents.js     # Public KV read endpoint
+│   ├── get-agents.js     # Public KV read endpoint
+│   ├── agent.js          # Server-rendered agent pages
+│   └── sitemap.js        # Dynamic XML sitemap
 ├── app.js                # Feed rendering, search, filters, and sharing
-├── detail.html           # Agent details
+├── about.html            # Editorial project information
+├── contact.html          # Contact information
+├── detail.html           # Legacy noindex agent route
 ├── index.html            # Main page
 ├── privacy-policy.html   # Privacy policy
 ├── terms-of-service.html # Terms of service
@@ -53,10 +58,10 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
    - `KV_REST_API_URL` and `KV_REST_API_TOKEN`: only add these manually when your storage integration did not inject variables with these exact names.
 
 5. Redeploy after adding the environment variables.
-6. Seed the first feed by sending a request:
+6. The GitHub Actions workflow authenticates with a short-lived OIDC token and refreshes the feed automatically. To permit manual authenticated refreshes too, optionally set `CRON_SECRET` in Vercel and send:
 
    ```bash
-   curl --fail https://ai-agent-radar.vercel.app/api/fetch-agents
+   curl --fail -H "Authorization: Bearer YOUR_CRON_SECRET" https://ai-agent-radar.vercel.app/api/fetch-agents
    ```
 
 7. Open the production URL. GitHub Actions refreshes the feed automatically at `00:00`, `06:00`, `12:00`, and `18:00` UTC.
@@ -75,7 +80,7 @@ For local development, link the folder to the Vercel project so its development 
 }
 ```
 
-`GET` or `POST /api/fetch-agents` refreshes KV and returns the update timestamp and number of saved agents. When `CRON_SECRET` is configured, the endpoint requires its bearer token.
+`GET` or `POST /api/fetch-agents` refreshes KV and returns the update timestamp and number of saved agents. The endpoint requires either a valid short-lived GitHub Actions OIDC token from this repository's refresh workflow or the optional `CRON_SECRET` bearer token.
 
 ## License
 

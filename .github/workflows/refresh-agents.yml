@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   refresh:
@@ -14,4 +15,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Refresh production feed
-        run: curl --fail --show-error --silent --retry 3 --retry-all-errors https://ai-agent-radar.vercel.app/api/fetch-agents
+        shell: bash
+        run: |
+          oidc_token="$(curl --fail --show-error --silent \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=ai-agent-radar-refresh" | jq -r '.value')"
+          curl --fail --show-error --silent --retry 3 --retry-all-errors \
+            -H "Authorization: Bearer ${oidc_token}" \
+            https://ai-agent-radar.vercel.app/api/fetch-agents
