@@ -18,6 +18,8 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 
 ```text
 .
+├── .github/workflows/
+│   └── refresh-agents.yml # Six-hour refresh schedule
 ├── api/
 │   ├── fetch-agents.js   # Product Hunt ingestion cron endpoint
 │   └── get-agents.js     # Public KV read endpoint
@@ -29,7 +31,7 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 ├── og-image.svg          # Social sharing image
 ├── styles.css            # Responsive site styles
 ├── package.json
-└── vercel.json           # Rewrites and six-hour cron
+└── vercel.json           # Production route rewrites
 ```
 
 ## Deploy to Vercel
@@ -48,19 +50,18 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 4. In **Settings → Environment Variables**, add:
 
    - `PH_TOKEN`: your Product Hunt API access token.
-   - `CRON_SECRET`: a long random secret used to protect `/api/fetch-agents`. Vercel cron requests automatically send `Authorization: Bearer <CRON_SECRET>` when this variable is configured.
    - `KV_REST_API_URL` and `KV_REST_API_TOKEN`: only add these manually when your storage integration did not inject variables with these exact names.
 
 5. Redeploy after adding the environment variables.
-6. Seed the first feed by sending an authorized request:
+6. Seed the first feed by sending a request:
 
    ```bash
-   curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://YOUR_DOMAIN/api/fetch-agents
+   curl --fail https://ai-agent-radar.vercel.app/api/fetch-agents
    ```
 
-7. Open the production URL. Future refreshes run automatically at `00:00`, `06:00`, `12:00`, and `18:00` UTC.
+7. Open the production URL. GitHub Actions refreshes the feed automatically at `00:00`, `06:00`, `12:00`, and `18:00` UTC.
 
-For local development, link the folder to the Vercel project so its development environment is available, then run `npm run dev`. You can also create a `.env.local` containing `PH_TOKEN`, `CRON_SECRET`, and the KV variables; never commit that file.
+For local development, link the folder to the Vercel project so its development environment is available, then run `npm run dev`. You can also create a `.env.local` containing `PH_TOKEN` and the KV variables; never commit that file.
 
 ## API responses
 
