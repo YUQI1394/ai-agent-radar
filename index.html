@@ -13,6 +13,20 @@
   <link rel="canonical" href="https://ai-agent-radar.vercel.app">
   <title>AI Agent Radar</title>
   <link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "AI Agent Radar",
+      "url": "https://ai-agent-radar.vercel.app",
+      "description": "A live radar for the latest AI Agents. Updated every 6 hours.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "AI Agent Radar",
+        "url": "https://ai-agent-radar.vercel.app"
+      }
+    }
+  </script>
 </head>
 <body>
   <header class="site-header">
@@ -28,25 +42,39 @@
       <p class="hero-copy">A focused feed of autonomous tools, copilots, assistants, and workflows ranked by Product Hunt votes.</p>
     </section>
 
+    <section class="radar-summary" aria-label="Today's radar summary">
+      <div><strong id="stat-total">—</strong><span>Agents tracked</span></div>
+      <div><strong id="stat-new">—</strong><span>Fresh this week</span></div>
+      <div><strong id="stat-category">—</strong><span>Leading category</span></div>
+      <div><strong id="stat-top">—</strong><span>Top radar signal</span></div>
+    </section>
+
     <section class="controls" aria-label="Agent search and filters">
       <label class="search-wrap" for="search-input">
         <span aria-hidden="true">⌕</span>
         <input id="search-input" type="search" placeholder="Search agents..." autocomplete="off">
       </label>
       <div class="filters" role="group" aria-label="Filter agents by category">
-        <button class="filter-button active" type="button" data-filter="All">All</button>
-        <button class="filter-button" type="button" data-filter="Marketing">Marketing</button>
-        <button class="filter-button" type="button" data-filter="Coding">Coding</button>
-        <button class="filter-button" type="button" data-filter="Design">Design</button>
-        <button class="filter-button" type="button" data-filter="Productivity">Productivity</button>
+        <button class="filter-button active" type="button" data-filter="All">All <span data-count="All"></span></button>
+        <button class="filter-button" type="button" data-filter="Marketing">Marketing <span data-count="Marketing"></span></button>
+        <button class="filter-button" type="button" data-filter="Coding">Coding <span data-count="Coding"></span></button>
+        <button class="filter-button" type="button" data-filter="Design">Design <span data-count="Design"></span></button>
+        <button class="filter-button" type="button" data-filter="Productivity">Productivity <span data-count="Productivity"></span></button>
+        <button class="filter-button saved-filter" type="button" data-filter="Saved">Saved <span data-count="Saved"></span></button>
+      </div>
+      <div class="sort-controls" role="group" aria-label="Sort agents">
+        <span>Sort by</span>
+        <button class="sort-button active" type="button" data-sort="radar">Radar Score</button>
+        <button class="sort-button" type="button" data-sort="newest">Newest</button>
+        <button class="sort-button" type="button" data-sort="votes">Most Upvoted</button>
       </div>
     </section>
 
     <section id="trending-widget" class="trending-widget" aria-labelledby="trending-title" hidden>
       <div class="trending-header">
         <div>
-          <span class="trending-eyebrow">DAILY LEADERBOARD</span>
-          <h2 id="trending-title">🔥 Trending Today</h2>
+          <span class="trending-eyebrow">RADAR LEADERBOARD</span>
+          <h2 id="trending-title">🔥 Strongest Signals</h2>
         </div>
         <span class="trending-badge">Top 5</span>
       </div>
@@ -68,6 +96,25 @@
       <h2>No agents found</h2>
       <p>Try a different search or category.</p>
     </div>
+
+    <section class="editorial-section" aria-labelledby="about-radar-title">
+      <div class="editorial-copy">
+        <span class="eyebrow">INDEPENDENT DISCOVERY LAYER</span>
+        <h2 id="about-radar-title">More signal, less AI noise</h2>
+        <p>AI Agent Radar monitors newly launched autonomous tools, copilots and workflows, then organizes them into a fast, searchable feed. Every listing remains free to explore.</p>
+        <p>Our goal is to help builders, marketers, designers and productivity enthusiasts spot useful agents while they are still emerging—not after they are everywhere.</p>
+      </div>
+      <aside class="method-card" aria-labelledby="method-title">
+        <h3 id="method-title">How Radar Score works</h3>
+        <p>Radar Score is an independent discovery signal calculated from launch freshness, community interest and relevance to AI-agent workflows.</p>
+        <ul>
+          <li><strong>Community signal</strong><span>Product Hunt vote activity</span></li>
+          <li><strong>Freshness signal</strong><span>How recently the agent launched</span></li>
+          <li><strong>Relevance signal</strong><span>Agent-focused topics and use cases</span></li>
+        </ul>
+        <small>Scores help discovery and are not paid placements or endorsements.</small>
+      </aside>
+    </section>
 
   </main>
 
