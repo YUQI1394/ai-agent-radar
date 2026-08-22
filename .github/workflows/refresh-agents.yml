@@ -22,4 +22,4 @@ jobs:
             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=ai-agent-radar-refresh" | jq -r '.value')"
           curl --fail --show-error --silent --retry 3 --retry-all-errors \
             -H "Authorization: Bearer ${oidc_token}" \
-            https://ai-agent-radar.vercel.app/api/fetch-agents
+            https://getaiagentradar.com/api/fetch-agents

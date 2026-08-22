@@ -61,7 +61,7 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 6. The GitHub Actions workflow authenticates with a short-lived OIDC token and refreshes the feed automatically. To permit manual authenticated refreshes too, optionally set `CRON_SECRET` in Vercel and send:
 
    ```bash
-   curl --fail -H "Authorization: Bearer YOUR_CRON_SECRET" https://ai-agent-radar.vercel.app/api/fetch-agents
+   curl --fail -H "Authorization: Bearer YOUR_CRON_SECRET" https://getaiagentradar.com/api/fetch-agents
    ```
 
 7. Open the production URL. GitHub Actions refreshes the feed automatically at `00:00`, `06:00`, `12:00`, and `18:00` UTC.

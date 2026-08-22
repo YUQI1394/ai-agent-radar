@@ -84,7 +84,7 @@
     const key = agentKey(agent);
     const detailId = encodeURIComponent(key);
     const detailSlug = encodeURIComponent(agent.slug || agent.id || key);
-    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Just discovered ${agent.name || 'an AI Agent'} on AI Agent Radar 🚀 https://ai-agent-radar.vercel.app`)}`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Just discovered ${agent.name || 'an AI Agent'} on AI Agent Radar 🚀 https://getaiagentradar.com`)}`;
     const signal = signalFor(agent);
     const isSaved = state.saved.has(key);
     return `<article id="agent-${detailId}" class="agent-card">

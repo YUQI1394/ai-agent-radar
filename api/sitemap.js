@@ -1,6 +1,6 @@
 const { createClient } = require('@vercel/kv');
 
-const SITE_URL = 'https://ai-agent-radar.vercel.app';
+const SITE_URL = 'https://getaiagentradar.com';
 const escapeXml = (value) => String(value).replace(/[<>&'\"]/g, (character) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[character]);
 
 module.exports = async function handler(req, res) {
