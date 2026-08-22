@@ -1,12 +1,10 @@
 (() => {
   'use strict';
 
-  const FREE_LIMIT = 10;
   const state = {
     agents: [],
     search: '',
-    filter: 'All',
-    unlocked: localStorage.getItem('radar_unlocked') === 'true'
+    filter: 'All'
   };
 
   const elements = {
@@ -15,7 +13,7 @@
     filters: [...document.querySelectorAll('.filter-button')],
     resultCount: document.getElementById('result-count'),
     updatedAt: document.getElementById('updated-at'),
-    paywall: document.getElementById('paywall'),
+    heroUpdatedAt: document.getElementById('hero-updated-at'),
     trendingWidget: document.getElementById('trending-widget'),
     trendingList: document.getElementById('trending-list'),
     empty: document.getElementById('empty-state')
@@ -51,6 +49,8 @@
       ? `<img class="agent-logo" src="${safeUrl(agent.thumbnail)}" alt="" loading="lazy">`
       : `<div class="agent-logo placeholder" aria-hidden="true">${escapeHtml((agent.name || 'AI').slice(0, 2).toUpperCase())}</div>`;
     const detailId = encodeURIComponent(agent.id || agent.slug || '');
+    const shareText = `Just discovered ${agent.name || 'an AI Agent'} on AI Agent Radar 🚀 https://ai-agent-radar.vercel.app`;
+    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 
     return `<article id="agent-${detailId}" class="agent-card">
       <div class="card-top">
@@ -63,6 +63,7 @@
       <div class="card-actions">
         <a class="card-link details-link" href="/detail.html?id=${detailId}">Details</a>
         <a class="card-link visit-link" href="${safeUrl(agent.url)}" target="_blank" rel="noopener noreferrer">Visit ↗</a>
+        <a class="card-link share-link" href="${shareUrl}" target="_blank" rel="noopener noreferrer" aria-label="Share ${escapeHtml(agent.name)} on X">Share on X</a>
       </div>
     </article>`;
   }
@@ -87,23 +88,32 @@
   function render() {
     const query = state.search.trim().toLowerCase();
     const filtered = state.agents.filter((agent) => {
-      const textMatch = !query || `${agent.name || ''} ${agent.description || ''} ${agent.tagline || ''}`
+      const textMatch = !query || `${agent.name || ''} ${agent.description || ''}`
         .toLowerCase()
         .includes(query);
       return textMatch && categoryMatches(agent, state.filter);
     });
 
-    const visible = state.unlocked ? filtered : filtered.slice(0, FREE_LIMIT);
-    elements.grid.innerHTML = visible.map(createCard).join('');
+    elements.grid.innerHTML = filtered.map(createCard).join('');
     elements.grid.setAttribute('aria-busy', 'false');
-    elements.empty.hidden = visible.length > 0;
-    elements.resultCount.textContent = state.unlocked
-      ? `${visible.length} agent${visible.length === 1 ? '' : 's'} found`
-      : `Showing ${visible.length} of ${filtered.length} matching agents`;
+    elements.empty.hidden = filtered.length > 0;
+    elements.resultCount.textContent = `${filtered.length} agent${filtered.length === 1 ? '' : 's'} found`;
   }
 
-  function configureAccess() {
-    elements.paywall.hidden = state.unlocked;
+  function hoursAgo(value) {
+    const timestamp = new Date(value).getTime();
+    if (!Number.isFinite(timestamp)) return null;
+    return Math.max(0, Math.floor((Date.now() - timestamp) / 3600000));
+  }
+
+  function showUpdatedAt(value) {
+    const hours = hoursAgo(value);
+    const relative = hours === null ? 'Waiting for first update' : `Updated ${hours} hour${hours === 1 ? '' : 's'} ago`;
+    elements.updatedAt.textContent = relative;
+    elements.heroUpdatedAt.textContent = hours === null
+      ? 'Updated every 6 hours • Last updated: pending'
+      : `Updated every 6 hours • Last updated: ${hours} hour${hours === 1 ? '' : 's'} ago`;
+    document.title = hours === null ? 'AI Agent Radar' : `AI Agent Radar — ${relative}`;
   }
 
   async function loadAgents() {
@@ -112,7 +122,7 @@
       if (!response.ok) throw new Error(`Request failed (${response.status})`);
       const data = await response.json();
       state.agents = (data.agents || []).sort((a, b) => Number(b.votes || 0) - Number(a.votes || 0));
-      elements.updatedAt.textContent = data.updatedAt ? `Updated ${new Date(data.updatedAt).toLocaleString()}` : 'Waiting for first update';
+      showUpdatedAt(data.updatedAt);
       renderTrending();
       render();
     } catch (error) {
@@ -128,6 +138,12 @@
     elements.filters.forEach((item) => item.classList.toggle('active', item === button));
     render();
   }));
+  elements.grid.addEventListener('click', (event) => {
+    const shareLink = event.target.closest('.share-link');
+    if (!shareLink) return;
+    event.preventDefault();
+    window.open(shareLink.href, 'share-on-x', 'popup,width=680,height=520,noopener,noreferrer');
+  });
   elements.trendingList.addEventListener('click', (event) => {
     const link = event.target.closest('[data-agent-target]');
     if (!link) return;
@@ -141,7 +157,6 @@
     window.setTimeout(() => target.classList.remove('agent-card-highlighted'), 1600);
   });
 
-  configureAccess();
   loadAgents();
 })();
 

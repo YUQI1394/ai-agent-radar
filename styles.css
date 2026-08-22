@@ -58,6 +58,7 @@ button, input { font: inherit; }
 .hero h1 { margin: 18px 0; font-size: clamp(2.5rem, 6vw, 5.1rem); line-height: 1.04; letter-spacing: -0.06em; }
 .hero h1 span { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .hero-copy { max-width: 670px; margin: 0 auto; color: var(--muted); font-size: 1.05rem; }
+.hero-updated { margin: -4px auto 14px; color: #c8b5ff; font-size: .9rem; font-weight: 650; }
 
 .controls { display: block; margin-bottom: 14px; }
 .search-wrap { width: 100%; display: flex; align-items: center; gap: 10px; padding: 0 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
@@ -99,24 +100,37 @@ button, input { font: inherit; }
 .tagline { flex: 1; margin: 0 0 18px; color: var(--muted); font-size: .92rem; }
 .topics { display: flex; flex-wrap: wrap; gap: 6px; }
 .topic { padding: 4px 8px; color: #c8b5ff; background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.2); border-radius: 999px; font-size: .7rem; }
-.card-actions { display: flex; gap: 9px; margin-top: 20px; }
+.card-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 20px; }
 .card-link { flex: 1; padding: 9px 12px; text-align: center; border-radius: 9px; font-size: .82rem; font-weight: 750; }
 .details-link { border: 1px solid rgba(255,255,255,.1); }
 .visit-link { background: var(--gradient); }
+.share-link { color: var(--text); border: 1px solid rgba(6,182,212,.42); background: rgba(6,182,212,.08); }
+.share-link:hover { border-color: var(--cyan); background: rgba(6,182,212,.16); }
 
-.paywall { margin: 30px 0 90px; padding: 48px 24px; text-align: center; border: 1px solid var(--border); border-radius: 22px; background: linear-gradient(135deg, rgba(124,58,237,.12), rgba(6,182,212,.06)); }
-.paywall[hidden] { display: none; }
-.paywall-icon { font-size: 2rem; color: var(--cyan); }
-.paywall h2 { margin: 8px 0; font-size: 1.8rem; }
-.paywall p { margin: 0 0 24px; color: var(--muted); }
-.pricing-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
 .button { display: inline-flex; justify-content: center; align-items: center; padding: 11px 18px; border: 1px solid transparent; border-radius: 10px; font-weight: 780; transition: transform .2s ease, box-shadow .2s ease; }
 .button:hover { transform: translateY(-2px); }
 .button-primary { background: var(--gradient); box-shadow: 0 8px 26px rgba(124,58,237,.25); }
 .button-secondary { border-color: var(--border); background: var(--card); }
 .empty-state, .loading-state, .error-state { padding: 60px 20px; text-align: center; color: var(--muted); }
 .empty-state h2, .error-state h1 { color: var(--text); }
-.site-footer { padding: 26px 20px; text-align: center; color: #646474; border-top: 1px solid rgba(255,255,255,.05); font-size: .8rem; }
+.site-footer { padding: 26px 20px; text-align: center; color: #777787; border-top: 1px solid rgba(255,255,255,.05); font-size: .8rem; }
+.site-footer p { margin: 6px 0; }
+.footer-links { display: flex; justify-content: center; gap: 18px; margin: 8px 0; }
+.footer-links a:hover { color: var(--cyan); }
+
+.skeleton-card { gap: 15px; pointer-events: none; }
+.skeleton { display: block; border-radius: 8px; background: linear-gradient(90deg, rgba(255,255,255,.05) 25%, rgba(255,255,255,.11) 50%, rgba(255,255,255,.05) 75%); background-size: 200% 100%; animation: skeleton-pulse 1.35s infinite linear; }
+.skeleton-logo { width: 48px; height: 48px; border-radius: 12px; }
+.skeleton-title { width: 62%; height: 24px; margin-top: 4px; }
+.skeleton-text { width: 100%; height: 14px; }
+.skeleton-text.short { width: 76%; }
+.skeleton-button { width: 100%; height: 38px; margin-top: auto; }
+@keyframes skeleton-pulse { to { background-position: -200% 0; } }
+
+.legal-page { max-width: 780px; padding-bottom: 90px; }
+.legal-card { padding: clamp(24px, 5vw, 48px); background: var(--card); border: 1px solid var(--border); border-radius: 20px; }
+.legal-card h1 { margin-top: 0; font-size: clamp(2rem, 5vw, 3.25rem); }
+.legal-card p { color: var(--muted); }
 
 .compact-header { margin-bottom: 40px; }
 .detail-shell { max-width: 900px; padding-bottom: 80px; }

@@ -6,8 +6,10 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 
 - Responsive dark neon UI with a three-column desktop and single-column mobile layout
 - Product cards ordered by Product Hunt votes
-- Free preview of the first 10 agents
-- Full-feed search and topic filtering after local access is unlocked
+- Every agent is available for free
+- Instant client-side search and combinable topic filtering
+- Share-on-X links for every agent
+- Skeleton loading states and ad-ready legal pages
 - Dedicated agent detail page
 - Scheduled Product Hunt GraphQL ingestion into Vercel KV
 - Cache-friendly public feed API
@@ -19,9 +21,12 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 ├── api/
 │   ├── fetch-agents.js   # Product Hunt ingestion cron endpoint
 │   └── get-agents.js     # Public KV read endpoint
-├── app.js                # Feed rendering, search, filters, access state
+├── app.js                # Feed rendering, search, filters, and sharing
 ├── detail.html           # Agent details
 ├── index.html            # Main page
+├── privacy-policy.html   # Privacy policy
+├── terms-of-service.html # Terms of service
+├── og-image.svg          # Social sharing image
 ├── styles.css            # Responsive site styles
 ├── package.json
 └── vercel.json           # Rewrites and six-hour cron
@@ -56,27 +61,6 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 7. Open the production URL. Future refreshes run automatically at `00:00`, `06:00`, `12:00`, and `18:00` UTC.
 
 For local development, link the folder to the Vercel project so its development environment is available, then run `npm run dev`. You can also create a `.env.local` containing `PH_TOKEN`, `CRON_SECRET`, and the KV variables; never commit that file.
-
-## Access and Gumroad setup
-
-The two pricing buttons in `index.html` intentionally use `href="#"`. To connect Gumroad:
-
-1. Create two Gumroad membership products:
-   - **Full Access** at `$1/month`
-   - **Pro Weekly Digest** at `$5/month`
-2. Copy each Gumroad product checkout URL and replace the matching `href="#"` in `index.html`.
-3. After a successful Full Access purchase, unlock the browser by setting:
-
-   ```js
-   localStorage.setItem('radar_unlocked', 'true');
-   location.reload();
-   ```
-
-   For a quick prototype, put this snippet on a Gumroad redirect/thank-you page or expose it through a small “Activate purchase” flow.
-
-> `localStorage` is client-side access control and can be changed by visitors. It is suitable for validating the product idea, but it is not secure payment enforcement. For production-grade access, verify Gumroad license/subscription data in a serverless endpoint, issue a signed session cookie, and protect the complete dataset server-side. Otherwise, `/api/get-agents` still exposes all records publicly.
-
-4. Configure Gumroad Ping or webhooks if you want to maintain subscriber status, cancellations, and the weekly digest mailing list in an external email provider.
 
 ## API responses
 

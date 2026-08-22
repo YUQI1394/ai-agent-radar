@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AI Agent Radar</title>
+  <desc id="desc">Discover the latest AI Agents before they trend</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17102b"/><stop offset="1" stop-color="#07171c"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#06b6d4"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0a0a0f"/>
+  <circle cx="230" cy="60" r="360" fill="url(#background)"/>
+  <circle cx="1030" cy="470" r="300" fill="#07171c"/>
+  <rect x="70" y="70" width="1060" height="490" rx="34" fill="#111118" stroke="#5931a1" stroke-opacity=".7"/>
+  <text x="120" y="180" fill="url(#accent)" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="800">AI AGENT RADAR</text>
+  <text x="120" y="300" fill="#f4f4f8" font-family="Inter, Arial, sans-serif" font-size="66" font-weight="800">Discover the latest AI Agents</text>
+  <text x="120" y="380" fill="#f4f4f8" font-family="Inter, Arial, sans-serif" font-size="66" font-weight="800">before they trend</text>
+  <rect x="120" y="445" width="370" height="58" rx="29" fill="url(#accent)"/>
+  <text x="305" y="483" text-anchor="middle" fill="white" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">UPDATED EVERY 6 HOURS</text>
+</svg>

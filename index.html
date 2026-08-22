@@ -3,20 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Discover the daily top AI agents from Product Hunt.">
+  <meta name="description" content="A live radar for the latest AI Agents. Updated every 6 hours.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="AI Agent Radar — Discover the latest AI Agents before they trend">
+  <meta property="og:description" content="A live radar for the latest AI Agents. Updated every 6 hours.">
+  <meta property="og:image" content="https://ai-agent-radar.vercel.app/og-image.svg">
+  <meta property="og:url" content="https://ai-agent-radar.vercel.app">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://ai-agent-radar.vercel.app">
   <title>AI Agent Radar</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="/" aria-label="AI Agent Radar home">AI Agent Radar</a>
-    <p>Daily top AI agents from Product Hunt</p>
+    <p>Fresh AI agent discoveries, updated every 6 hours</p>
   </header>
 
   <main class="page-shell">
     <section class="hero" aria-labelledby="hero-title">
-      <span class="eyebrow">CURATED &amp; UPDATED EVERY 6 HOURS</span>
-      <h1 id="hero-title">Find the next AI agent<br><span>before everyone else.</span></h1>
+      <span class="eyebrow">LIVE AI AGENT DISCOVERY FEED</span>
+      <h1 id="hero-title">Discover the latest AI Agents<br><span>before they trend</span></h1>
+      <p id="hero-updated-at" class="hero-updated">Updated every 6 hours • Last updated: checking…</p>
       <p class="hero-copy">A focused feed of autonomous tools, copilots, assistants, and workflows ranked by Product Hunt votes.</p>
     </section>
 
@@ -50,26 +58,23 @@
       <p id="updated-at"></p>
     </div>
 
-    <section id="agent-grid" class="agent-grid" aria-live="polite" aria-busy="true"></section>
+    <section id="agent-grid" class="agent-grid" aria-live="polite" aria-busy="true">
+      <article class="agent-card skeleton-card" aria-hidden="true"><span class="skeleton skeleton-logo"></span><span class="skeleton skeleton-title"></span><span class="skeleton skeleton-text"></span><span class="skeleton skeleton-text short"></span><span class="skeleton skeleton-button"></span></article>
+      <article class="agent-card skeleton-card" aria-hidden="true"><span class="skeleton skeleton-logo"></span><span class="skeleton skeleton-title"></span><span class="skeleton skeleton-text"></span><span class="skeleton skeleton-text short"></span><span class="skeleton skeleton-button"></span></article>
+      <article class="agent-card skeleton-card" aria-hidden="true"><span class="skeleton skeleton-logo"></span><span class="skeleton skeleton-title"></span><span class="skeleton skeleton-text"></span><span class="skeleton skeleton-text short"></span><span class="skeleton skeleton-button"></span></article>
+    </section>
 
     <div id="empty-state" class="empty-state" hidden>
       <h2>No agents found</h2>
       <p>Try a different search or category.</p>
     </div>
 
-    <section id="paywall" class="paywall" aria-labelledby="paywall-title">
-      <span class="paywall-icon" aria-hidden="true">✦</span>
-      <h2 id="paywall-title">Unlock the full radar</h2>
-      <p>See every ranked agent and unlock search and category filters.</p>
-      <div class="pricing-actions">
-        <a class="button button-primary" href="#">$1/month Full Access</a>
-        <a class="button button-secondary" href="#">$5/month Pro Weekly Digest</a>
-      </div>
-    </section>
   </main>
 
   <footer class="site-footer">
     <p>AI Agent Radar · Independent Product Hunt discovery feed</p>
+    <nav class="footer-links" aria-label="Legal"><a href="/privacy-policy">Privacy Policy</a><a href="/terms-of-service">Terms of Service</a></nav>
+    <p>This site is supported by ads. We do not sell user data.</p>
   </footer>
   <script src="/app.js" defer></script>
 </body>
