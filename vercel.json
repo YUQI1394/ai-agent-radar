@@ -1,5 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.getaiagentradar.com" }],
+      "destination": "https://getaiagentradar.com/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/agent/:slug",

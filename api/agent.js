@@ -101,7 +101,7 @@ function renderPage(agent, agents) {
   <meta property="og:title" content="${escapeHtml(agent.name)} · AI Agent Radar">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${canonical}">
-  <meta property="og:image" content="${safeUrl(agent.thumbnail || `${SITE_URL}/og-image.svg`)}">
+  <meta property="og:image" content="${safeUrl(agent.thumbnail || `${SITE_URL}/og-image.png`)}">
   <title>${escapeHtml(agent.name)} · AI Agent Radar</title>
   <link rel="canonical" href="${canonical}">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
