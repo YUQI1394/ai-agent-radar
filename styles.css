@@ -115,7 +115,7 @@ button, input { font: inherit; }
 .empty-state h2, .error-state h1 { color: var(--text); }
 .site-footer { padding: 26px 20px; text-align: center; color: #777787; border-top: 1px solid rgba(255,255,255,.05); font-size: .8rem; }
 .site-footer p { margin: 6px 0; }
-.footer-links { display: flex; justify-content: center; gap: 18px; margin: 8px 0; }
+.footer-links { display: flex; justify-content: center; align-items: center; gap: 9px; margin: 8px 0; }
 .footer-links a:hover { color: var(--cyan); }
 
 .skeleton-card { gap: 15px; pointer-events: none; }
