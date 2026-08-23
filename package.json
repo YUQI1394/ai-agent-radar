@@ -8,6 +8,7 @@
     "check": "node --check app.js && node --check api/get-agents.js && node --check api/fetch-agents.js && node --check api/agent.js && node --check api/sitemap.js && node --check api/feed.js"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "@vercel/kv": "^3.0.0"
   },
   "devDependencies": {
