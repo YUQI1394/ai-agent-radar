@@ -1,5 +1,6 @@
 const { kv } = require('@vercel/kv');
 const crypto = require('crypto');
+const { enrichAgents } = require('../lib/radar');
 
 const PH_ENDPOINT = 'https://api.producthunt.com/v2/api/graphql';
 const KEYWORDS = /\b(agent|agents|autonomous|workflow|workflows|mcp|copilot|assistant|assistants)\b/i;
@@ -159,9 +160,15 @@ module.exports = async function handler(req, res) {
       if (KEYWORDS.test(searchable)) unique.set(post.id || post.slug, normalize(post));
     });
 
-    const agents = [...unique.values()].sort((a, b) => b.votes - a.votes);
-    const payload = { updatedAt: new Date().toISOString(), count: agents.length, agents };
+    const rawAgents = [...unique.values()].sort((a, b) => b.votes - a.votes);
+    const previous = await kv.get('agents:latest');
+    const updatedAt = new Date().toISOString();
+    const agents = enrichAgents(rawAgents, Array.isArray(previous?.agents) ? previous.agents : [], Date.now());
+    const payload = { updatedAt, count: agents.length, agents };
     await kv.set('agents:latest', payload);
+    await kv.set(`agents:snapshot:${updatedAt.slice(0, 10)}`, payload, { ex: 60 * 60 * 24 * 35 });
+    await kv.lpush('agents:history', payload);
+    await kv.ltrim('agents:history', 0, 27);
     await notifyIndexNow(agents);
 
     return res.status(200).json({ ok: true, updatedAt: payload.updatedAt, count: agents.length });

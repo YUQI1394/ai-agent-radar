@@ -28,6 +28,14 @@
       "destination": "/api/feed"
     },
     {
+      "source": "/weekly",
+      "destination": "/api/weekly"
+    },
+    {
+      "source": "/compare",
+      "destination": "/api/compare"
+    },
+    {
       "source": "/favicon.ico",
       "destination": "/favicon.svg"
     },

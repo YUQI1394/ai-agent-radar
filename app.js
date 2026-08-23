@@ -52,6 +52,7 @@
   const primaryCategory = (agent) => CATEGORIES.slice(1).find((category) => categoryMatches(agent, category)) || 'AI Agent';
 
   function radarScore(agent) {
+    if (Number.isFinite(Number(agent.score?.total))) return Number(agent.score.total);
     const votes = Math.max(0, Number(agent.votes || 0));
     const voteSignal = Math.min(65, Math.round(Math.log10(votes + 1) * 22));
     const hours = ageInHours(agent);
@@ -61,6 +62,7 @@
   }
 
   function signalFor(agent) {
+    if (Number(agent.voteDelta || 0) > 0 || Number(agent.rankChange || 0) > 0) return { label: 'RISING', className: 'signal-trending' };
     const hours = ageInHours(agent);
     if (hours <= 24) return { label: 'NEW', className: 'signal-new' };
     if (hours <= 72) return { label: 'FRESH', className: 'signal-fresh' };
@@ -86,15 +88,22 @@
     const detailSlug = encodeURIComponent(agent.slug || agent.id || key);
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Just discovered ${agent.name || 'an AI Agent'} on AI Agent Radar 🚀 https://getaiagentradar.com`)}`;
     const signal = signalFor(agent);
+    const score = agent.score || { total: agent.radarScore, community: 0, freshness: 0, relevance: 0, momentum: 0 };
+    const peer = state.agents.filter((item) => agentKey(item) !== key).sort((a, b) => {
+      const aShared = (a.topics || []).filter((topic) => (agent.topics || []).includes(topic)).length;
+      const bShared = (b.topics || []).filter((topic) => (agent.topics || []).includes(topic)).length;
+      return bShared - aShared || b.radarScore - a.radarScore;
+    })[0];
+    const compareHref = peer ? `/compare?agents=${encodeURIComponent(agent.slug || agent.id)},${encodeURIComponent(peer.slug || peer.id)}` : `/agent/${detailSlug}`;
     const isSaved = state.saved.has(key);
     return `<article id="agent-${detailId}" class="agent-card">
       <div class="card-top">${thumbnail}<div class="card-signals"><span class="signal-badge ${signal.className}">${signal.label}</span><button class="save-button${isSaved ? ' saved' : ''}" type="button" data-save-id="${escapeHtml(key)}" aria-pressed="${isSaved}" aria-label="${isSaved ? 'Remove' : 'Save'} ${escapeHtml(agent.name)}">${isSaved ? '♥' : '♡'}</button></div></div>
-      <div class="score-row"><span class="radar-score">Radar Score <strong>${agent.radarScore}</strong></span><span class="votes" title="Product Hunt votes">▲ ${Number(agent.votes || 0).toLocaleString()}</span></div>
+      <div class="score-row"><span class="radar-score" title="Community ${score.community}/45 · Freshness ${score.freshness}/25 · Relevance ${score.relevance}/20 · Momentum ${score.momentum}/10">Radar Score <strong>${agent.radarScore}</strong></span><span class="votes" title="Product Hunt votes">▲ ${Number(agent.votes || 0).toLocaleString()}${Number(agent.voteDelta || 0) > 0 ? ` <small>+${Number(agent.voteDelta)}</small>` : ''}</span></div>
       <h2>${index + 1}. ${escapeHtml(agent.name)}</h2>
       <p class="tagline">${escapeHtml(agent.tagline)}</p>
       <p class="best-for">Best for: <strong>${escapeHtml(primaryCategory(agent))}</strong></p>
       <div class="topics">${topics || '<span class="topic">AI Agent</span>'}</div>
-      <div class="card-actions"><a class="card-link details-link" href="/agent/${detailSlug}">Details</a><a class="card-link visit-link" href="${safeUrl(agent.url)}" target="_blank" rel="noopener noreferrer">Visit ↗</a><a class="card-link share-link" href="${shareUrl}" target="_blank" rel="noopener noreferrer" aria-label="Share ${escapeHtml(agent.name)} on X">Share on X</a></div>
+      <div class="card-actions"><a class="card-link details-link" href="/agent/${detailSlug}">Details</a><a class="card-link compare-link" href="${compareHref}">Compare</a><a class="card-link visit-link" href="${safeUrl(agent.url)}" target="_blank" rel="noopener noreferrer">Visit ↗</a><a class="card-link share-link" href="${shareUrl}" target="_blank" rel="noopener noreferrer" aria-label="Share ${escapeHtml(agent.name)} on X">Share on X</a></div>
     </article>`;
   }
 
@@ -102,7 +111,8 @@
     const leaders = [...state.agents].sort((a, b) => b.radarScore - a.radarScore).slice(0, 5);
     elements.trendingList.innerHTML = leaders.map((agent, index) => {
       const detailSlug = encodeURIComponent(agent.slug || agent.id || agentKey(agent));
-      return `<li class="trending-item"><span class="trending-rank">${index + 1}</span><a class="trending-name" href="/agent/${detailSlug}">${escapeHtml(agent.name)}</a><span class="trending-votes">Score ${agent.radarScore}</span></li>`;
+      const movement = Number(agent.voteDelta || 0) > 0 ? ` · +${Number(agent.voteDelta)} votes` : Number(agent.rankChange || 0) > 0 ? ` · ↑${Number(agent.rankChange)}` : '';
+      return `<li class="trending-item"><span class="trending-rank">${index + 1}</span><a class="trending-name" href="/agent/${detailSlug}">${escapeHtml(agent.name)}</a><span class="trending-votes">Score ${agent.radarScore}${movement}</span></li>`;
     }).join('');
     elements.trendingWidget.hidden = leaders.length === 0;
   }

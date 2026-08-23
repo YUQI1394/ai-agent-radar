@@ -125,12 +125,19 @@ button, input { font: inherit; }
 .best-for strong { color: #c8b5ff; }
 .topics { display: flex; flex-wrap: wrap; gap: 6px; }
 .topic { padding: 4px 8px; color: #c8b5ff; background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.2); border-radius: 999px; font-size: .7rem; }
-.card-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 20px; }
+.card-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 20px; }
 .card-link { flex: 1; padding: 9px 12px; text-align: center; border-radius: 9px; font-size: .82rem; font-weight: 750; }
 .details-link { border: 1px solid rgba(255,255,255,.1); }
+.compare-link { color: #c4b5fd; border: 1px solid rgba(124,58,237,.42); background: rgba(124,58,237,.08); }
+.compare-link:hover { border-color: #a78bfa; background: rgba(124,58,237,.16); }
 .visit-link { background: var(--gradient); }
 .share-link { color: var(--text); border: 1px solid rgba(6,182,212,.42); background: rgba(6,182,212,.08); }
 .share-link:hover { border-color: var(--cyan); background: rgba(6,182,212,.16); }
+.votes small { color: #86efac; font-size: .67rem; }
+.weekly-banner { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 22px 0; padding: 18px 22px; border: 1px solid rgba(6,182,212,.3); border-radius: 15px; background: linear-gradient(110deg, rgba(6,182,212,.1), rgba(124,58,237,.1)); }
+.weekly-banner strong, .weekly-banner small { display: block; }
+.weekly-banner small { margin-top: 3px; color: var(--muted); }
+.weekly-banner > span:last-child { flex: 0 0 auto; color: var(--cyan); font-weight: 750; }
 
 .editorial-section { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr); gap: 24px; margin: 40px 0 90px; padding-top: 44px; border-top: 1px solid rgba(255,255,255,.07); }
 .editorial-copy { padding: 18px 0; }
@@ -177,7 +184,7 @@ button, input { font: inherit; }
 .detail-logo { width: 84px; height: 84px; flex: 0 0 auto; object-fit: cover; border-radius: 20px; }
 .detail-heading h1 { margin: 5px 0; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; letter-spacing: -.04em; }
 .detail-tagline { margin: 0; color: var(--muted); }
-.detail-stats { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin: 35px 0 20px; }
+.detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin: 35px 0 20px; }
 .detail-stats div { display: flex; flex-direction: column; padding: 18px; background: var(--card-soft); border-radius: 12px; }
 .detail-stats strong { font-size: 1.1rem; }
 .detail-stats span { color: var(--muted); font-size: .75rem; }
@@ -199,9 +206,39 @@ button, input { font: inherit; }
 .comparison-list span { text-align: right; font-size: .78rem; }
 .trend-observation { margin-top: 28px; border-color: rgba(124,58,237,.3); }
 .detail-visit { margin-top: 22px; }
+.detail-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.score-breakdown { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin: 24px 0; padding: 20px; border: 1px solid rgba(6,182,212,.24); border-radius: 15px; background: rgba(6,182,212,.05); }
+.score-breakdown div { display: flex; flex-direction: column; }
+.score-breakdown span { color: var(--muted); font-size: .72rem; }
+.score-breakdown strong { color: var(--cyan); font-size: 1.1rem; }
+.score-breakdown p { grid-column: 1 / -1; margin: 5px 0 0; color: var(--muted); font-size: .78rem; }
 .content-page h2 { margin-top: 32px; }
 .content-page li { margin-bottom: 8px; color: var(--muted); }
 .contact-email { color: var(--cyan); font-size: clamp(1rem, 3vw, 1.3rem); font-weight: 700; overflow-wrap: anywhere; }
+
+.report-shell { max-width: 980px; padding-bottom: 90px; }
+.report-hero { padding: 50px 0 30px; }
+.report-hero h1 { margin: 10px 0; font-size: clamp(2.3rem, 6vw, 4.6rem); line-height: 1.05; letter-spacing: -.055em; }
+.report-hero h1 span { color: var(--cyan); }
+.report-hero p { max-width: 720px; color: var(--muted); }
+.weekly-brief, .comparison-verdict { margin-bottom: 22px; padding: 26px; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(145deg, rgba(124,58,237,.12), rgba(6,182,212,.05)), var(--card); }
+.weekly-brief h2, .comparison-verdict h2 { margin: 7px 0; font-size: 1.45rem; }
+.weekly-brief p, .weekly-brief small, .comparison-verdict p { color: var(--muted); }
+.weekly-list { display: grid; gap: 12px; }
+.weekly-item { display: grid; grid-template-columns: 58px minmax(0,1fr); gap: 16px; padding: 22px; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; background: var(--card); }
+.weekly-rank { color: #fb923c; font-size: 1.25rem; font-weight: 900; }
+.weekly-item h2 { margin: 3px 0; }
+.weekly-item h2 a:hover { color: var(--cyan); }
+.weekly-item p { margin: 4px 0 12px; color: var(--muted); }
+.weekly-metrics { display: flex; flex-wrap: wrap; gap: 8px; }
+.weekly-metrics span { padding: 5px 9px; color: #c8b5ff; border-radius: 999px; background: rgba(124,58,237,.1); font-size: .72rem; }
+.report-method { margin-top: 26px; }
+.compare-table-wrap { overflow-x: auto; margin: 22px 0; border: 1px solid var(--border); border-radius: 16px; }
+.compare-table { width: 100%; border-collapse: collapse; background: var(--card); }
+.compare-table th, .compare-table td { padding: 15px 18px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.07); }
+.compare-table th { color: var(--muted); }
+.compare-table thead th { color: var(--text); background: var(--card-soft); }
+.compare-table thead a { color: var(--cyan); }
 
 @media (max-width: 900px) {
   .agent-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -224,6 +261,8 @@ button, input { font: inherit; }
   .sort-controls > span { width: 100%; }
   .sort-button { flex: 1; }
   .card-actions { grid-template-columns: 1fr; }
+  .weekly-banner { align-items: flex-start; flex-direction: column; }
+  .weekly-item { grid-template-columns: 1fr; }
   .editorial-section { margin-bottom: 60px; }
   .method-card li { align-items: flex-start; flex-direction: column; gap: 2px; }
   .method-card li span { text-align: left; }
@@ -231,6 +270,7 @@ button, input { font: inherit; }
   .feed-meta p { margin: 5px 0; }
   .detail-heading { align-items: flex-start; flex-direction: column; }
   .detail-stats { grid-template-columns: 1fr; }
+  .score-breakdown { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .analysis-grid, .pros-limits { grid-template-columns: 1fr; }
   .comparison-list li { align-items: flex-start; flex-direction: column; }
   .comparison-list span { text-align: left; }

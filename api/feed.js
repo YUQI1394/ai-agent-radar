@@ -43,6 +43,7 @@ module.exports = async function handler(req, res) {
     <language>en</language>
     <lastBuildDate>${new Date(payload.updatedAt || Date.now()).toUTCString()}</lastBuildDate>
     <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="${SITE_URL}/weekly" rel="related" type="text/html" />
     ${items}
   </channel>
 </rss>`;

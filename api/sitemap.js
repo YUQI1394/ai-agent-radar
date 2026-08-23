@@ -11,6 +11,7 @@ module.exports = async function handler(req, res) {
 
   const staticUrls = [
     { path: '/', lastmod: null },
+    { path: '/weekly', lastmod: null },
     { path: '/about', lastmod: '2026-08-22T00:00:00.000Z' },
     { path: '/contact', lastmod: '2026-08-22T00:00:00.000Z' },
     { path: '/privacy-policy', lastmod: '2026-08-22T00:00:00.000Z' },

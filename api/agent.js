@@ -1,4 +1,5 @@
 const { createClient } = require('@vercel/kv');
+const { scoreBreakdown } = require('../lib/radar');
 
 const SITE_URL = 'https://getaiagentradar.com';
 
@@ -82,6 +83,8 @@ function renderPage(agent, agents) {
     sameAs: safeUrl(agent.url)
   }).replace(/</g, '\\u003c');
   const analysis = automaticAnalysis(agent, agents);
+  const score = agent.score || scoreBreakdown(agent);
+  const primaryPeer = analysis.peers[0];
   const featureItems = analysis.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join('');
   const comparisonItems = analysis.peers.map((peer) => `<li><a href="/agent/${encodeURIComponent(peer.slug || peer.id)}">${escapeHtml(peer.name)}</a><span>${escapeHtml(profileFor(peer).lens)} · ▲ ${Number(peer.votes || 0).toLocaleString()}</span></li>`).join('');
   const limitations = [
@@ -114,9 +117,10 @@ function renderPage(agent, agents) {
     <a class="back-link" href="/">← Back to radar</a>
     <article class="detail-card">
       <div class="detail-heading">${image}<div><span class="rank-label">AI AGENT DISCOVERY</span><h1>${escapeHtml(agent.name)}</h1><p class="detail-tagline">${escapeHtml(agent.tagline)}</p></div></div>
-      <div class="detail-stats"><div><strong>▲ ${Number(agent.votes || 0).toLocaleString()}</strong><span>Product Hunt votes</span></div><div><strong>${escapeHtml(agent.createdAt ? new Date(agent.createdAt).toLocaleDateString('en-US') : '—')}</strong><span>Published</span></div></div>
+      <div class="detail-stats"><div><strong>${score.total}/100</strong><span>Transparent Radar Score</span></div><div><strong>▲ ${Number(agent.votes || 0).toLocaleString()}</strong><span>Product Hunt votes${Number(agent.voteDelta || 0) > 0 ? ` · +${Number(agent.voteDelta)} last scan` : ''}</span></div><div><strong>${escapeHtml(agent.createdAt ? new Date(agent.createdAt).toLocaleDateString('en-US') : '—')}</strong><span>Published</span></div></div>
       <div class="topics detail-topics">${topics || '<span class="topic">AI Agent</span>'}</div>
       <section class="description"><h2>What does ${escapeHtml(agent.name)} do?</h2><p>${escapeHtml(agent.description || agent.tagline)}</p></section>
+      <section class="score-breakdown"><div><span>Community</span><strong>${score.community}/45</strong></div><div><span>Freshness</span><strong>${score.freshness}/25</strong></div><div><span>Agent relevance</span><strong>${score.relevance}/20</strong></div><div><span>Momentum</span><strong>${score.momentum}/10</strong></div><p>Community uses a logarithmic public-vote signal; freshness uses launch age; relevance uses listing metadata; momentum uses vote and rank movement between six-hour scans.</p></section>
       <section class="analysis-grid" aria-label="Automated Radar analysis">
         <div class="analysis-panel"><span class="analysis-label">EDITOR'S RADAR TAKE</span><h2>Editorial take</h2><p>${escapeHtml(agent.name)} stands out in ${escapeHtml(analysis.profile.lens)} because its launch connects a focused product promise with measurable community attention. It is most useful to evaluate as a workflow tool—not as a replacement for human judgment.</p></div>
         <div class="analysis-panel"><span class="analysis-label">WHO IT IS FOR</span><h2>Best suited for</h2><p>${escapeHtml(analysis.profile.audience)}.</p></div>
@@ -126,7 +130,7 @@ function renderPage(agent, agents) {
       <section class="pros-limits"><div><h2>Potential advantages</h2><ul><li>Focused on ${escapeHtml(analysis.profile.lens)}.</li><li>Shows ▲ ${Number(agent.votes || 0).toLocaleString()} votes of public launch interest.</li><li>Offers a concrete workflow to evaluate instead of a general-purpose AI claim.</li></ul></div><div><h2>Limits to consider</h2><ul>${limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div></section>
       <section class="radar-context"><h2>Similar agents to compare</h2>${comparisonItems ? `<ul class="comparison-list">${comparisonItems}</ul>` : '<p>No close comparison is currently available in this Radar update.</p>'}</section>
       <section class="trend-observation"><span class="analysis-label">INDEPENDENT TREND OBSERVATION</span><h2>What the signal suggests</h2><p>${escapeHtml(agent.name)} ranks #${analysis.rank} by Product Hunt votes among ${agents.length} agents in this update and is ${escapeHtml(analysis.momentum)}.${analysis.ageDays === null ? '' : ` It launched about ${analysis.ageDays} day${analysis.ageDays === 1 ? '' : 's'} ago, so its signal should be read alongside launch freshness.`}</p><small>Automatically generated from public listing metadata, feed position and community activity. It is not a paid placement, endorsement or hands-on review.</small></section>
-      <a class="button button-primary detail-visit" href="${safeUrl(agent.url)}" target="_blank" rel="noopener noreferrer">Visit official listing ↗</a>
+      <div class="detail-actions"><a class="button button-primary detail-visit" href="${safeUrl(agent.url)}" target="_blank" rel="noopener noreferrer">Visit official listing ↗</a>${primaryPeer ? `<a class="button button-secondary detail-visit" href="/compare?agents=${slug},${encodeURIComponent(primaryPeer.slug || primaryPeer.id)}">Compare with ${escapeHtml(primaryPeer.name)}</a>` : ''}</div>
     </article>
   </main>
   <footer class="site-footer"><p>AI Agent Radar · Independent AI agent discovery</p><p>This site is supported by ads. We do not sell user data.</p><nav class="footer-links" aria-label="Legal"><a href="/about">About</a><span aria-hidden="true">·</span><a href="/contact">Contact</a><span aria-hidden="true">·</span><a href="/privacy-policy">Privacy Policy</a><span aria-hidden="true">·</span><a href="/terms-of-service">Terms of Service</a></nav></footer>
