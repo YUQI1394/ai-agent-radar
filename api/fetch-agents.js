@@ -4,7 +4,10 @@ const { enrichAgents, mergeArchive, qualifiesAsAgent, scoreBreakdown, weeklyRepo
 
 const PH_ENDPOINT = 'https://api.producthunt.com/v2/api/graphql';
 const KEYWORDS = /\b(agent|agents|autonomous|workflow|workflows|mcp|copilot|assistant|assistants)\b/i;
-const TOPIC_SLUGS = ['artificial-intelligence', 'developer-tools', 'productivity', 'marketing', 'design-tools'];
+const TOPIC_SLUGS = [
+  'artificial-intelligence', 'developer-tools', 'productivity', 'marketing', 'design-tools',
+  'saas', 'open-source', 'github', 'no-code', 'task-management', 'sales', 'social-media'
+];
 const CANDIDATES_PER_TOPIC = 40;
 const CURATED_LIMIT = 24;
 const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
