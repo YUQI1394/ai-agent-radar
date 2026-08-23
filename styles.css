@@ -184,6 +184,7 @@ button, input { font: inherit; }
 .detail-logo { width: 84px; height: 84px; flex: 0 0 auto; object-fit: cover; border-radius: 20px; }
 .detail-heading h1 { margin: 5px 0; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; letter-spacing: -.04em; }
 .detail-tagline { margin: 0; color: var(--muted); }
+.archive-note { margin: 8px 0 0; color: #fbbf24; font-size: .8rem; }
 .detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin: 35px 0 20px; }
 .detail-stats div { display: flex; flex-direction: column; padding: 18px; background: var(--card-soft); border-radius: 12px; }
 .detail-stats strong { font-size: 1.1rem; }
@@ -233,6 +234,10 @@ button, input { font: inherit; }
 .weekly-metrics { display: flex; flex-wrap: wrap; gap: 8px; }
 .weekly-metrics span { padding: 5px 9px; color: #c8b5ff; border-radius: 999px; background: rgba(124,58,237,.1); font-size: .72rem; }
 .report-method { margin-top: 26px; }
+.report-archive { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.report-archive span { margin-right: 4px; color: var(--muted); font-size: .75rem; }
+.report-archive a { padding: 6px 9px; color: var(--muted); border: 1px solid rgba(255,255,255,.09); border-radius: 8px; font-size: .72rem; }
+.report-archive a:hover, .report-archive a[aria-current="page"] { color: var(--cyan); border-color: rgba(6,182,212,.45); background: rgba(6,182,212,.08); }
 .compare-table-wrap { overflow-x: auto; margin: 22px 0; border: 1px solid var(--border); border-radius: 16px; }
 .compare-table { width: 100%; border-collapse: collapse; background: var(--card); }
 .compare-table th, .compare-table td { padding: 15px 18px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.07); }

@@ -1,6 +1,6 @@
 const { kv } = require('@vercel/kv');
 const crypto = require('crypto');
-const { enrichAgents } = require('../lib/radar');
+const { enrichAgents, mergeArchive, weeklyReport } = require('../lib/radar');
 
 const PH_ENDPOINT = 'https://api.producthunt.com/v2/api/graphql';
 const KEYWORDS = /\b(agent|agents|autonomous|workflow|workflows|mcp|copilot|assistant|assistants)\b/i;
@@ -117,11 +117,12 @@ async function isAuthorized(req) {
   return verifyGithubOidc(token);
 }
 
-async function notifyIndexNow(agents) {
+async function notifyIndexNow(agents, report) {
   const urlList = [
     `${SITE_URL}/`,
     `${SITE_URL}/about`,
     `${SITE_URL}/feed.xml`,
+    `${SITE_URL}/weekly/${report.week}`,
     ...agents.map((agent) => `${SITE_URL}/agent/${encodeURIComponent(agent.slug || agent.id)}`)
   ];
   try {
@@ -165,13 +166,22 @@ module.exports = async function handler(req, res) {
     const updatedAt = new Date().toISOString();
     const agents = enrichAgents(rawAgents, Array.isArray(previous?.agents) ? previous.agents : [], Date.now());
     const payload = { updatedAt, count: agents.length, agents };
+    const storedArchive = await kv.get('agents:archive');
+    const archivedAgents = mergeArchive(Array.isArray(storedArchive?.agents) ? storedArchive.agents : [], agents, updatedAt);
+    const archivePayload = { updatedAt, count: archivedAgents.length, agents: archivedAgents };
+    const report = weeklyReport(agents, updatedAt);
+    const storedReports = await kv.get('weekly:reports');
+    const reports = storedReports && typeof storedReports === 'object' && !Array.isArray(storedReports) ? storedReports : {};
+    reports[report.week] = report;
     await kv.set('agents:latest', payload);
+    await kv.set('agents:archive', archivePayload);
+    await kv.set('weekly:reports', reports);
     await kv.set(`agents:snapshot:${updatedAt.slice(0, 10)}`, payload, { ex: 60 * 60 * 24 * 35 });
     await kv.lpush('agents:history', payload);
     await kv.ltrim('agents:history', 0, 27);
-    await notifyIndexNow(agents);
+    await notifyIndexNow(agents, report);
 
-    return res.status(200).json({ ok: true, updatedAt: payload.updatedAt, count: agents.length });
+    return res.status(200).json({ ok: true, updatedAt: payload.updatedAt, count: agents.length, archiveCount: archivedAgents.length, weeklyReport: report.week });
   } catch (error) {
     console.error('Product Hunt refresh failed:', error);
     return res.status(502).json({ error: 'Unable to refresh agents', detail: error.message });

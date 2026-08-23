@@ -9,8 +9,8 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).send('Method not allowed');
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
-    const payload = await kv.get('agents:latest');
-    const agents = payload?.agents || [];
+    const [payload, archive] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive')]);
+    const agents = archive?.agents?.length ? archive.agents : (payload?.agents || []);
     const requested = String(req.query.agents || '').split(',').map(decodeURIComponent).filter(Boolean);
     let first = agents.find((agent) => requested.includes(String(agent.slug || agent.id))) || agents[0];
     let second = agents.find((agent) => String(agent.slug || agent.id) === requested[1]);

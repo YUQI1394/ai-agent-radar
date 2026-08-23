@@ -28,6 +28,10 @@
       "destination": "/api/feed"
     },
     {
+      "source": "/weekly/:date",
+      "destination": "/api/weekly?date=:date"
+    },
+    {
       "source": "/weekly",
       "destination": "/api/weekly"
     },

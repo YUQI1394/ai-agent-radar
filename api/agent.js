@@ -85,6 +85,7 @@ function renderPage(agent, agents) {
   const analysis = automaticAnalysis(agent, agents);
   const score = agent.score || scoreBreakdown(agent);
   const primaryPeer = analysis.peers[0];
+  const statusLabel = agent.status === 'archived' ? 'PREVIOUS RADAR PICK' : 'CURRENT RADAR PICK';
   const featureItems = analysis.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join('');
   const comparisonItems = analysis.peers.map((peer) => `<li><a href="/agent/${encodeURIComponent(peer.slug || peer.id)}">${escapeHtml(peer.name)}</a><span>${escapeHtml(profileFor(peer).lens)} · ▲ ${Number(peer.votes || 0).toLocaleString()}</span></li>`).join('');
   const limitations = [
@@ -112,11 +113,11 @@ function renderPage(agent, agents) {
   <script type="application/ld+json">${schema}</script>
 </head>
 <body>
-  <header class="site-header compact-header"><a class="brand" href="/">AI Agent Radar</a><nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/about">About</a><a href="/contact">Contact</a></nav></header>
+  <header class="site-header compact-header"><a class="brand" href="/">AI Agent Radar</a><nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/weekly">Weekly Radar</a><a href="/about">About</a><a href="/contact">Contact</a></nav></header>
   <main class="page-shell detail-shell">
     <a class="back-link" href="/">← Back to radar</a>
     <article class="detail-card">
-      <div class="detail-heading">${image}<div><span class="rank-label">AI AGENT DISCOVERY</span><h1>${escapeHtml(agent.name)}</h1><p class="detail-tagline">${escapeHtml(agent.tagline)}</p></div></div>
+      <div class="detail-heading">${image}<div><span class="rank-label">${statusLabel}</span><h1>${escapeHtml(agent.name)}</h1><p class="detail-tagline">${escapeHtml(agent.tagline)}</p>${agent.status === 'archived' ? '<p class="archive-note">This agent is preserved in the Radar archive and is not in the current homepage selection.</p>' : ''}</div></div>
       <div class="detail-stats"><div><strong>${score.total}/100</strong><span>Transparent Radar Score</span></div><div><strong>▲ ${Number(agent.votes || 0).toLocaleString()}</strong><span>Product Hunt votes${Number(agent.voteDelta || 0) > 0 ? ` · +${Number(agent.voteDelta)} last scan` : ''}</span></div><div><strong>${escapeHtml(agent.createdAt ? new Date(agent.createdAt).toLocaleDateString('en-US') : '—')}</strong><span>Published</span></div></div>
       <div class="topics detail-topics">${topics || '<span class="topic">AI Agent</span>'}</div>
       <section class="description"><h2>What does ${escapeHtml(agent.name)} do?</h2><p>${escapeHtml(agent.description || agent.tagline)}</p></section>
@@ -147,13 +148,16 @@ module.exports = async function handler(req, res) {
 
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
-    const payload = await kv.get('agents:latest');
+    const [payload, archive] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive')]);
     const requested = String(req.query.slug || '');
-    const agent = (payload?.agents || []).find((item) => String(item.slug) === requested || String(item.id) === requested);
+    const currentAgents = payload?.agents || [];
+    const archiveAgents = archive?.agents || [];
+    const agent = currentAgents.find((item) => String(item.slug) === requested || String(item.id) === requested)
+      || archiveAgents.find((item) => String(item.slug) === requested || String(item.id) === requested);
     if (!agent) return res.status(404).send('<!doctype html><title>Agent not found · AI Agent Radar</title><h1>Agent not found</h1><p><a href="/">Return to AI Agent Radar</a></p>');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    return res.status(200).send(renderPage(agent, payload?.agents || []));
+    return res.status(200).send(renderPage(agent, archiveAgents.length ? archiveAgents : currentAgents));
   } catch (error) {
     console.error('Agent page render failed:', { name: error?.name, message: error?.message });
     return res.status(500).send('Unable to render agent page');
