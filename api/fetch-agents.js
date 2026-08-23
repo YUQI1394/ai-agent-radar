@@ -5,6 +5,8 @@ const { enrichAgents, mergeArchive, weeklyReport } = require('../lib/radar');
 const PH_ENDPOINT = 'https://api.producthunt.com/v2/api/graphql';
 const KEYWORDS = /\b(agent|agents|autonomous|workflow|workflows|mcp|copilot|assistant|assistants)\b/i;
 const TOPIC_SLUGS = ['artificial-intelligence', 'developer-tools'];
+const CANDIDATES_PER_TOPIC = 40;
+const CURATED_LIMIT = 24;
 const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
 const OIDC_AUDIENCE = 'ai-agent-radar-refresh';
 const TRUSTED_REPOSITORY = 'YUQI1394/ai-agent-radar';
@@ -43,7 +45,7 @@ async function fetchTopic(topic) {
       'Content-Type': 'application/json',
       Accept: 'application/json'
     },
-    body: JSON.stringify({ query: QUERY, variables: { topic, first: 25 } })
+    body: JSON.stringify({ query: QUERY, variables: { topic, first: CANDIDATES_PER_TOPIC } })
   });
 
   if (!response.ok) throw new Error(`Product Hunt returned ${response.status}`);
@@ -161,7 +163,7 @@ module.exports = async function handler(req, res) {
       if (KEYWORDS.test(searchable)) unique.set(post.id || post.slug, normalize(post));
     });
 
-    const rawAgents = [...unique.values()].sort((a, b) => b.votes - a.votes);
+    const rawAgents = [...unique.values()].sort((a, b) => b.votes - a.votes).slice(0, CURATED_LIMIT);
     const previous = await kv.get('agents:latest');
     const updatedAt = new Date().toISOString();
     const agents = enrichAgents(rawAgents, Array.isArray(previous?.agents) ? previous.agents : [], Date.now());
