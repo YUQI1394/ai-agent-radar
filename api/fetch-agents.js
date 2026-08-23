@@ -1,6 +1,6 @@
 const { kv } = require('@vercel/kv');
 const crypto = require('crypto');
-const { enrichAgents, mergeArchive, weeklyReport } = require('../lib/radar');
+const { enrichAgents, mergeArchive, qualifiesAsAgent, scoreBreakdown, weeklyReport } = require('../lib/radar');
 
 const PH_ENDPOINT = 'https://api.producthunt.com/v2/api/graphql';
 const KEYWORDS = /\b(agent|agents|autonomous|workflow|workflows|mcp|copilot|assistant|assistants)\b/i;
@@ -163,12 +163,17 @@ module.exports = async function handler(req, res) {
       if (KEYWORDS.test(searchable)) unique.set(post.id || post.slug, normalize(post));
     });
 
-    const rawAgents = [...unique.values()].sort((a, b) => b.votes - a.votes).slice(0, CURATED_LIMIT);
     const previous = await kv.get('agents:latest');
+    const storedArchive = await kv.get('agents:archive');
+    const candidates = [...unique.values()].filter(qualifiesAsAgent).sort((a, b) => b.votes - a.votes);
+    const candidateKeys = new Set(candidates.map((agent) => String(agent.id || agent.slug)));
+    const qualifiedArchive = (Array.isArray(storedArchive?.agents) ? storedArchive.agents : [])
+      .filter((agent) => qualifiesAsAgent(agent) && !candidateKeys.has(String(agent.id || agent.slug)))
+      .sort((a, b) => (b.score?.total || scoreBreakdown(b).total) - (a.score?.total || scoreBreakdown(a).total) || Number(b.votes || 0) - Number(a.votes || 0));
+    const rawAgents = [...candidates, ...qualifiedArchive].slice(0, CURATED_LIMIT);
     const updatedAt = new Date().toISOString();
     const agents = enrichAgents(rawAgents, Array.isArray(previous?.agents) ? previous.agents : [], Date.now());
     const payload = { updatedAt, count: agents.length, agents };
-    const storedArchive = await kv.get('agents:archive');
     const archivedAgents = mergeArchive(Array.isArray(storedArchive?.agents) ? storedArchive.agents : [], agents, updatedAt);
     const archivePayload = { updatedAt, count: archivedAgents.length, agents: archivedAgents };
     const report = weeklyReport(agents, updatedAt);

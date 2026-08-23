@@ -49,7 +49,7 @@
     return tags.some((tag) => aliases[selected]?.test(tag));
   }
 
-  const primaryCategory = (agent) => CATEGORIES.slice(1).find((category) => categoryMatches(agent, category)) || 'AI Agent';
+  const primaryCategory = (agent) => agent.category || CATEGORIES.slice(1).find((category) => categoryMatches(agent, category)) || 'AI Agent';
 
   function radarScore(agent) {
     if (Number.isFinite(Number(agent.score?.total))) return Number(agent.score.total);
