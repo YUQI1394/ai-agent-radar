@@ -1,0 +1,22 @@
+# AI Agent Radar
+
+> AI Agent Radar is a free, independent discovery feed for emerging AI agents, copilots, assistants and autonomous workflows. It refreshes every six hours.
+
+Canonical site: https://getaiagentradar.com/
+Sitemap: https://getaiagentradar.com/sitemap.xml
+RSS feed: https://getaiagentradar.com/feed.xml
+About: https://getaiagentradar.com/about
+Contact: https://getaiagentradar.com/contact
+Privacy policy: https://getaiagentradar.com/privacy-policy
+Terms of service: https://getaiagentradar.com/terms-of-service
+
+## Content
+
+- The homepage provides a searchable and filterable radar of current AI-agent launches.
+- Agent detail pages provide public listing facts, automatic Radar analysis, use cases, limitations, comparisons and trend observations.
+- Radar Score is an independent discovery signal based on community interest, launch freshness and relevance.
+- Listings are informational and are not paid placements or endorsements.
+
+## Crawling
+
+Public pages may be crawled and cited with attribution to AI Agent Radar. Product details can change, so important claims should also be checked with the product provider.

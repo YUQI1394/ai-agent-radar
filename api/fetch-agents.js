@@ -8,6 +8,8 @@ const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
 const OIDC_AUDIENCE = 'ai-agent-radar-refresh';
 const TRUSTED_REPOSITORY = 'YUQI1394/ai-agent-radar';
 const TRUSTED_WORKFLOW = `${TRUSTED_REPOSITORY}/.github/workflows/refresh-agents.yml@refs/heads/main`;
+const SITE_URL = 'https://getaiagentradar.com';
+const INDEXNOW_KEY = '7a4f931bc0e8421ab5d681f29c7e304d';
 let cachedJwks = null;
 let jwksExpiresAt = 0;
 
@@ -114,6 +116,30 @@ async function isAuthorized(req) {
   return verifyGithubOidc(token);
 }
 
+async function notifyIndexNow(agents) {
+  const urlList = [
+    `${SITE_URL}/`,
+    `${SITE_URL}/about`,
+    `${SITE_URL}/feed.xml`,
+    ...agents.map((agent) => `${SITE_URL}/agent/${encodeURIComponent(agent.slug || agent.id)}`)
+  ];
+  try {
+    const response = await fetch('https://api.indexnow.org/indexnow', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({
+        host: 'getaiagentradar.com',
+        key: INDEXNOW_KEY,
+        keyLocation: `${SITE_URL}/${INDEXNOW_KEY}.txt`,
+        urlList
+      })
+    });
+    if (!response.ok && response.status !== 202) console.warn(`IndexNow returned ${response.status}`);
+  } catch (error) {
+    console.warn('IndexNow notification failed:', { name: error?.name, message: error?.message });
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (!['GET', 'POST'].includes(req.method)) {
     res.setHeader('Allow', 'GET, POST');
@@ -136,6 +162,7 @@ module.exports = async function handler(req, res) {
     const agents = [...unique.values()].sort((a, b) => b.votes - a.votes);
     const payload = { updatedAt: new Date().toISOString(), count: agents.length, agents };
     await kv.set('agents:latest', payload);
+    await notifyIndexNow(agents);
 
     return res.status(200).json({ ok: true, updatedAt: payload.updatedAt, count: agents.length });
   } catch (error) {
