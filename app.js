@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const CATEGORIES = ['All', 'Marketing', 'Coding', 'Design', 'Productivity'];
+  const CATEGORIES = ['All', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure'];
   const SAVED_KEY = 'ai-agent-radar-saved';
 
   function readSavedAgents() {
@@ -39,6 +39,7 @@
   function categoryMatches(agent, selected) {
     if (selected === 'All') return true;
     if (selected === 'Saved') return state.saved.has(agentKey(agent));
+    if (agent.category === selected) return true;
     const tags = [...(agent.tags || []), ...(agent.topics || []), ...(agent.topicSlugs || [])].map((tag) => String(tag).toLowerCase());
     const aliases = {
       Marketing: /marketing|advertising|growth|sales|social.?media/,
