@@ -5,10 +5,10 @@ const SITE_URL = 'https://getaiagentradar.com';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
 const footer = '<footer class="site-footer"><p>AI Agent Radar · Independent AI agent discovery</p><p>This site is supported by ads. We do not sell user data.</p><nav class="footer-links"><a href="/about">About</a><span>·</span><a href="/contact">Contact</a><span>·</span><a href="/privacy-policy">Privacy Policy</a><span>·</span><a href="/terms-of-service">Terms of Service</a><span>·</span><a href="/feed.xml">RSS Feed</a></nav></footer>';
 
-function card(agent, rank) {
+function card(agent, index) {
   const slug = encodeURIComponent(agent.slug || agent.id);
   const score = agent.score || scoreBreakdown(agent);
-  return `<article class="weekly-item"><div class="weekly-rank">#${rank}</div><div><span class="analysis-label">${escapeHtml(agent.category || category(agent))}</span><h2><a href="/agent/${slug}">${escapeHtml(agent.name)}</a></h2><p>${escapeHtml(agent.tagline || agent.description)}</p><div class="weekly-metrics"><span>Radar ${score.total}</span><span>▲ ${Number(agent.votes || 0).toLocaleString()} votes</span><span>${Number(agent.voteDelta || 0) > 0 ? `+${Number(agent.voteDelta)} since last scan` : 'Newly tracked signal'}</span></div></div></article>`;
+  return `<article class="weekly-item"><div class="weekly-rank">#${index + 1}</div><div><span class="analysis-label">${escapeHtml(agent.category || category(agent))}</span><h2><a href="/agent/${slug}">${escapeHtml(agent.name)}</a></h2><p>${escapeHtml(agent.tagline || agent.description)}</p><div class="weekly-metrics"><span>Radar ${score.total}</span><span>▲ ${Number(agent.votes || 0).toLocaleString()} votes</span><span>${Number(agent.voteDelta || 0) > 0 ? `+${Number(agent.voteDelta)} since last scan` : 'Newly tracked signal'}</span></div></div></article>`;
 }
 
 module.exports = async function handler(req, res) {
