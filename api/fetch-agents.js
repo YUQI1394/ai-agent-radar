@@ -180,12 +180,14 @@ module.exports = async function handler(req, res) {
     const evidenceByRepository = new Map();
     const issueScanTime = new Date().toISOString();
     issueBatches.forEach(({ repository, issues }) => {
+      const previousIssues = new Map((previousByName.get(repository.toLowerCase())?.evidenceIssues || []).map((issue) => [String(issue.id), issue]));
       const evidence = issues.map((issue) => issueEvidence(issue, repository))
         .filter((issue) => {
           const searchable = `${issue.title} ${issue.labels.join(' ')}`;
           return DEMAND_PATTERN.test(searchable) && !MAINTENANCE_NOISE.test(searchable)
             && (issue.comments >= 2 || issue.reactions >= 2);
         })
+        .map((issue) => ({ ...issue, firstSeenAt: previousIssues.get(String(issue.id))?.firstSeenAt || previous?.updatedAt || issueScanTime }))
         .sort((a, b) => (b.comments + b.reactions) - (a.comments + a.reactions)).slice(0, 3);
       evidenceByRepository.set(repository.toLowerCase(), evidence);
     });
