@@ -123,6 +123,9 @@ button, input { font: inherit; }
 .tagline { flex: 1; margin: 0 0 18px; color: var(--muted); font-size: .92rem; }
 .best-for { margin: -8px 0 13px; color: #777787; font-size: .75rem; }
 .best-for strong { color: #c8b5ff; }
+.repo-facts { display: flex; flex-wrap: wrap; gap: 6px; margin: -2px 0 13px; }
+.repo-facts span { padding: 4px 7px; color: #a9a9b8; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.07); border-radius: 7px; font-size: .66rem; }
+.repo-facts .quality-label { color: #86efac; border-color: rgba(34,197,94,.24); background: rgba(34,197,94,.08); font-weight: 800; letter-spacing: .04em; }
 .topics { display: flex; flex-wrap: wrap; gap: 6px; }
 .topic { padding: 4px 8px; color: #c8b5ff; background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.2); border-radius: 999px; font-size: .7rem; }
 .card-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 20px; }
