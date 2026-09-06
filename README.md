@@ -22,6 +22,7 @@ AI Agent Radar is a free discovery site backed by Vercel Serverless Functions an
 - A local-only workspace for resuming multiple validation sprints
 - Cross-repository Pattern Radar for separating recurring needs from isolated requests
 - Public methodology covering inclusion, scoring, evidence filters and limitations
+- Public freshness and data-health endpoint for production monitoring
 - Cache-friendly public feed API
 
 ## Project structure

@@ -16,6 +16,10 @@
   ],
   "rewrites": [
     {
+      "source": "/health",
+      "destination": "/api/health"
+    },
+    {
       "source": "/agent/:slug",
       "destination": "/api/agent?slug=:slug"
     },
