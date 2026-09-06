@@ -11,6 +11,7 @@ const SEARCHES = () => [
   { query: '"agent framework" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 20 },
   { query: `topic:multi-agent-systems stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 20 }
 ];
+const ISSUE_TARGETS_PER_SCAN = 5;
 const CURATED_LIMIT = 36;
 const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
 const OIDC_AUDIENCE = 'ai-agent-radar-refresh';
@@ -21,22 +22,45 @@ const INDEXNOW_KEY = '7a4f931bc0e8421ab5d681f29c7e304d';
 let cachedJwks = null;
 let jwksExpiresAt = 0;
 
-function githubHeaders() {
+function githubHeaders(token = '') {
   const headers = {
     Accept: 'application/vnd.github+json',
     'User-Agent': 'getaiagentradar.com',
     'X-GitHub-Api-Version': '2022-11-28'
   };
-  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  const apiToken = token || process.env.GITHUB_TOKEN;
+  if (apiToken) headers.Authorization = `Bearer ${apiToken}`;
   return headers;
 }
 
-async function searchRepositories(search) {
+async function searchRepositories(search, token) {
   const params = new URLSearchParams({ q: search.query, sort: search.sort, order: 'desc', per_page: String(search.perPage) });
-  const response = await fetch(`${GITHUB_API}/search/repositories?${params}`, { headers: githubHeaders() });
+  const response = await fetch(`${GITHUB_API}/search/repositories?${params}`, { headers: githubHeaders(token) });
   if (!response.ok) throw new Error(`GitHub repository search returned ${response.status}`);
   const body = await response.json();
   return Array.isArray(body.items) ? body.items : [];
+}
+
+async function fetchRepositoryIssues(repository, token) {
+  const params = new URLSearchParams({ state: 'open', sort: 'comments', direction: 'desc', per_page: '20' });
+  const response = await fetch(`${GITHUB_API}/repos/${repository}/issues?${params}`, { headers: githubHeaders(token) });
+  if (!response.ok) throw new Error(`GitHub issues for ${repository} returned ${response.status}`);
+  const body = await response.json();
+  return (Array.isArray(body) ? body : []).filter((issue) => !issue.pull_request);
+}
+
+function issueEvidence(issue, repository) {
+  return {
+    id: issue.id,
+    repository: repository.toLowerCase(),
+    title: issue.title || 'Open feature request',
+    url: issue.html_url,
+    comments: Number(issue.comments || 0),
+    reactions: Number(issue.reactions?.['+1'] || 0),
+    createdAt: issue.created_at || null,
+    updatedAt: issue.updated_at || null,
+    labels: (issue.labels || []).map((label) => typeof label === 'string' ? label : label.name).filter(Boolean).slice(0, 5)
+  };
 }
 
 function normalize(repo) {
@@ -136,13 +160,37 @@ module.exports = async function handler(req, res) {
   if (!(await isAuthorized(req))) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const batches = await Promise.all(SEARCHES().map(searchRepositories));
+    const apiToken = String(req.headers['x-github-token'] || '');
+    const batches = await Promise.all(SEARCHES().map((search) => searchRepositories(search, apiToken)));
     const unique = new Map();
     batches.flat().forEach((repo) => unique.set(repo.id, normalize(repo)));
     const previous = await kv.get('agents:latest');
     const storedArchive = await kv.get('agents:archive');
+    const previousByName = new Map((previous?.agents || []).map((agent) => [String(agent.name).toLowerCase(), agent]));
     const candidates = [...unique.values()].filter(qualifiesAsAgent);
-    const agents = enrichAgents(candidates, Array.isArray(previous?.agents) ? previous.agents : [], Date.now())
+    const groups = Math.max(1, Math.ceil(candidates.length / ISSUE_TARGETS_PER_SCAN));
+    const groupIndex = Math.floor(Date.now() / (6 * 60 * 60 * 1000)) % groups;
+    const issueTargets = candidates.slice(groupIndex * ISSUE_TARGETS_PER_SCAN, (groupIndex + 1) * ISSUE_TARGETS_PER_SCAN);
+    const issueBatches = await Promise.all(issueTargets.map(async (agent) => ({
+      repository: agent.name,
+      issues: await fetchRepositoryIssues(agent.name, apiToken)
+    })));
+    const evidenceByRepository = new Map();
+    issueBatches.forEach(({ repository, issues }) => {
+      const evidence = issues.map((issue) => issueEvidence(issue, repository))
+        .filter((issue) => issue.comments >= 2 || issue.reactions >= 2)
+        .sort((a, b) => (b.comments + b.reactions) - (a.comments + a.reactions)).slice(0, 3);
+      evidenceByRepository.set(repository.toLowerCase(), evidence);
+    });
+    unique.forEach((agent, id) => {
+      const key = String(agent.name).toLowerCase();
+      const evidence = evidenceByRepository.has(key)
+        ? evidenceByRepository.get(key)
+        : (previousByName.get(key)?.evidenceIssues || []);
+      unique.set(id, { ...agent, painSignals: evidence.length, evidenceIssues: evidence });
+    });
+    const enrichedCandidates = [...unique.values()].filter(qualifiesAsAgent);
+    const agents = enrichAgents(enrichedCandidates, Array.isArray(previous?.agents) ? previous.agents : [], Date.now())
       .sort((a, b) => b.score.total - a.score.total || b.stars - a.stars).slice(0, CURATED_LIMIT);
     const updatedAt = new Date().toISOString();
     const payload = { updatedAt, count: agents.length, source: 'github', agents };

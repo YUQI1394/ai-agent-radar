@@ -13,6 +13,7 @@ AI Agent Radar is a free discovery site backed by Vercel Serverless Functions an
 - Server-rendered, indexable agent detail pages
 - Dynamic XML sitemap, robots.txt, structured data, About and Contact pages
 - OIDC-authenticated GitHub ingestion every six hours
+- Rotating repository-specific Issue analysis for traceable demand signals
 - Cache-friendly public feed API
 
 ## Project structure
@@ -41,7 +42,7 @@ AI Agent Radar is a free discovery site backed by Vercel Serverless Functions an
 
 ## Deploy to Vercel
 
-1. Optionally create a fine-grained GitHub token with read-only access to public repositories. The feed can run without one at lower API rate limits.
+1. The included GitHub Actions workflow supplies its short-lived, read-only token to each authenticated refresh. No persistent GitHub token is required for scheduled production updates.
 2. Push this directory to a Git repository and import the repository in Vercel, or run:
 
    ```bash
@@ -54,7 +55,7 @@ AI Agent Radar is a free discovery site backed by Vercel Serverless Functions an
    - For a new project, Vercel no longer provisions first-party KV stores. Install **Upstash Redis** from the Vercel Marketplace, then map its REST URL and REST token to environment variables named `KV_REST_API_URL` and `KV_REST_API_TOKEN`. This preserves the requested `@vercel/kv` API used by this project.
 4. In **Settings → Environment Variables**, add:
 
-   - `GITHUB_TOKEN`: optional read-only GitHub API token for higher rate limits.
+   - `GITHUB_TOKEN`: optional read-only GitHub API token for local or manually triggered refreshes.
    - `KV_REST_API_URL` and `KV_REST_API_TOKEN`: only add these manually when your storage integration did not inject variables with these exact names.
 
 5. Redeploy after adding the environment variables.

@@ -89,7 +89,7 @@
     const detailSlug = encodeURIComponent(agent.slug || agent.id || key);
     const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Just discovered ${agent.name || 'an AI Agent'} on AI Agent Radar 🚀 https://getaiagentradar.com`)}`;
     const signal = signalFor(agent);
-    const score = agent.score || { total: agent.radarScore, adoption: 0, maintenance: 0, quality: 0, relevance: 0, momentum: 0 };
+    const score = agent.score || { total: agent.radarScore, adoption: 0, maintenance: 0, quality: 0, relevance: 0, demand: 0, momentum: 0 };
     const peer = state.agents.filter((item) => agentKey(item) !== key).sort((a, b) => {
       const aShared = (a.topics || []).filter((topic) => (agent.topics || []).includes(topic)).length;
       const bShared = (b.topics || []).filter((topic) => (agent.topics || []).includes(topic)).length;
@@ -99,11 +99,11 @@
     const isSaved = state.saved.has(key);
     return `<article id="agent-${detailId}" class="agent-card">
       <div class="card-top">${thumbnail}<div class="card-signals"><span class="signal-badge ${signal.className}">${signal.label}</span><button class="save-button${isSaved ? ' saved' : ''}" type="button" data-save-id="${escapeHtml(key)}" aria-pressed="${isSaved}" aria-label="${isSaved ? 'Remove' : 'Save'} ${escapeHtml(agent.name)}">${isSaved ? '♥' : '♡'}</button></div></div>
-      <div class="score-row"><span class="radar-score" title="Adoption ${score.adoption ?? score.community}/30 · Maintenance ${score.maintenance ?? score.freshness}/25 · Project quality ${score.quality || 0}/20 · Relevance ${score.relevance}/20 · Momentum ${score.momentum}/5">Radar Score <strong>${agent.radarScore}</strong></span><span class="votes" title="GitHub stars">★ ${Number(agent.stars ?? agent.votes ?? 0).toLocaleString()}${Number(agent.starDelta ?? agent.voteDelta ?? 0) > 0 ? ` <small>+${Number(agent.starDelta ?? agent.voteDelta)}</small>` : ''}</span></div>
+      <div class="score-row"><span class="radar-score" title="Adoption ${score.adoption ?? score.community}/25 · Maintenance ${score.maintenance ?? score.freshness}/20 · Project quality ${score.quality || 0}/20 · Relevance ${score.relevance}/20 · Demand ${score.demand || 0}/10 · Momentum ${score.momentum}/5">Radar Score <strong>${agent.radarScore}</strong></span><span class="votes" title="GitHub stars">★ ${Number(agent.stars ?? agent.votes ?? 0).toLocaleString()}${Number(agent.starDelta ?? agent.voteDelta ?? 0) > 0 ? ` <small>+${Number(agent.starDelta ?? agent.voteDelta)}</small>` : ''}</span></div>
       <h2>${index + 1}. ${escapeHtml(agent.name)}</h2>
       <p class="tagline">${escapeHtml(agent.tagline)}</p>
       <p class="best-for">Best for: <strong>${escapeHtml(primaryCategory(agent))}</strong></p>
-      <div class="repo-facts" aria-label="Repository evidence"><span class="quality-label">${escapeHtml(agent.qualityLabel || 'REVIEWED')}</span><span>${escapeHtml(agent.language || 'Unknown')}</span><span>${escapeHtml(agent.license || 'No license')}</span><span>⑂ ${Number(agent.forks || 0).toLocaleString()} forks</span><span>◯ ${Number(agent.openIssues || 0).toLocaleString()} issues</span></div>
+      <div class="repo-facts" aria-label="Repository evidence"><span class="quality-label">${escapeHtml(agent.qualityLabel || 'REVIEWED')}</span>${Number(agent.painSignals || 0) ? `<span class="demand-label">${Number(agent.painSignals)} demand signal${Number(agent.painSignals) === 1 ? '' : 's'}</span>` : ''}<span>${escapeHtml(agent.language || 'Unknown')}</span><span>${escapeHtml(agent.license || 'No license')}</span><span>⑂ ${Number(agent.forks || 0).toLocaleString()} forks</span><span>◯ ${Number(agent.openIssues || 0).toLocaleString()} issues</span></div>
       <div class="topics">${topics || '<span class="topic">AI Agent</span>'}</div>
       <div class="card-actions"><a class="card-link details-link" href="/agent/${detailSlug}">Analysis</a><a class="card-link compare-link" href="${compareHref}">Compare</a><a class="card-link visit-link" href="${safeUrl(agent.githubUrl || agent.url)}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a class="card-link share-link" href="${shareUrl}" target="_blank" rel="noopener noreferrer" aria-label="Share ${escapeHtml(agent.name)} on X">Share on X</a></div>
     </article>`;
