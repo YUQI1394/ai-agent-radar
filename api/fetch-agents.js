@@ -11,7 +11,7 @@ const SEARCHES = () => [
   { query: '"agent framework" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 20 },
   { query: `topic:multi-agent-systems stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 20 }
 ];
-const ISSUE_TARGETS_PER_SCAN = 5;
+const ISSUE_TARGETS_PER_SCAN = 10;
 const DEMAND_PATTERN = /feature|request|support|proposal|enhancement|workflow|integration|export|import|api|ux|documentation|docs|performance|slow|error|fail|bug|problem|missing|cannot|can't|unable|crash|session|memory|security/i;
 const MAINTENANCE_NOISE = /dependency dashboard|release checklist|roadmap tracking|ci red|build status|automated update|test matrix/i;
 const CURATED_LIMIT = 36;
@@ -178,6 +178,7 @@ module.exports = async function handler(req, res) {
       issues: await fetchRepositoryIssues(agent.name, apiToken)
     })));
     const evidenceByRepository = new Map();
+    const issueScanTime = new Date().toISOString();
     issueBatches.forEach(({ repository, issues }) => {
       const evidence = issues.map((issue) => issueEvidence(issue, repository))
         .filter((issue) => {
@@ -190,10 +191,12 @@ module.exports = async function handler(req, res) {
     });
     unique.forEach((agent, id) => {
       const key = String(agent.name).toLowerCase();
+      const wasScanned = evidenceByRepository.has(key);
       const evidence = evidenceByRepository.has(key)
         ? evidenceByRepository.get(key)
         : (previousByName.get(key)?.evidenceIssues || []);
-      unique.set(id, { ...agent, painSignals: evidence.length, evidenceIssues: evidence });
+      const issueScannedAt = wasScanned ? issueScanTime : (previousByName.get(key)?.issueScannedAt || null);
+      unique.set(id, { ...agent, painSignals: evidence.length, evidenceIssues: evidence, issueScannedAt });
     });
     const enrichedCandidates = [...unique.values()].filter(qualifiesAsAgent);
     const agents = enrichAgents(enrichedCandidates, Array.isArray(previous?.agents) ? previous.agents : [], Date.now())

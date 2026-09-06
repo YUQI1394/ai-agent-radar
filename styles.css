@@ -253,6 +253,10 @@ button, input { font: inherit; }
 .compare-table thead th { color: var(--text); background: var(--card-soft); }
 .compare-table thead a { color: var(--cyan); }
 .opportunity-updated { font-size: .82rem; }
+.coverage-status { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 18px; padding: 18px 21px; border: 1px solid rgba(6,182,212,.24); border-radius: 15px; background: rgba(6,182,212,.055); }
+.coverage-status div { flex: 0 0 auto; }
+.coverage-status strong { display: block; margin-top: 4px; color: var(--cyan); font-size: 1.1rem; }
+.coverage-status p { max-width: 620px; margin: 0; color: var(--muted); font-size: .78rem; }
 .opportunity-disclaimer { margin-bottom: 24px; padding: 20px 22px; border: 1px solid rgba(249,115,22,.3); border-radius: 15px; background: rgba(249,115,22,.07); }
 .opportunity-disclaimer strong { color: #fdba74; }
 .opportunity-disclaimer p { margin: 6px 0 0; color: var(--muted); }
@@ -387,6 +391,7 @@ button, input { font: inherit; }
   .evidence-source { align-items: flex-start; flex-direction: column; }
   .workspace-heading { align-items: flex-start; flex-direction: column; }
   .workspace-summary { grid-template-columns: 1fr; }
+  .coverage-status { align-items: flex-start; flex-direction: column; }
   .pattern-summary { grid-template-columns: 1fr; }
   .pattern-card { grid-template-columns: 1fr; }
   .pattern-evidence li { align-items: flex-start; flex-direction: column; gap: 4px; }
