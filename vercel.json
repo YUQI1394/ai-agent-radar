@@ -20,6 +20,10 @@
       "destination": "/api/health"
     },
     {
+      "source": "/status",
+      "destination": "/status.html"
+    },
+    {
       "source": "/agent/:slug",
       "destination": "/api/agent?slug=:slug"
     },

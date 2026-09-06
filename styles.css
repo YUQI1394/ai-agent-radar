@@ -385,6 +385,17 @@ button, input { font: inherit; }
 .confidence-scale strong { color: #fdba74; }
 .confidence-scale span { color: var(--muted); font-size: .75rem; }
 .limitation-section { border-color: rgba(249,115,22,.25); }
+.status-panel { padding: 28px; border: 1px solid var(--border); border-radius: 20px; background: var(--card); }
+.status-heading { display: flex; align-items: center; gap: 14px; }
+.status-heading strong { font-size: 1.2rem; }
+.status-heading p { margin: 4px 0 0; color: var(--muted); font-size: .8rem; }
+.status-dot { width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 16px currentColor; }
+.status-healthy .status-dot { color: #22c55e; background: #22c55e; }
+.status-degraded .status-dot { color: #ef4444; background: #ef4444; }
+.status-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; margin-top: 24px; }
+.status-grid div { display: flex; flex-direction: column; padding: 17px; border-radius: 12px; background: var(--card-soft); }
+.status-grid strong { color: var(--cyan); font-size: 1.35rem; }
+.status-grid span { color: var(--muted); font-size: .72rem; }
 
 @media (max-width: 900px) {
   .agent-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -422,6 +433,7 @@ button, input { font: inherit; }
   .pattern-evidence li { align-items: flex-start; flex-direction: column; gap: 4px; }
   .pattern-evidence span { text-align: left; }
   .methodology-principles, .rule-grid, .score-table, .confidence-scale { grid-template-columns: 1fr; }
+  .status-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .editorial-section { margin-bottom: 60px; }
   .method-card li { align-items: flex-start; flex-direction: column; gap: 2px; }
   .method-card li span { text-align: left; }

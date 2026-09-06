@@ -15,6 +15,7 @@ module.exports = async function handler(req, res) {
     { path: '/opportunities', lastmod: null },
     { path: '/patterns', lastmod: null },
     { path: '/methodology', lastmod: '2026-09-06T00:00:00.000Z' },
+    { path: '/status', lastmod: null },
     { path: '/about', lastmod: '2026-08-22T00:00:00.000Z' },
     { path: '/contact', lastmod: '2026-08-22T00:00:00.000Z' },
     { path: '/privacy-policy', lastmod: '2026-08-22T00:00:00.000Z' },
