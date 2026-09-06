@@ -2,6 +2,12 @@
   const grid = document.querySelector('.coach-grid');
   if (!grid) return;
   const nav = document.querySelector('.site-nav');
+  if (nav && !nav.querySelector('[href="/patterns"]')) {
+    const link = document.createElement('a');
+    link.href = '/patterns';
+    link.textContent = 'Patterns';
+    nav.querySelector('[href="/weekly"]')?.before(link);
+  }
   if (nav && !nav.querySelector('[href="/workspace"]')) {
     const link = document.createElement('a');
     link.href = '/workspace';

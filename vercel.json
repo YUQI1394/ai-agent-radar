@@ -48,6 +48,10 @@
       "destination": "/workspace.html"
     },
     {
+      "source": "/patterns",
+      "destination": "/api/patterns"
+    },
+    {
       "source": "/compare",
       "destination": "/api/compare"
     },
