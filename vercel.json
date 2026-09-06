@@ -44,6 +44,10 @@
       "destination": "/api/opportunity?id=:id"
     },
     {
+      "source": "/workspace",
+      "destination": "/workspace.html"
+    },
+    {
       "source": "/compare",
       "destination": "/api/compare"
     },

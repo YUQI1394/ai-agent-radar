@@ -1,6 +1,13 @@
 (() => {
   const grid = document.querySelector('.coach-grid');
   if (!grid) return;
+  const nav = document.querySelector('.site-nav');
+  if (nav && !nav.querySelector('[href="/workspace"]')) {
+    const link = document.createElement('a');
+    link.href = '/workspace';
+    link.textContent = 'Workspace';
+    nav.querySelector('[href="/weekly"]')?.before(link);
+  }
   const opportunityId = location.pathname.split('/').filter(Boolean).pop();
   const storageKey = `ai-agent-radar:validation:${opportunityId}`;
   const steps = [...grid.querySelectorAll('article')];
@@ -15,8 +22,12 @@
   const progress = workspace.querySelector('.workspace-progress');
   const saved = workspace.querySelector('.workspace-saved');
   notes.value = state.notes || '';
+  state.title = document.querySelector('.opportunity-detail-hero h1')?.textContent.trim() || 'Opportunity validation';
+  state.project = document.querySelector('.opportunity-detail-hero p a')?.textContent.trim() || '';
+  state.updatedAt = new Date().toISOString();
   function persist(message = 'Saved locally') {
     state.notes = notes.value;
+    state.updatedAt = new Date().toISOString();
     try {
       localStorage.setItem(storageKey, JSON.stringify(state));
       saved.textContent = message;
@@ -52,4 +63,5 @@
     persist('Progress reset');
   });
   updateProgress();
+  persist('');
 })();
