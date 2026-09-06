@@ -40,6 +40,10 @@
       "destination": "/api/opportunities"
     },
     {
+      "source": "/opportunity/:id",
+      "destination": "/api/opportunity?id=:id"
+    },
+    {
       "source": "/compare",
       "destination": "/api/compare"
     },

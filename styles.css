@@ -285,6 +285,22 @@ button, input { font: inherit; }
 .opportunity-labels span { color: #a9a9b8; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.035); }
 .opportunity-actions { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; font-size: .8rem; font-weight: 750; }
 .opportunity-actions a:first-child { color: #fdba74; }
+.opportunity-detail-shell { max-width: 980px; padding: 42px 0 90px; }
+.opportunity-detail-hero { padding: 20px 0 34px; }
+.opportunity-detail-hero h1 { max-width: 900px; margin: 10px 0; font-size: clamp(2rem, 5vw, 4rem); line-height: 1.08; letter-spacing: -.045em; }
+.opportunity-detail-hero > p { color: var(--muted); }
+.opportunity-detail-hero > p a { color: var(--cyan); }
+.evidence-source { display: flex; justify-content: space-between; align-items: center; gap: 26px; margin-bottom: 24px; padding: 25px; border: 1px solid rgba(249,115,22,.3); border-radius: 18px; background: rgba(249,115,22,.07); }
+.evidence-source h2 { margin: 7px 0; }
+.evidence-source p { max-width: 650px; margin: 0; color: var(--muted); }
+.evidence-source .button { flex: 0 0 auto; }
+.coach-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+.coach-grid article { padding: 25px; border: 1px solid rgba(255,255,255,.08); border-radius: 18px; background: var(--card); }
+.coach-step { color: #fdba74; font-size: .72rem; font-weight: 900; letter-spacing: .12em; }
+.coach-grid h2 { margin: 8px 0 12px; font-size: 1.25rem; }
+.coach-grid p, .coach-grid li, .coach-grid article > span:last-child { color: var(--muted); line-height: 1.6; }
+.coach-grid ul { padding-left: 20px; }
+.coach-grid label { display: block; margin-top: 18px; color: var(--cyan); font-size: .7rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 
 @media (max-width: 900px) {
   .agent-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -292,6 +308,7 @@ button, input { font: inherit; }
   .editorial-section { grid-template-columns: 1fr; }
   .radar-banners { grid-template-columns: 1fr; gap: 0; }
   .validation-playbook { grid-template-columns: 1fr; }
+  .coach-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   .trending-widget { padding: 16px; }
@@ -312,6 +329,7 @@ button, input { font: inherit; }
   .weekly-banner { align-items: flex-start; flex-direction: column; }
   .weekly-item { grid-template-columns: 1fr; }
   .opportunity-card { grid-template-columns: 1fr; }
+  .evidence-source { align-items: flex-start; flex-direction: column; }
   .editorial-section { margin-bottom: 60px; }
   .method-card li { align-items: flex-start; flex-direction: column; gap: 2px; }
   .method-card li span { text-align: left; }

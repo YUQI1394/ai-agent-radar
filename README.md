@@ -16,6 +16,7 @@ AI Agent Radar is a free discovery site backed by Vercel Serverless Functions an
 - Rotating repository-specific Issue analysis for traceable demand signals
 - A server-rendered Opportunity Radar that ranks unresolved GitHub Issue evidence
 - Problem-theme filters and a three-step opportunity validation playbook
+- Indexable guided validation briefs for every qualified opportunity
 - Cache-friendly public feed API
 
 ## Project structure
@@ -29,6 +30,7 @@ AI Agent Radar is a free discovery site backed by Vercel Serverless Functions an
 │   ├── get-agents.js     # Public KV read endpoint
 │   ├── agent.js          # Server-rendered agent pages
 │   ├── opportunities.js  # Ranked GitHub Issue opportunity evidence
+│   ├── opportunity.js    # Guided opportunity validation briefs
 │   └── sitemap.js        # Dynamic XML sitemap
 ├── app.js                # Feed rendering, search, filters, and sharing
 ├── about.html            # Editorial project information
