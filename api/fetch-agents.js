@@ -3,14 +3,14 @@ const crypto = require('crypto');
 const { enrichAgents, mergeArchive, qualifiesAsAgent, weeklyReport } = require('../lib/radar');
 
 const GITHUB_API = 'https://api.github.com';
-const SEARCHES = [
-  'topic:ai-agents stars:>50 archived:false',
-  'topic:llm-agents stars:>50 archived:false',
-  '"agent framework" in:name,description,readme stars:>100 archived:false',
-  'topic:mcp-server stars:>20 archived:false',
-  'topic:multi-agent-systems stars:>20 archived:false'
+const recentCutoff = () => new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+const SEARCHES = () => [
+  { query: 'topic:ai-agents stars:>500 archived:false', sort: 'stars', perPage: 20 },
+  { query: `topic:ai-agents stars:50..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 25 },
+  { query: `topic:mcp-server stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 25 },
+  { query: '"agent framework" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 20 },
+  { query: `topic:multi-agent-systems stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 20 }
 ];
-const RESULTS_PER_SEARCH = 30;
 const CURATED_LIMIT = 36;
 const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
 const OIDC_AUDIENCE = 'ai-agent-radar-refresh';
@@ -31,8 +31,8 @@ function githubHeaders() {
   return headers;
 }
 
-async function searchRepositories(query) {
-  const params = new URLSearchParams({ q: query, sort: 'stars', order: 'desc', per_page: String(RESULTS_PER_SEARCH) });
+async function searchRepositories(search) {
+  const params = new URLSearchParams({ q: search.query, sort: search.sort, order: 'desc', per_page: String(search.perPage) });
   const response = await fetch(`${GITHUB_API}/search/repositories?${params}`, { headers: githubHeaders() });
   if (!response.ok) throw new Error(`GitHub repository search returned ${response.status}`);
   const body = await response.json();
@@ -136,7 +136,7 @@ module.exports = async function handler(req, res) {
   if (!(await isAuthorized(req))) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const batches = await Promise.all(SEARCHES.map(searchRepositories));
+    const batches = await Promise.all(SEARCHES().map(searchRepositories));
     const unique = new Map();
     batches.flat().forEach((repo) => unique.set(repo.id, normalize(repo)));
     const previous = await kv.get('agents:latest');
