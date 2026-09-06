@@ -114,7 +114,7 @@ function renderPage(agent, agents) {
   <script type="application/ld+json">${schema}</script>
 </head>
 <body>
-  <header class="site-header compact-header"><a class="brand" href="/">AI Agent Radar</a><nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/weekly">Weekly Radar</a><a href="/about">About</a><a href="/contact">Contact</a></nav></header>
+  <header class="site-header compact-header"><a class="brand" href="/">AI Agent Radar</a><nav class="site-nav" aria-label="Main navigation"><a href="/">Home</a><a href="/opportunities">Opportunities</a><a href="/weekly">Weekly Radar</a><a href="/about">About</a><a href="/contact">Contact</a></nav></header>
   <main class="page-shell detail-shell">
     <a class="back-link" href="/">← Back to radar</a>
     <article class="detail-card">

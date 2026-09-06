@@ -1,0 +1,57 @@
+const { createClient } = require('@vercel/kv');
+const { category, scoreBreakdown } = require('../lib/radar');
+
+const SITE_URL = 'https://getaiagentradar.com';
+const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
+const safeUrl = (value = '') => /^https:\/\/github\.com\//i.test(String(value)) ? escapeHtml(value) : '#';
+
+function openDays(createdAt) {
+  const time = Date.parse(createdAt || '');
+  return Number.isFinite(time) ? Math.max(1, Math.floor((Date.now() - time) / 86400000)) : 0;
+}
+
+function evidenceScore(issue, agent) {
+  const engagement = Math.log2(Number(issue.comments || 0) * 2 + Number(issue.reactions || 0) * 3 + 1) * 14;
+  const persistence = Math.min(24, Math.log2(openDays(issue.createdAt) + 1) * 3);
+  const project = Number(agent.score?.total || scoreBreakdown(agent).total) * 0.22;
+  return Math.min(100, Math.round(engagement + persistence + project));
+}
+
+function opportunityCard(item, index) {
+  const issue = item.issue;
+  const agent = item.agent;
+  const slug = encodeURIComponent(agent.slug || agent.id);
+  const labels = (issue.labels || []).slice(0, 4).map((label) => `<span>${escapeHtml(label)}</span>`).join('');
+  const age = openDays(issue.createdAt);
+  return `<article class="opportunity-card"><div class="opportunity-rank">#${index + 1}</div><div class="opportunity-content"><div class="opportunity-kicker"><span class="analysis-label">${escapeHtml(agent.category || category(agent))}</span><strong>Evidence ${item.score}/100</strong></div><h2><a href="${safeUrl(issue.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(issue.title)}</a></h2><p class="opportunity-project">Observed in <a href="/agent/${slug}">${escapeHtml(agent.name)}</a> · ${escapeHtml(agent.language || 'Unknown')} · ${escapeHtml(agent.license || 'License not declared')}</p><div class="opportunity-metrics"><span>${Number(issue.comments || 0)} comments</span><span>${Number(issue.reactions || 0)} positive reactions</span><span>${age ? `${age} days open` : 'Open duration unknown'}</span><span>Project Radar ${Number(agent.score?.total || scoreBreakdown(agent).total)}</span></div>${labels ? `<div class="opportunity-labels">${labels}</div>` : ''}<div class="opportunity-actions"><a href="${safeUrl(issue.url)}" target="_blank" rel="noopener noreferrer">View original GitHub Issue ↗</a><a href="/agent/${slug}">View project analysis →</a></div></div></article>`;
+}
+
+module.exports = async function handler(req, res) {
+  if (req.method !== 'GET') return res.status(405).send('Method not allowed');
+  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Opportunity storage is not configured');
+  try {
+    const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
+    const [latest, archive] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive')]);
+    const agentsById = new Map();
+    [...(archive?.agents || []), ...(latest?.agents || [])].forEach((agent) => agentsById.set(String(agent.id || agent.slug || agent.name), agent));
+    const seen = new Set();
+    const opportunities = [];
+    agentsById.forEach((agent) => (agent.evidenceIssues || []).forEach((issue) => {
+      const key = String(issue.id || issue.url);
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      opportunities.push({ issue, agent, score: evidenceScore(issue, agent) });
+    }));
+    opportunities.sort((a, b) => b.score - a.score || Number(b.issue.comments || 0) - Number(a.issue.comments || 0));
+    const updatedAt = latest?.updatedAt || new Date().toISOString();
+    const canonical = `${SITE_URL}/opportunities`;
+    const cards = opportunities.map(opportunityCard).join('');
+    const html = `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Traceable product opportunities discovered in high-engagement GitHub Issues across open-source AI agent projects."><meta name="robots" content="index, follow"><meta property="og:title" content="Opportunity Radar · AI Agent Radar"><meta property="og:description" content="Explore unresolved needs and feature requests found in open-source AI agent projects."><meta property="og:url" content="${canonical}"><meta property="og:image" content="${SITE_URL}/og-image.png"><link rel="canonical" href="${canonical}"><link rel="stylesheet" href="/styles.css"><link rel="icon" href="/favicon.svg"><title>Opportunity Radar · AI Agent Radar</title></head><body><header class="site-header"><a class="brand" href="/">AI Agent Radar</a><nav class="site-nav"><a href="/">Home</a><a href="/opportunities" aria-current="page">Opportunities</a><a href="/weekly">Weekly Radar</a><a href="/about">About</a><a href="/contact">Contact</a></nav></header><main class="page-shell report-shell"><section class="report-hero"><span class="eyebrow">TRACEABLE OPEN-SOURCE DEMAND SIGNALS</span><h1>Opportunity <span>Radar</span></h1><p>We scan public GitHub Issues for recurring requests, workflow friction and missing capabilities—then rank the strongest signals without hiding the original evidence.</p><p class="opportunity-updated">${opportunities.length} signals · Last data refresh ${escapeHtml(new Date(updatedAt).toLocaleString('en-US', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' }))} UTC</p></section><section class="opportunity-disclaimer"><strong>Evidence signal, not proof of market demand.</strong><p>A popular Issue can reveal real friction, but it does not prove willingness to pay. Use these leads for interviews, validation and product discovery.</p></section><section class="opportunity-list">${cards || '<div class="empty-state"><h2>No qualified opportunities yet</h2><p>The Radar will add signals as repository Issue rotations complete.</p></div>'}</section><section class="method-card report-method"><h2>How opportunities are ranked</h2><p>The evidence score combines Issue comments, positive reactions, unresolved duration and the underlying project’s Radar Score. Maintenance-only tickets, dependency dashboards, CI failures and release checklists are filtered out. Rankings are independent and never paid placements.</p></section></main><footer class="site-footer"><p>AI Agent Radar · Independent open-source intelligence</p><p>Every listing and opportunity remains free to explore.</p><nav class="footer-links"><a href="/about">About</a><span>·</span><a href="/contact">Contact</a><span>·</span><a href="/privacy-policy">Privacy Policy</a><span>·</span><a href="/terms-of-service">Terms of Service</a><span>·</span><a href="/feed.xml">RSS Feed</a></nav></footer></body></html>`;
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=3600');
+    return res.status(200).send(html);
+  } catch (error) {
+    console.error('Opportunity radar failed:', { name: error?.name, message: error?.message });
+    return res.status(500).send('Unable to render Opportunity Radar');
+  }
+};

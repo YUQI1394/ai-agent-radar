@@ -36,6 +36,10 @@
       "destination": "/api/weekly"
     },
     {
+      "source": "/opportunities",
+      "destination": "/api/opportunities"
+    },
+    {
       "source": "/compare",
       "destination": "/api/compare"
     },
