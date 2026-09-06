@@ -39,7 +39,7 @@ module.exports = async function handler(req, res) {
   <channel>
     <title>AI Agent Radar</title>
     <link>${SITE_URL}</link>
-    <description>New and trending AI agents, refreshed every six hours.</description>
+    <description>Professionally filtered open-source AI agent projects from GitHub, refreshed every six hours.</description>
     <language>en</language>
     <lastBuildDate>${new Date(payload.updatedAt || Date.now()).toUTCString()}</lastBuildDate>
     <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />

@@ -1,6 +1,6 @@
 # AI Agent Radar
 
-AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Functions and Vercel KV. It fetches the top Product Hunt products from the `artificial-intelligence` and `developer-tools` topics, keeps agent-like products, ranks them by votes, and refreshes the feed every six hours.
+AI Agent Radar is a free discovery site backed by Vercel Serverless Functions and Vercel KV. It searches relevant GitHub topics, filters open-source AI agent projects, ranks them using transparent repository signals, and refreshes the feed every six hours.
 
 ## Features
 
@@ -12,7 +12,7 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 - Skeleton loading states and ad-ready legal pages
 - Server-rendered, indexable agent detail pages
 - Dynamic XML sitemap, robots.txt, structured data, About and Contact pages
-- OIDC-authenticated Product Hunt ingestion every six hours
+- OIDC-authenticated GitHub ingestion every six hours
 - Cache-friendly public feed API
 
 ## Project structure
@@ -22,7 +22,7 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 ├── .github/workflows/
 │   └── refresh-agents.yml # Six-hour refresh schedule
 ├── api/
-│   ├── fetch-agents.js   # Product Hunt ingestion cron endpoint
+│   ├── fetch-agents.js   # GitHub ingestion cron endpoint
 │   ├── get-agents.js     # Public KV read endpoint
 │   ├── agent.js          # Server-rendered agent pages
 │   └── sitemap.js        # Dynamic XML sitemap
@@ -41,7 +41,7 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 
 ## Deploy to Vercel
 
-1. Create a Product Hunt developer token at [Product Hunt API documentation](https://api.producthunt.com/v2/docs) and keep it private.
+1. Optionally create a fine-grained GitHub token with read-only access to public repositories. The feed can run without one at lower API rate limits.
 2. Push this directory to a Git repository and import the repository in Vercel, or run:
 
    ```bash
@@ -54,7 +54,7 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
    - For a new project, Vercel no longer provisions first-party KV stores. Install **Upstash Redis** from the Vercel Marketplace, then map its REST URL and REST token to environment variables named `KV_REST_API_URL` and `KV_REST_API_TOKEN`. This preserves the requested `@vercel/kv` API used by this project.
 4. In **Settings → Environment Variables**, add:
 
-   - `PH_TOKEN`: your Product Hunt API access token.
+   - `GITHUB_TOKEN`: optional read-only GitHub API token for higher rate limits.
    - `KV_REST_API_URL` and `KV_REST_API_TOKEN`: only add these manually when your storage integration did not inject variables with these exact names.
 
 5. Redeploy after adding the environment variables.
@@ -66,7 +66,7 @@ AI Agent Radar is a pure-front-end discovery site backed by Vercel Serverless Fu
 
 7. Open the production URL. GitHub Actions refreshes the feed automatically at `00:00`, `06:00`, `12:00`, and `18:00` UTC.
 
-For local development, link the folder to the Vercel project so its development environment is available, then run `npm run dev`. You can also create a `.env.local` containing `PH_TOKEN` and the KV variables; never commit that file.
+For local development, link the folder to the Vercel project so its development environment is available, then run `npm run dev`. You can also create a `.env.local` containing the optional `GITHUB_TOKEN` and the KV variables; never commit that file.
 
 ## API responses
 
@@ -84,4 +84,4 @@ For local development, link the folder to the Vercel project so its development 
 
 ## License
 
-Use and adapt this starter for your own project. Product Hunt names, product data, and trademarks belong to their respective owners.
+Use and adapt this starter for your own project. Repository names, metadata and trademarks belong to their respective owners. AI Agent Radar is not affiliated with GitHub.

@@ -2,7 +2,7 @@
   "name": "ai-agent-radar",
   "version": "1.0.0",
   "private": true,
-  "description": "Daily top AI agents from Product Hunt, powered by Vercel Serverless and Vercel KV.",
+  "description": "Professionally filtered open-source AI agent intelligence from GitHub, powered by Vercel Serverless and Vercel KV.",
   "scripts": {
     "dev": "vercel dev",
     "check": "node --check app.js && node --check lib/radar.js && node --check api/get-agents.js && node --check api/fetch-agents.js && node --check api/agent.js && node --check api/weekly.js && node --check api/compare.js && node --check api/sitemap.js && node --check api/feed.js"
