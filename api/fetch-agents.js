@@ -12,6 +12,8 @@ const SEARCHES = () => [
   { query: `topic:multi-agent-systems stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 20 }
 ];
 const ISSUE_TARGETS_PER_SCAN = 5;
+const DEMAND_PATTERN = /feature|request|support|proposal|enhancement|workflow|integration|export|import|api|ux|documentation|docs|performance|slow|error|fail|bug|problem|missing|cannot|can't|unable|crash|session|memory|security/i;
+const MAINTENANCE_NOISE = /dependency dashboard|release checklist|roadmap tracking|ci red|build status|automated update|test matrix/i;
 const CURATED_LIMIT = 36;
 const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
 const OIDC_AUDIENCE = 'ai-agent-radar-refresh';
@@ -178,7 +180,11 @@ module.exports = async function handler(req, res) {
     const evidenceByRepository = new Map();
     issueBatches.forEach(({ repository, issues }) => {
       const evidence = issues.map((issue) => issueEvidence(issue, repository))
-        .filter((issue) => issue.comments >= 2 || issue.reactions >= 2)
+        .filter((issue) => {
+          const searchable = `${issue.title} ${issue.labels.join(' ')}`;
+          return DEMAND_PATTERN.test(searchable) && !MAINTENANCE_NOISE.test(searchable)
+            && (issue.comments >= 2 || issue.reactions >= 2);
+        })
         .sort((a, b) => (b.comments + b.reactions) - (a.comments + a.reactions)).slice(0, 3);
       evidenceByRepository.set(repository.toLowerCase(), evidence);
     });
