@@ -52,6 +52,10 @@
       "destination": "/api/patterns"
     },
     {
+      "source": "/methodology",
+      "destination": "/methodology.html"
+    },
+    {
       "source": "/compare",
       "destination": "/api/compare"
     },

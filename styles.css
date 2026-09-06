@@ -157,6 +157,7 @@ button, input { font: inherit; }
 .method-card ul { display: grid; gap: 10px; margin: 22px 0; padding: 0; list-style: none; }
 .method-card li { display: flex; justify-content: space-between; gap: 18px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.06); }
 .method-card li span { color: var(--muted); font-size: .78rem; text-align: right; }
+.methodology-link { color: var(--cyan); font-size: .82rem; font-weight: 750; }
 
 .button { display: inline-flex; justify-content: center; align-items: center; padding: 11px 18px; border: 1px solid transparent; border-radius: 10px; font-weight: 780; transition: transform .2s ease, box-shadow .2s ease; }
 .button:hover { transform: translateY(-2px); }
@@ -360,6 +361,29 @@ button, input { font: inherit; }
 .pattern-evidence a:hover, .pattern-link:hover { color: var(--cyan); }
 .pattern-evidence span { color: var(--muted); font-size: .7rem; text-align: right; }
 .pattern-link { color: var(--cyan); font-size: .8rem; font-weight: 750; }
+.methodology-shell { max-width: 980px; padding-bottom: 90px; }
+.method-version { font-size: .78rem; }
+.methodology-principles { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 26px; }
+.methodology-principles article { padding: 20px; border: 1px solid rgba(6,182,212,.2); border-radius: 15px; background: rgba(6,182,212,.05); }
+.methodology-principles strong { color: var(--cyan); }
+.methodology-principles p { margin: 7px 0 0; color: var(--muted); font-size: .8rem; }
+.methodology-section { margin: 16px 0; padding: clamp(22px,4vw,34px); border: 1px solid rgba(255,255,255,.08); border-radius: 18px; background: var(--card); }
+.methodology-section h2 { margin: 8px 0 14px; font-size: clamp(1.45rem,3vw,2rem); }
+.methodology-section > p, .methodology-section li { color: var(--muted); line-height: 1.65; }
+.rule-grid, .score-table { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; margin-top: 20px; }
+.rule-grid > div, .score-table > div { padding: 17px; border-radius: 13px; background: var(--card-soft); }
+.rule-grid h3 { margin: 0 0 9px; }
+.rule-grid ul { margin-bottom: 0; padding-left: 18px; }
+.score-table > div { display: grid; grid-template-columns: 1fr auto; gap: 5px 12px; }
+.score-table strong { color: var(--text); }
+.score-table span { color: #fdba74; font-size: .75rem; font-weight: 800; }
+.score-table p { grid-column: 1/-1; margin: 0; color: var(--muted); font-size: .78rem; }
+.method-note { margin-top: 18px; padding-left: 13px; border-left: 2px solid #fdba74; }
+.confidence-scale { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; margin: 18px 0; }
+.confidence-scale div { display: flex; flex-direction: column; padding: 16px; border-radius: 12px; background: var(--card-soft); }
+.confidence-scale strong { color: #fdba74; }
+.confidence-scale span { color: var(--muted); font-size: .75rem; }
+.limitation-section { border-color: rgba(249,115,22,.25); }
 
 @media (max-width: 900px) {
   .agent-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -396,6 +420,7 @@ button, input { font: inherit; }
   .pattern-card { grid-template-columns: 1fr; }
   .pattern-evidence li { align-items: flex-start; flex-direction: column; gap: 4px; }
   .pattern-evidence span { text-align: left; }
+  .methodology-principles, .rule-grid, .score-table, .confidence-scale { grid-template-columns: 1fr; }
   .editorial-section { margin-bottom: 60px; }
   .method-card li { align-items: flex-start; flex-direction: column; gap: 2px; }
   .method-card li span { text-align: left; }
