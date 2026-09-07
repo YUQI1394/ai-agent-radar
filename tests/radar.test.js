@@ -40,6 +40,18 @@ test('accepts actionable agents and rejects model-only or generator products', (
     name: 'Logo AI', tagline: 'AI logo generator',
     description: 'Create logos from text prompts for your next brand.', topics: ['image-generator']
   })), false);
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Trading Course', tagline: 'Code for machine learning trading from data sourcing to live execution',
+    description: 'Examples and notebooks for quantitative finance.', topics: ['trading-agent']
+  })), false);
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Awesome AI Startups', tagline: 'A curated list of indie-built AI startups',
+    description: 'A curated list of useful tools and companies.', topics: ['ai-agents', 'mcp']
+  })), false);
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Quant Platform', tagline: 'Machine-learning investment platform equipped with RD-Agent',
+    description: 'Explore ideas and implement quantitative models.', topics: ['finance', 'research']
+  })), false);
 });
 
 test('scores stay bounded and reward fresh, evidenced projects', () => {
