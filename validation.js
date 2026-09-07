@@ -22,17 +22,26 @@
 
   const workspace = document.createElement('section');
   workspace.className = 'validation-workspace';
-  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>Saved only in this browser. No account required.</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
+  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>Saved only in this browser. No account required.</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Decision<select id="validation-decision"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
   grid.before(workspace);
   const notes = workspace.querySelector('textarea');
   const progress = workspace.querySelector('.workspace-progress');
   const saved = workspace.querySelector('.workspace-saved');
+  const nextAction = workspace.querySelector('#validation-next-action');
+  const dueDate = workspace.querySelector('#validation-due');
+  const decision = workspace.querySelector('#validation-decision');
   notes.value = state.notes || '';
+  nextAction.value = state.nextAction || '';
+  dueDate.value = state.dueDate || '';
+  decision.value = ['build', 'narrow', 'stop'].includes(state.decision) ? state.decision : '';
   state.title = document.querySelector('.opportunity-detail-hero h1')?.textContent.trim() || 'Opportunity validation';
   state.project = document.querySelector('.opportunity-detail-hero p a')?.textContent.trim() || '';
   state.updatedAt = new Date().toISOString();
   function persist(message = 'Saved locally') {
     state.notes = notes.value;
+    state.nextAction = nextAction.value.trim();
+    state.dueDate = dueDate.value;
+    state.decision = decision.value;
     state.updatedAt = new Date().toISOString();
     try {
       localStorage.setItem(storageKey, JSON.stringify(state));
@@ -58,6 +67,9 @@
   });
   let notesTimer;
   notes.addEventListener('input', () => { clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
+  nextAction.addEventListener('input', () => { clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
+  dueDate.addEventListener('change', () => persist());
+  decision.addEventListener('change', () => persist('Decision saved'));
   workspace.querySelector('[data-copy-notes]').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(notes.value); saved.textContent = 'Notes copied'; }
     catch (_) { notes.select(); saved.textContent = 'Select and copy your notes'; }
