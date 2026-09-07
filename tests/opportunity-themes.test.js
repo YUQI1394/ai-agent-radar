@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { THEMES, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, cleanIssueEvidence, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
 
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
@@ -18,4 +18,14 @@ test('theme slugs are stable and unique', () => {
 test('issue fingerprints collapse cosmetic title duplicates', () => {
   assert.equal(issueFingerprint('[FEAT]: Add Slack connector'), issueFingerprint('feat - add slack connector'));
   assert.equal(issueFingerprint('Canary: add a small documentation clarification'), 'canary add a small documentation clarification');
+});
+
+test('cleans duplicate and maintenance-only evidence across stored history', () => {
+  const issues = [
+    { title: 'Canary: add a small documentation clarification', labels: [] },
+    { title: '[FEAT]: Add Slack connector', labels: [] },
+    { title: 'feat - add slack connector', labels: [] },
+    { title: 'Human approval workflow', labels: [] }
+  ];
+  assert.deepEqual(cleanIssueEvidence(issues).map((issue) => issue.title), ['[FEAT]: Add Slack connector', 'Human approval workflow']);
 });
