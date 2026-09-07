@@ -51,7 +51,7 @@
 
   api.ready = (async () => {
     try {
-      const response = await fetch('/api/auth-config', { headers: { Accept: 'application/json' } });
+      const response = await fetch('/auth-config.json', { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`Auth configuration request failed (${response.status})`);
       const config = await response.json();
       api.configured = Boolean(config.configured);

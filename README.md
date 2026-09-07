@@ -24,7 +24,7 @@ AI Agent Radar is a free discovery site backed by Vercel Serverless Functions an
 
 ## Authentication setup
 
-Set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in Vercel. In Supabase Auth, use `https://getaiagentradar.com` as the Site URL and allow `https://getaiagentradar.com/login` as a redirect URL. Enable Google and GitHub providers if those buttons should be available; email magic-link registration works when Supabase email auth is enabled.
+Copy the project's public Supabase URL and publishable key into `auth-config.json`, then set `configured` to `true`. These values are intentionally public browser credentials; never place a Supabase service-role key in this file. In Supabase Auth, use `https://getaiagentradar.com` as the Site URL and allow `https://getaiagentradar.com/login` as a redirect URL. Enable Google and GitHub providers if those buttons should be available; email magic-link registration works when Supabase email auth is enabled.
 - Cross-repository Pattern Radar for separating recurring needs from isolated requests
 - Public methodology covering inclusion, scoring, evidence filters and limitations
 - Public freshness and data-health endpoint for production monitoring
