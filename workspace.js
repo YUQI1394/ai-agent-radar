@@ -2,6 +2,16 @@
   const prefix = 'ai-agent-radar:validation:';
   const list = document.querySelector('#workspace-list');
   const empty = document.querySelector('#workspace-empty');
+  const exportButton = document.querySelector('#workspace-export');
+  const importButton = document.createElement('button');
+  const importInput = document.createElement('input');
+  importButton.className = 'button button-secondary';
+  importButton.type = 'button';
+  importButton.textContent = 'Import backup';
+  importInput.type = 'file';
+  importInput.accept = 'application/json,.json';
+  importInput.hidden = true;
+  exportButton.after(importButton, importInput);
   const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
   function records() {
     const items = [];
@@ -29,15 +39,49 @@
       const action = String(item.nextAction || '').trim();
       return `<article class="workspace-card"><div class="workspace-card-top"><span>${escapeHtml(item.project || 'Opportunity validation')}</span><strong>${count}/4 steps · ${escapeHtml(decision)}</strong></div><h2><a href="/opportunity/${encodeURIComponent(item.id)}">${escapeHtml(item.title)}</a></h2><div class="workspace-bar"><span style="width:${Math.min(100, count / 4 * 100)}%"></span></div>${action ? `<p class="workspace-next"><strong>Next:</strong> ${escapeHtml(action)}${item.dueDate ? ` · ${escapeHtml(item.dueDate)}` : ''}</p>` : ''}<p>${note ? escapeHtml(note.slice(0, 180)) : 'No research notes yet.'}${note.length > 180 ? '…' : ''}</p><div class="workspace-card-actions"><a href="/opportunity/${encodeURIComponent(item.id)}">Continue validation →</a><button type="button" data-remove="${escapeHtml(item.key)}">Remove</button></div></article>`;
     }).join('');
-    list.querySelectorAll('[data-remove]').forEach((button) => button.addEventListener('click', () => { localStorage.removeItem(button.dataset.remove); render(); }));
+    list.querySelectorAll('[data-remove]').forEach((button) => button.addEventListener('click', () => {
+      if (!window.confirm('Remove this validation from this browser? Export a backup first if you may need it later.')) return;
+      localStorage.removeItem(button.dataset.remove);
+      render();
+    }));
   }
-  document.querySelector('#workspace-export').addEventListener('click', () => {
+  exportButton.addEventListener('click', () => {
     const payload = JSON.stringify({ exportedAt: new Date().toISOString(), version: 1, validations: records().map(({ key, ...item }) => item) }, null, 2);
     const link = document.createElement('a');
     link.href = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
     link.download = `ai-agent-radar-workspace-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
-    URL.revokeObjectURL(link.href);
+    setTimeout(() => URL.revokeObjectURL(link.href), 0);
+  });
+  importButton.addEventListener('click', () => importInput.click());
+  importInput.addEventListener('change', async () => {
+    const file = importInput.files?.[0];
+    if (!file) return;
+    const message = document.querySelector('#workspace-due');
+    try {
+      if (file.size > 1000000) throw new Error('Backup is larger than 1 MB');
+      const payload = JSON.parse(await file.text());
+      if (payload?.version !== 1 || !Array.isArray(payload.validations) || payload.validations.length > 100) throw new Error('Unsupported backup format');
+      let imported = 0;
+      payload.validations.forEach((item) => {
+        const id = String(item?.id || '');
+        if (!/^\d+$/.test(id) || typeof item.title !== 'string' || !item.title.trim()) return;
+        const record = {
+          id,
+          title: item.title.slice(0, 300), project: String(item.project || '').slice(0, 200),
+          completed: Array.isArray(item.completed) ? [...new Set(item.completed.filter((step) => Number.isInteger(step) && step >= 0 && step < 4))] : [],
+          notes: String(item.notes || '').slice(0, 50000), nextAction: String(item.nextAction || '').slice(0, 180),
+          dueDate: /^\d{4}-\d{2}-\d{2}$/.test(String(item.dueDate || '')) ? item.dueDate : '',
+          decision: ['build', 'narrow', 'stop'].includes(item.decision) ? item.decision : '', updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(`${prefix}${id}`, JSON.stringify(record));
+        imported += 1;
+      });
+      render();
+      message.textContent = `${imported} validation${imported === 1 ? '' : 's'} imported`;
+    } catch (error) {
+      message.textContent = `Import failed: ${error.message}`;
+    } finally { importInput.value = ''; }
   });
   render();
 })();
