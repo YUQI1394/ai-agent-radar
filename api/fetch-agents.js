@@ -1,6 +1,7 @@
 const { kv } = require('@vercel/kv');
 const crypto = require('crypto');
 const { enrichAgents, mergeArchive, qualifiesAsAgent, weeklyReport } = require('../lib/radar');
+const { githubHeaders, githubJson } = require('../lib/github-client');
 
 const GITHUB_API = 'https://api.github.com';
 const recentCutoff = () => new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
@@ -27,30 +28,15 @@ const INDEXNOW_KEY = '7a4f931bc0e8421ab5d681f29c7e304d';
 let cachedJwks = null;
 let jwksExpiresAt = 0;
 
-function githubHeaders(token = '') {
-  const headers = {
-    Accept: 'application/vnd.github+json',
-    'User-Agent': 'getaiagentradar.com',
-    'X-GitHub-Api-Version': '2022-11-28'
-  };
-  const apiToken = token || process.env.GITHUB_TOKEN;
-  if (apiToken) headers.Authorization = `Bearer ${apiToken}`;
-  return headers;
-}
-
 async function searchRepositories(search, token) {
   const params = new URLSearchParams({ q: search.query, sort: search.sort, order: 'desc', per_page: String(search.perPage) });
-  const response = await fetch(`${GITHUB_API}/search/repositories?${params}`, { headers: githubHeaders(token) });
-  if (!response.ok) throw new Error(`GitHub repository search returned ${response.status}`);
-  const body = await response.json();
+  const body = await githubJson(`${GITHUB_API}/search/repositories?${params}`, token, 'GitHub repository search');
   return Array.isArray(body.items) ? body.items : [];
 }
 
 async function fetchRepositoryIssues(repository, token) {
   const params = new URLSearchParams({ state: 'open', sort: 'comments', direction: 'desc', per_page: '20' });
-  const response = await fetch(`${GITHUB_API}/repos/${repository}/issues?${params}`, { headers: githubHeaders(token) });
-  if (!response.ok) throw new Error(`GitHub issues for ${repository} returned ${response.status}`);
-  const body = await response.json();
+  const body = await githubJson(`${GITHUB_API}/repos/${repository}/issues?${params}`, token, `GitHub issues for ${repository}`);
   return (Array.isArray(body) ? body : []).filter((issue) => !issue.pull_request);
 }
 
@@ -166,20 +152,29 @@ module.exports = async function handler(req, res) {
 
   try {
     const apiToken = String(req.headers['x-github-token'] || '');
-    const batches = await Promise.all(SEARCHES().map((search) => searchRepositories(search, apiToken)));
+    const searches = SEARCHES();
+    const searchResults = await Promise.allSettled(searches.map((search) => searchRepositories(search, apiToken)));
+    const batches = searchResults.filter((result) => result.status === 'fulfilled').map((result) => result.value);
+    const searchFailures = searchResults.length - batches.length;
+    if (!batches.length) throw new Error('All GitHub repository searches failed; existing feed preserved');
+    searchResults.filter((result) => result.status === 'rejected').forEach((result) => console.warn('GitHub search degraded:', result.reason?.message));
     const unique = new Map();
     batches.flat().forEach((repo) => unique.set(repo.id, normalize(repo)));
     const previous = await kv.get('agents:latest');
     const storedArchive = await kv.get('agents:archive');
+    if (searchFailures) (previous?.agents || []).forEach((agent) => { if (!unique.has(agent.id)) unique.set(agent.id, agent); });
     const previousByName = new Map((previous?.agents || []).map((agent) => [String(agent.name).toLowerCase(), agent]));
     const candidates = [...unique.values()].filter(qualifiesAsAgent);
     const groups = Math.max(1, Math.ceil(candidates.length / ISSUE_TARGETS_PER_SCAN));
     const groupIndex = Math.floor(Date.now() / (6 * 60 * 60 * 1000)) % groups;
     const issueTargets = candidates.slice(groupIndex * ISSUE_TARGETS_PER_SCAN, (groupIndex + 1) * ISSUE_TARGETS_PER_SCAN);
-    const issueBatches = await Promise.all(issueTargets.map(async (agent) => ({
+    const issueResults = await Promise.allSettled(issueTargets.map(async (agent) => ({
       repository: agent.name,
       issues: await fetchRepositoryIssues(agent.name, apiToken)
     })));
+    const issueBatches = issueResults.filter((result) => result.status === 'fulfilled').map((result) => result.value);
+    const issueFailures = issueResults.length - issueBatches.length;
+    issueResults.filter((result) => result.status === 'rejected').forEach((result) => console.warn('GitHub Issue scan degraded:', result.reason?.message));
     const evidenceByRepository = new Map();
     const issueScanTime = new Date().toISOString();
     issueBatches.forEach(({ repository, issues }) => {
@@ -207,7 +202,8 @@ module.exports = async function handler(req, res) {
     const agents = enrichAgents(enrichedCandidates, Array.isArray(previous?.agents) ? previous.agents : [], Date.now())
       .sort((a, b) => b.score.total - a.score.total || b.stars - a.stars).slice(0, CURATED_LIMIT);
     const updatedAt = new Date().toISOString();
-    const payload = { updatedAt, count: agents.length, source: 'github', agents };
+    const ingestion = { searchesSucceeded: batches.length, searchesFailed: searchFailures, issuesSucceeded: issueBatches.length, issuesFailed: issueFailures, degraded: searchFailures > 0 || issueFailures > 0 };
+    const payload = { updatedAt, count: agents.length, source: 'github', ingestion, agents };
     const archivedAgents = mergeArchive(Array.isArray(storedArchive?.agents) ? storedArchive.agents : [], agents, updatedAt);
     const report = weeklyReport(agents, updatedAt);
     const storedReports = await kv.get('weekly:reports');
@@ -220,7 +216,7 @@ module.exports = async function handler(req, res) {
     await kv.lpush('agents:history', payload);
     await kv.ltrim('agents:history', 0, 27);
     await notifyIndexNow(agents, report);
-    return res.status(200).json({ ok: true, source: 'github', updatedAt, count: agents.length, archiveCount: archivedAgents.length, weeklyReport: report.week });
+    return res.status(200).json({ ok: true, source: 'github', updatedAt, count: agents.length, archiveCount: archivedAgents.length, weeklyReport: report.week, ingestion });
   } catch (error) {
     console.error('GitHub refresh failed:', error);
     return res.status(502).json({ error: 'Unable to refresh GitHub projects', detail: error.message });
