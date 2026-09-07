@@ -3,6 +3,7 @@
   const set = (id, value) => { document.querySelector(id).textContent = value; };
   const grid = panel.querySelector('.status-grid');
   if (grid && !document.querySelector('#status-domains')) grid.insertAdjacentHTML('beforeend', '<div><strong id="status-domains">—</strong><span>Professional domains</span></div>');
+  if (grid && !document.querySelector('#status-refresh')) grid.insertAdjacentHTML('beforeend', '<div><strong id="status-refresh">—</strong><span>Latest GitHub scan</span></div>');
   try {
     const response = await fetch('/health', { cache: 'no-store' });
     const health = await response.json();
@@ -14,6 +15,8 @@
     set('#status-coverage', health.issueCoverage ? `${health.issueCoverage.scanned}/${health.issueCoverage.total}` : '—');
     set('#status-evidence', health.evidenceSignals ?? '—');
     set('#status-domains', health.professionalCoverage?.representedDomains ?? '—');
+    const ingestion = health.ingestion;
+    set('#status-refresh', ingestion ? (ingestion.degraded ? 'Partial' : `${ingestion.searchesSucceeded}/${ingestion.searchesSucceeded + ingestion.searchesFailed}`) : 'Legacy');
   } catch (_) {
     panel.classList.add('status-degraded');
     set('#status-name', 'Health endpoint unavailable');

@@ -30,6 +30,7 @@ async function main() {
   assert.equal(health.checks?.feedFresh, true, 'feed is stale');
   assert.equal(health.checks?.professionalBreadth, true, 'professional domain coverage has collapsed');
   assert.ok(health.professionalCoverage?.representedDomains >= 3, 'fewer than three professional domains represented');
+  if (health.ingestion) assert.equal(health.ingestion.degraded, false, 'latest GitHub refresh was partial');
   console.log(`PASS /health (${health.projects} projects, ${health.evidenceSignals} evidence signals)`);
 
   const headers = await fetch(`${origin}/`, { method: 'HEAD' });
