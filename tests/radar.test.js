@@ -5,6 +5,7 @@ const {
   enrichAgents,
   mergeArchive,
   qualifiesAsAgent,
+  selectCuratedAgents,
   scoreBreakdown,
   weekKey
 } = require('../lib/radar');
@@ -78,6 +79,21 @@ test('archive retains missing projects and marks current projects', () => {
   const merged = mergeArchive([archived], [agent()], '2026-09-06T12:00:00.000Z');
   assert.equal(merged.find((item) => item.id === 1).status, 'current');
   assert.equal(merged.find((item) => item.id === 2).status, 'archived');
+});
+
+test('curated selection preserves professional-domain representation', () => {
+  const coding = Array.from({ length: 36 }, (_, index) => agent({ id: index + 1, category: 'Coding', score: { total: 100 - index }, stars: 1000 - index }));
+  const specialist = [
+    agent({ id: 101, category: 'Security', score: { total: 45 }, stars: 100 }),
+    agent({ id: 102, category: 'Security', score: { total: 44 }, stars: 90 }),
+    agent({ id: 103, category: 'Finance', score: { total: 43 }, stars: 80 }),
+    agent({ id: 104, category: 'Finance', score: { total: 42 }, stars: 70 })
+  ];
+  const selected = selectCuratedAgents([...coding, ...specialist], 36, 2);
+  assert.equal(selected.filter((item) => item.category === 'Security').length, 2);
+  assert.equal(selected.filter((item) => item.category === 'Finance').length, 2);
+  assert.equal(selected.length, 36);
+  assert.deepEqual(selected.map((item) => item.score.total), selected.map((item) => item.score.total).sort((a, b) => b - a));
 });
 
 test('week keys consistently end on Sunday in UTC', () => {

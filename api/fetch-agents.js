@@ -1,6 +1,6 @@
 const { kv } = require('@vercel/kv');
 const crypto = require('crypto');
-const { enrichAgents, mergeArchive, qualifiesAsAgent, weeklyReport } = require('../lib/radar');
+const { enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAgents, weeklyReport } = require('../lib/radar');
 const { githubHeaders, githubJson } = require('../lib/github-client');
 const { cleanIssueEvidence } = require('../lib/opportunity-themes');
 
@@ -14,7 +14,11 @@ const SEARCHES = () => [
   { query: `topic:multi-agent-systems stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 20 },
   { query: `topic:ai-agents security in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `topic:ai-agents finance in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
-  { query: `topic:ai-agents research in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 }
+  { query: `topic:ai-agents research in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"security agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"financial agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"marketing agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"research agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 }
 ];
 const ISSUE_TARGETS_PER_SCAN = 10;
 const DEMAND_PATTERN = /feature|request|support|proposal|enhancement|workflow|integration|export|import|api|ux|documentation|docs|performance|slow|error|fail|bug|problem|missing|cannot|can't|unable|crash|session|memory|security/i;
@@ -198,8 +202,7 @@ module.exports = async function handler(req, res) {
       unique.set(id, { ...agent, painSignals: evidence.length, evidenceIssues: evidence, issueScannedAt });
     });
     const enrichedCandidates = [...unique.values()].filter(qualifiesAsAgent);
-    const agents = enrichAgents(enrichedCandidates, Array.isArray(previous?.agents) ? previous.agents : [], Date.now())
-      .sort((a, b) => b.score.total - a.score.total || b.stars - a.stars).slice(0, CURATED_LIMIT);
+    const agents = selectCuratedAgents(enrichAgents(enrichedCandidates, Array.isArray(previous?.agents) ? previous.agents : [], Date.now()), CURATED_LIMIT);
     const updatedAt = new Date().toISOString();
     const ingestion = { searchesSucceeded: batches.length, searchesFailed: searchFailures, issuesSucceeded: issueBatches.length, issuesFailed: issueFailures, degraded: searchFailures > 0 || issueFailures > 0 };
     const payload = { updatedAt, count: agents.length, source: 'github', ingestion, agents };
