@@ -28,6 +28,8 @@ async function main() {
   assert.equal(health.status, 'healthy');
   assert.ok(health.projects >= 20, 'curated project depth is below 20');
   assert.equal(health.checks?.feedFresh, true, 'feed is stale');
+  assert.equal(health.checks?.professionalBreadth, true, 'professional domain coverage has collapsed');
+  assert.ok(health.professionalCoverage?.representedDomains >= 3, 'fewer than three professional domains represented');
   console.log(`PASS /health (${health.projects} projects, ${health.evidenceSignals} evidence signals)`);
 
   const headers = await fetch(`${origin}/`, { method: 'HEAD' });

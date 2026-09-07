@@ -405,7 +405,7 @@ button, input { font: inherit; }
 .status-dot { width: 14px; height: 14px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 16px currentColor; }
 .status-healthy .status-dot { color: #22c55e; background: #22c55e; }
 .status-degraded .status-dot { color: #ef4444; background: #ef4444; }
-.status-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; margin-top: 24px; }
+.status-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 10px; margin-top: 24px; }
 .status-grid div { display: flex; flex-direction: column; padding: 17px; border-radius: 12px; background: var(--card-soft); }
 .status-grid strong { color: var(--cyan); font-size: 1.35rem; }
 .status-grid span { color: var(--muted); font-size: .72rem; }
