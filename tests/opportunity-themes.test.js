@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { THEMES, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
 
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
@@ -13,4 +13,9 @@ test('maps issue evidence into actionable demand themes', () => {
 
 test('theme slugs are stable and unique', () => {
   assert.equal(new Set(THEMES.map((theme) => theme.slug)).size, THEMES.length);
+});
+
+test('issue fingerprints collapse cosmetic title duplicates', () => {
+  assert.equal(issueFingerprint('[FEAT]: Add Slack connector'), issueFingerprint('feat - add slack connector'));
+  assert.equal(issueFingerprint('Canary: add a small documentation clarification'), 'canary add a small documentation clarification');
 });

@@ -2,6 +2,7 @@ const { kv } = require('@vercel/kv');
 const crypto = require('crypto');
 const { enrichAgents, mergeArchive, qualifiesAsAgent, weeklyReport } = require('../lib/radar');
 const { githubHeaders, githubJson } = require('../lib/github-client');
+const { issueFingerprint } = require('../lib/opportunity-themes');
 
 const GITHUB_API = 'https://api.github.com';
 const recentCutoff = () => new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
@@ -17,7 +18,7 @@ const SEARCHES = () => [
 ];
 const ISSUE_TARGETS_PER_SCAN = 10;
 const DEMAND_PATTERN = /feature|request|support|proposal|enhancement|workflow|integration|export|import|api|ux|documentation|docs|performance|slow|error|fail|bug|problem|missing|cannot|can't|unable|crash|session|memory|security/i;
-const MAINTENANCE_NOISE = /dependency dashboard|release checklist|roadmap tracking|ci red|build status|automated update|test matrix/i;
+const MAINTENANCE_NOISE = /dependency dashboard|release checklist|roadmap tracking|ci red|build status|build artifacts?|automated update|test matrix|canary|flaky test|tests? (?:fail|failing)|verification.*manifest|gsoc.*community/i;
 const CURATED_LIMIT = 36;
 const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
 const OIDC_AUDIENCE = 'ai-agent-radar-refresh';
@@ -179,11 +180,16 @@ module.exports = async function handler(req, res) {
     const issueScanTime = new Date().toISOString();
     issueBatches.forEach(({ repository, issues }) => {
       const previousIssues = new Map((previousByName.get(repository.toLowerCase())?.evidenceIssues || []).map((issue) => [String(issue.id), issue]));
+      const fingerprints = new Set();
       const evidence = issues.map((issue) => issueEvidence(issue, repository))
         .filter((issue) => {
           const searchable = `${issue.title} ${issue.labels.join(' ')}`;
-          return DEMAND_PATTERN.test(searchable) && !MAINTENANCE_NOISE.test(searchable)
+          const fingerprint = issueFingerprint(issue.title);
+          if (!fingerprint || fingerprints.has(fingerprint)) return false;
+          const qualified = DEMAND_PATTERN.test(searchable) && !MAINTENANCE_NOISE.test(searchable)
             && (issue.comments >= 2 || issue.reactions >= 2);
+          if (qualified) fingerprints.add(fingerprint);
+          return qualified;
         })
         .map((issue) => ({ ...issue, firstSeenAt: previousIssues.get(String(issue.id))?.firstSeenAt || previous?.updatedAt || issueScanTime }))
         .sort((a, b) => (b.comments + b.reactions) - (a.comments + a.reactions)).slice(0, 3);
