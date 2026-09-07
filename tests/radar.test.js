@@ -59,6 +59,12 @@ test('classifies infrastructure before broad coding keywords', () => {
   })), 'Coding');
 });
 
+test('professional domains take priority over infrastructure form', () => {
+  assert.equal(category(agent({ name: 'Quant Agent', topics: ['ai-agents', 'quantitative-finance', 'agent-framework'] })), 'Finance');
+  assert.equal(category(agent({ name: 'Red Team Agent', topics: ['ai-agents', 'penetration-testing', 'mcp-server'] })), 'Security');
+  assert.equal(category(agent({ name: 'Research Agent', topics: ['ai-agents', 'deep-research', 'rag'] })), 'Research');
+});
+
 test('enrichment preserves first-seen time and computes deltas', () => {
   const previous = agent({ stars: 4000, firstSeenAt: '2026-08-01T00:00:00.000Z' });
   const [current] = enrichAgents([agent()], [previous], now);

@@ -9,7 +9,10 @@ const SEARCHES = () => [
   { query: `topic:ai-agents stars:50..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 25 },
   { query: `topic:mcp-server stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 25 },
   { query: '"agent framework" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 20 },
-  { query: `topic:multi-agent-systems stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 20 }
+  { query: `topic:multi-agent-systems stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 20 },
+  { query: `topic:ai-agents security in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `topic:ai-agents finance in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `topic:ai-agents research in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 }
 ];
 const ISSUE_TARGETS_PER_SCAN = 10;
 const DEMAND_PATTERN = /feature|request|support|proposal|enhancement|workflow|integration|export|import|api|ux|documentation|docs|performance|slow|error|fail|bug|problem|missing|cannot|can't|unable|crash|session|memory|security/i;

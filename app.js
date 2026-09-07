@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const CATEGORIES = ['All', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure'];
+  const CATEGORIES = ['All', 'Research', 'Security', 'Finance', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure'];
   const SAVED_KEY = 'ai-agent-radar-saved';
 
   function readSavedAgents() {
@@ -42,6 +42,9 @@
     if (agent.category === selected) return true;
     const tags = [...(agent.tags || []), ...(agent.topics || []), ...(agent.topicSlugs || [])].map((tag) => String(tag).toLowerCase());
     const aliases = {
+      Research: /research|academic|scientific|literature|knowledge|retriev|rag/,
+      Security: /security|cyber|pentest|penetration.?test|red.?team|malware|vulnerab|threat|reverse.?engineering/,
+      Finance: /finance|fintech|trading|investment|quant|stock|portfolio|accounting/,
       Marketing: /marketing|advertising|growth|sales|social.?media/,
       Coding: /coding|code|developer|programming|software|github|api/,
       Design: /design|creative|graphics|ui|ux|image|video/,
