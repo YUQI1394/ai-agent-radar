@@ -36,6 +36,28 @@
     }
   };
 
+  function migrateLegacyBrowserData() {
+    if (!api.user) return;
+    try {
+      const accountSavedKey = api.savedKey();
+      if (!localStorage.getItem(accountSavedKey)) {
+        const legacySaved = localStorage.getItem('ai-agent-radar-saved');
+        if (legacySaved) localStorage.setItem(accountSavedKey, legacySaved);
+      }
+      const accountPrefix = api.storagePrefix('validation');
+      const legacyPrefix = 'ai-agent-radar:validation:';
+      const legacyKeys = [];
+      for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index);
+        if (key?.startsWith(legacyPrefix) && /^\d+$/.test(key.slice(legacyPrefix.length))) legacyKeys.push(key);
+      }
+      legacyKeys.forEach((legacyKey) => {
+        const accountKey = `${accountPrefix}${legacyKey.slice(legacyPrefix.length)}`;
+        if (!localStorage.getItem(accountKey)) localStorage.setItem(accountKey, localStorage.getItem(legacyKey));
+      });
+    } catch (_) { /* Storage may be unavailable in privacy-restricted browsers. */ }
+  }
+
   function updateNavigation() {
     document.querySelectorAll('.site-nav').forEach((nav) => {
       let link = nav.querySelector('[data-auth-link]');
@@ -63,8 +85,10 @@
       const { data, error } = await api.client.auth.getUser();
       if (error && !/session/i.test(error.message || '')) throw error;
       api.user = data?.user || null;
+      migrateLegacyBrowserData();
       api.client.auth.onAuthStateChange((event, session) => {
         api.user = session?.user || null;
+        if (api.user) migrateLegacyBrowserData();
         updateNavigation();
         document.dispatchEvent(new CustomEvent('radar:auth', { detail: { event, user: api.user } }));
       });
