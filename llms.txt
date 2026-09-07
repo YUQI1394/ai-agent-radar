@@ -13,7 +13,10 @@ Terms of service: https://getaiagentradar.com/terms-of-service
 ## Content
 
 - The homepage provides a searchable and filterable radar of current AI-agent launches.
+- Professional domain reports provide indexable GitHub-curated collections for research, security, finance, coding, marketing, design, productivity and agent infrastructure.
 - Agent detail pages provide public listing facts, automatic Radar analysis, use cases, limitations, comparisons and trend observations.
+- Opportunity Radar ranks traceable unmet needs from GitHub Issues and links each signal to a guided validation brief.
+- Validation Workspace is a free, private browser-only execution queue for notes, next actions, target dates and build decisions.
 - Radar Score is an independent discovery signal based on community interest, launch freshness and relevance.
 - Listings are informational and are not paid placements or endorsements.
 

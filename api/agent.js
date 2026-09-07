@@ -159,7 +159,9 @@ module.exports = async function handler(req, res) {
     if (!agent) return res.status(404).send('<!doctype html><title>Agent not found · AI Agent Radar</title><h1>Agent not found</h1><p><a href="/">Return to AI Agent Radar</a></p>');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-    return res.status(200).send(renderPage(agent, archiveAgents.length ? archiveAgents : currentAgents));
+    return res.status(200).send(renderPage(agent, archiveAgents.length ? archiveAgents : currentAgents)
+      .replace('<p>This site is supported by ads. We do not sell user data.</p>', '')
+      .replace('AI Agent Radar · Independent AI agent discovery', 'AI Agent Radar · Free, independent open-source intelligence'));
   } catch (error) {
     console.error('Agent page render failed:', { name: error?.name, message: error?.message });
     return res.status(500).send('Unable to render agent page');
