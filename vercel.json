@@ -28,6 +28,10 @@
       "destination": "/api/agent?slug=:slug"
     },
     {
+      "source": "/category/:slug",
+      "destination": "/api/category?slug=:slug"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/api/sitemap"
     },

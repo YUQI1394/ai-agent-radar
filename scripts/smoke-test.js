@@ -7,7 +7,10 @@ const pages = [
   ['/patterns', 'Pattern'],
   ['/workspace', 'Workspace'],
   ['/methodology', 'Methodology'],
-  ['/status', 'Status']
+  ['/status', 'Status'],
+  ['/category/research', 'Research AI Agents'],
+  ['/category/security', 'Security AI Agents'],
+  ['/category/finance', 'Finance AI Agents']
 ];
 
 async function main() {

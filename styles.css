@@ -247,6 +247,10 @@ button, input { font: inherit; }
 .report-archive span { margin-right: 4px; color: var(--muted); font-size: .75rem; }
 .report-archive a { padding: 6px 9px; color: var(--muted); border: 1px solid rgba(255,255,255,.09); border-radius: 8px; font-size: .72rem; }
 .report-archive a:hover, .report-archive a[aria-current="page"] { color: var(--cyan); border-color: rgba(6,182,212,.45); background: rgba(6,182,212,.08); }
+.domain-report-links { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; width: 100%; }
+.domain-report-links span { margin-right: 2px; color: var(--muted); font-size: .72rem; }
+.domain-report-links a { padding: 5px 8px; color: #c4b5fd; border-bottom: 1px solid rgba(167,139,250,.35); font-size: .74rem; }
+.domain-report-links a:hover { color: var(--cyan); border-color: var(--cyan); }
 .compare-table-wrap { overflow-x: auto; margin: 22px 0; border: 1px solid var(--border); border-radius: 16px; }
 .compare-table { width: 100%; border-collapse: collapse; background: var(--card); }
 .compare-table th, .compare-table td { padding: 15px 18px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.07); }
