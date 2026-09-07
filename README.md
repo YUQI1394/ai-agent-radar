@@ -18,8 +18,13 @@ AI Agent Radar is a free discovery site backed by Vercel Serverless Functions an
 - A server-rendered Opportunity Radar that ranks unresolved GitHub Issue evidence
 - Problem-theme filters and a three-step opportunity validation playbook
 - Indexable guided validation briefs for every qualified opportunity
-- Private browser-saved validation progress and research notes with no account required
-- A local-only workspace for resuming multiple validation sprints
+- Free Supabase authentication with Google, GitHub and email magic links
+- Account-gated, browser-saved validation progress and research notes
+- A local-only workspace for resuming multiple validation sprints (cloud sync is not yet enabled)
+
+## Authentication setup
+
+Set `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in Vercel. In Supabase Auth, use `https://getaiagentradar.com` as the Site URL and allow `https://getaiagentradar.com/login` as a redirect URL. Enable Google and GitHub providers if those buttons should be available; email magic-link registration works when Supabase email auth is enabled.
 - Cross-repository Pattern Radar for separating recurring needs from isolated requests
 - Public methodology covering inclusion, scoring, evidence filters and limitations
 - Public freshness and data-health endpoint for production monitoring

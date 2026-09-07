@@ -1,5 +1,13 @@
-(() => {
-  const prefix = 'ai-agent-radar:validation:';
+(async () => {
+  const auth = await window.RadarAuth.ready;
+  if (!auth.user) {
+    document.querySelector('.workspace-summary').hidden = true;
+    document.querySelector('.workspace-toolbar').hidden = true;
+    document.querySelector('#workspace-empty').hidden = true;
+    document.querySelector('#workspace-list').innerHTML = `<section class="auth-gate"><span class="eyebrow">FREE REGISTRATION</span><h2>Sign in to use your workspace</h2><p>Create a free account to save validation progress on this device and keep different users' work separate.</p><a class="button button-primary" href="/login?next=%2Fworkspace">Create free account or sign in</a></section>`;
+    return;
+  }
+  const prefix = auth.storagePrefix('validation');
   const list = document.querySelector('#workspace-list');
   const empty = document.querySelector('#workspace-empty');
   const exportButton = document.querySelector('#workspace-export');

@@ -2,11 +2,12 @@
   'use strict';
 
   const CATEGORIES = ['All', 'Research', 'Security', 'Finance', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure'];
-  const SAVED_KEY = 'ai-agent-radar-saved';
+  const LEGACY_SAVED_KEY = 'ai-agent-radar-saved';
+  const savedStorageKey = () => window.RadarAuth?.user ? window.RadarAuth.savedKey() : LEGACY_SAVED_KEY;
 
   function readSavedAgents() {
     try {
-      const saved = JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
+      const saved = JSON.parse(localStorage.getItem(savedStorageKey()) || '[]');
       return new Set(Array.isArray(saved) ? saved.map(String) : []);
     } catch { return new Set(); }
   }
@@ -175,16 +176,24 @@
   elements.search.addEventListener('input', (event) => { state.search = event.target.value; render(); });
   elements.filters.forEach((button) => button.addEventListener('click', () => { state.filter = button.dataset.filter; elements.filters.forEach((item) => item.classList.toggle('active', item === button)); render(); }));
   elements.sorts.forEach((button) => button.addEventListener('click', () => { state.sort = button.dataset.sort; elements.sorts.forEach((item) => item.classList.toggle('active', item === button)); render(); }));
-  elements.grid.addEventListener('click', (event) => {
+  elements.grid.addEventListener('click', async (event) => {
     const saveButton = event.target.closest('[data-save-id]');
     if (saveButton) {
+      const auth = await window.RadarAuth.ready;
+      if (!auth.user) {
+        location.assign(`/login?next=${encodeURIComponent(location.pathname + location.search)}`);
+        return;
+      }
       const key = saveButton.dataset.saveId;
       state.saved.has(key) ? state.saved.delete(key) : state.saved.add(key);
-      localStorage.setItem(SAVED_KEY, JSON.stringify([...state.saved]));
+      localStorage.setItem(savedStorageKey(), JSON.stringify([...state.saved]));
       render(); return;
     }
     const shareLink = event.target.closest('.share-link');
     if (shareLink) { event.preventDefault(); window.open(shareLink.href, 'share-on-x', 'popup,width=680,height=520,noopener,noreferrer'); }
   });
-  loadAgents();
+  window.RadarAuth.ready.then((auth) => {
+    if (auth.user) state.saved = readSavedAgents();
+    loadAgents();
+  });
 })();

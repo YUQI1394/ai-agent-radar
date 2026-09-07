@@ -1,0 +1,76 @@
+(() => {
+  'use strict';
+
+  const normalizeNext = (value) => {
+    try {
+      const url = new URL(value || '/', location.origin);
+      return url.origin === location.origin ? `${url.pathname}${url.search}${url.hash}` : '/';
+    } catch { return '/'; }
+  };
+  const api = {
+    client: null, user: null, configured: false, error: '',
+    next(value) { return normalizeNext(value); },
+    storagePrefix(kind) { return `ai-agent-radar:${kind}:${this.user?.id || 'guest'}:`; },
+    savedKey() { return `ai-agent-radar-saved:${this.user?.id || 'guest'}`; },
+    async signIn(provider, next = '/') {
+      if (!this.client) throw new Error('Registration is not configured yet.');
+      sessionStorage.setItem('ai-agent-radar:auth-next', normalizeNext(next));
+      const { error } = await this.client.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: `${location.origin}/login` }
+      });
+      if (error) throw error;
+    },
+    async sendMagicLink(email, next = '/') {
+      if (!this.client) throw new Error('Registration is not configured yet.');
+      sessionStorage.setItem('ai-agent-radar:auth-next', normalizeNext(next));
+      const { error } = await this.client.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${location.origin}/login` }
+      });
+      if (error) throw error;
+    },
+    async signOut() {
+      if (this.client) await this.client.auth.signOut({ scope: 'local' });
+      location.assign('/');
+    }
+  };
+
+  function updateNavigation() {
+    document.querySelectorAll('.site-nav').forEach((nav) => {
+      let link = nav.querySelector('[data-auth-link]');
+      if (!link) {
+        link = document.createElement('a');
+        link.dataset.authLink = '';
+        nav.append(link);
+      }
+      link.href = api.user ? '/account' : `/login?next=${encodeURIComponent(location.pathname + location.search)}`;
+      link.textContent = api.user ? 'Account' : 'Sign in';
+    });
+  }
+
+  api.ready = (async () => {
+    try {
+      const response = await fetch('/api/auth-config', { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Auth configuration request failed (${response.status})`);
+      const config = await response.json();
+      api.configured = Boolean(config.configured);
+      if (!api.configured) return api;
+      if (!window.supabase?.createClient) throw new Error('The secure sign-in library did not load.');
+      api.client = window.supabase.createClient(config.url, config.publishableKey, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+      const { data, error } = await api.client.auth.getUser();
+      if (error && !/session/i.test(error.message || '')) throw error;
+      api.user = data?.user || null;
+      api.client.auth.onAuthStateChange((event, session) => {
+        api.user = session?.user || null;
+        updateNavigation();
+        document.dispatchEvent(new CustomEvent('radar:auth', { detail: { event, user: api.user } }));
+      });
+    } catch (error) { api.error = error.message || 'Authentication is temporarily unavailable.'; }
+    finally { updateNavigation(); }
+    return api;
+  })();
+  window.RadarAuth = api;
+})();
