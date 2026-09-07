@@ -160,6 +160,7 @@ module.exports = async function handler(req, res) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
     return res.status(200).send(renderPage(agent, archiveAgents.length ? archiveAgents : currentAgents)
+      .replace('</nav></header>', '<a href="/login">Sign in</a></nav></header>')
       .replace('<p>This site is supported by ads. We do not sell user data.</p>', '')
       .replace('AI Agent Radar · Independent AI agent discovery', 'AI Agent Radar · Free, independent open-source intelligence'));
   } catch (error) {
