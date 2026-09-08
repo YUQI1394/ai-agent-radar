@@ -67,6 +67,8 @@ Copy the project's public Supabase URL and publishable key into `auth-config.jso
    npx vercel
    ```
 
+   Vercel CLI is intentionally not stored as a project dependency because it is not needed at runtime. `npm run dev` downloads the current CLI only for that local session.
+
 3. Connect storage:
    - If the project already has a legacy/migrated Vercel KV store, connect that store to the project. Its `KV_REST_API_URL` and `KV_REST_API_TOKEN` variables work directly with `@vercel/kv`.
    - For a new project, Vercel no longer provisions first-party KV stores. Install **Upstash Redis** from the Vercel Marketplace, then map its REST URL and REST token to environment variables named `KV_REST_API_URL` and `KV_REST_API_TOKEN`. This preserves the requested `@vercel/kv` API used by this project.
