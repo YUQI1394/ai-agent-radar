@@ -45,3 +45,14 @@ test('sitemap applies the same opportunity quality filter as public rankings', (
   assert.match(sitemap, /cleanIssueEvidence\(agent\.evidenceIssues/);
   assert.match(sitemap, /agent\.lastSeenAt \|\| agent\.pushedAt \|\| agent\.updatedAt/);
 });
+
+test('production security headers and third-party authentication integrity stay enforced', () => {
+  const vercel = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
+  const headers = new Map(vercel.headers[0].headers.map((header) => [header.key.toLowerCase(), header.value]));
+  assert.match(headers.get('content-security-policy'), /frame-ancestors 'none'/);
+  assert.match(headers.get('content-security-policy'), /connect-src[^;]+supabase\.co/);
+  for (const file of ['index.html', 'login.html', 'workspace.html', 'account.html']) {
+    const html = fs.readFileSync(path.join(root, file), 'utf8');
+    assert.match(html, /supabase\.min\.js" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/);
+  }
+});
