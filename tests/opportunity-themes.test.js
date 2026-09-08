@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { THEMES, cleanIssueEvidence, coachingPlan, isUsefulDemandSignal, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, cleanIssueEvidence, coachingPlan, isUsefulDemandSignal, issueExcerpt, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
 
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
@@ -28,6 +28,15 @@ test('builds specialized coaching plans for opportunity themes', () => {
 test('issue fingerprints collapse cosmetic title duplicates', () => {
   assert.equal(issueFingerprint('[FEAT]: Add Slack connector'), issueFingerprint('feat - add slack connector'));
   assert.equal(issueFingerprint('Canary: add a small documentation clarification'), 'canary add a small documentation clarification');
+});
+
+test('creates bounded evidence excerpts without republishing credentials or contact details', () => {
+  const excerpt = issueExcerpt(`## Problem\nI cannot finish the workflow. Contact me at user@example.com.\n\`\`\`js\nconst token = "sk-secretsecretsecretsecret";\n\`\`\`\nSee https://example.com/private for logs.`);
+  assert.match(excerpt, /cannot finish the workflow/);
+  assert.match(excerpt, /\[email hidden\]/);
+  assert.match(excerpt, /\[link\]/);
+  assert.doesNotMatch(excerpt, /user@example\.com|sk-secret|const token/);
+  assert.ok(issueExcerpt('word '.repeat(200)).length <= 321);
 });
 
 test('cleans duplicate and maintenance-only evidence across stored history', () => {

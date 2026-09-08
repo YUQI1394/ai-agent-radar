@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAgents, weeklyReport } = require('../lib/radar');
 const { githubHeaders, githubJson } = require('../lib/github-client');
 const { selectIssueTargets } = require('../lib/ingestion-selection');
-const { cleanIssueEvidence } = require('../lib/opportunity-themes');
+const { cleanIssueEvidence, issueExcerpt } = require('../lib/opportunity-themes');
 
 const GITHUB_API = 'https://api.github.com';
 const recentCutoff = () => new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
@@ -51,6 +51,7 @@ function issueEvidence(issue, repository) {
     id: issue.id,
     repository: repository.toLowerCase(),
     title: issue.title || 'Open feature request',
+    excerpt: issueExcerpt(issue.body),
     url: issue.html_url,
     comments: Number(issue.comments || 0),
     reactions: Number(issue.reactions?.['+1'] || 0),

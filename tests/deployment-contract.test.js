@@ -79,9 +79,13 @@ test('homepage presents the full discovery-to-action path with live project evid
 test('opportunities lead directly into the free guided execution sprint', () => {
   const listing = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');
   const detail = fs.readFileSync(path.join(root, 'api', 'opportunity.js'), 'utf8');
+  const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   const validation = fs.readFileSync(path.join(root, 'validation.js'), 'utf8');
   assert.match(listing, /Start guided sprint/);
+  assert.match(listing, /What the reporter described/);
+  assert.match(ingestion, /excerpt: issueExcerpt\(issue\.body\)/);
   assert.match(detail, /Start free validation sprint/);
+  assert.match(detail, /Reporter context/);
   assert.match(detail, /href="#validation-start"/);
   assert.match(validation, /gate\.id = 'validation-start'/);
   assert.match(validation, /workspace\.id = 'validation-start'/);
