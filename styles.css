@@ -417,6 +417,11 @@ button, input { font: inherit; }
 .pattern-card > div > p { color: var(--muted); }
 .pattern-metrics { display: flex; flex-wrap: wrap; gap: 7px; }
 .pattern-metrics span { padding: 5px 9px; color: #c8b5ff; border-radius: 999px; background: rgba(124,58,237,.1); font-size: .71rem; }
+.pattern-next { margin-top: 16px; padding: 15px 17px; border-left: 2px solid #fb923c; background: rgba(249,115,22,.055); }
+.pattern-next span { color: #fdba74; font-size: .65rem; font-weight: 850; letter-spacing: .08em; }
+.pattern-next p { margin: 7px 0; color: var(--muted); font-size: .82rem; line-height: 1.55; }
+.pattern-next a { color: #fdba74; font-size: .76rem; font-weight: 800; }
+.pattern-next a:hover { color: #fff; }
 .pattern-evidence { display: grid; gap: 8px; margin: 18px 0; padding: 0; list-style: none; }
 .pattern-evidence li { display: flex; justify-content: space-between; gap: 18px; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.035); }
 .pattern-evidence a { color: var(--text); font-size: .82rem; font-weight: 700; }

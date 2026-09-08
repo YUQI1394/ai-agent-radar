@@ -141,6 +141,14 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(workflow, /\.checks\.demandEvidence/);
 });
 
+test('pattern intelligence uses qualified evidence and leads to an executable test', () => {
+  const patterns = fs.readFileSync(path.join(root, 'api', 'patterns.js'), 'utf8');
+  assert.match(patterns, /cleanIssueEvidence\(agent\.evidenceIssues/);
+  assert.match(patterns, /coachingPlan\(lead\.issue\)/);
+  assert.match(patterns, /RECOMMENDED FIRST TEST/);
+  assert.match(patterns, /#validation-start/);
+});
+
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);

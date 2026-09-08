@@ -1,5 +1,5 @@
 const { createClient } = require('@vercel/kv');
-const { THEMES, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, cleanIssueEvidence, coachingPlan, opportunityTheme } = require('../lib/opportunity-themes');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
@@ -7,8 +7,10 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '
 function patternCard(pattern, index) {
   const repositoryCount = pattern.repositories.size;
   const status = repositoryCount >= 3 ? 'Recurring pattern' : repositoryCount === 2 ? 'Cross-project signal' : 'Emerging signal';
+  const lead = pattern.issues[0];
+  const plan = coachingPlan(lead.issue);
   const issues = pattern.issues.slice(0, 3).map(({ issue, agent }) => `<li><a href="/opportunity/${encodeURIComponent(issue.id)}">${escapeHtml(issue.title)}</a><span>${escapeHtml(agent.name)} · ${Number(issue.comments || 0)} comments</span></li>`).join('');
-  return `<article class="pattern-card"><div class="pattern-rank">#${index + 1}</div><div><div class="pattern-heading"><span class="analysis-label">${status}</span><strong>${pattern.score} evidence points</strong></div><h2>${escapeHtml(pattern.name)}</h2><p>${repositoryCount === 1 ? 'One qualified repository currently shows this need. Treat it as an interview lead, not a trend.' : `${repositoryCount} independent repositories show related friction, increasing confidence that this is broader than one project.`}</p><div class="pattern-metrics"><span>${pattern.issues.length} Issues</span><span>${repositoryCount} repositories</span><span>${pattern.comments} comments</span><span>${pattern.reactions} positive reactions</span></div><ul class="pattern-evidence">${issues}</ul><a class="pattern-link" href="/opportunities?theme=${encodeURIComponent(pattern.name)}">Explore all evidence →</a></div></article>`;
+  return `<article class="pattern-card"><div class="pattern-rank">#${index + 1}</div><div><div class="pattern-heading"><span class="analysis-label">${status}</span><strong>${pattern.score} evidence points</strong></div><h2>${escapeHtml(pattern.name)}</h2><p>${repositoryCount === 1 ? 'One qualified repository currently shows this need. Treat it as an interview lead, not a trend.' : `${repositoryCount} independent repositories show related friction, increasing confidence that this is broader than one project.`}</p><div class="pattern-metrics"><span>${pattern.issues.length} Issues</span><span>${repositoryCount} repositories</span><span>${pattern.comments} comments</span><span>${pattern.reactions} positive reactions</span></div><div class="pattern-next"><span>RECOMMENDED FIRST TEST</span><p>${escapeHtml(plan.experiment)}</p><a href="/opportunity/${encodeURIComponent(lead.issue.id)}#validation-start">Start with the strongest signal →</a></div><ul class="pattern-evidence">${issues}</ul><a class="pattern-link" href="/opportunities?theme=${encodeURIComponent(pattern.name)}">Explore all evidence →</a></div></article>`;
 }
 
 module.exports = async function handler(req, res) {
@@ -21,7 +23,7 @@ module.exports = async function handler(req, res) {
     [...(archive?.agents || []), ...(latest?.agents || [])].forEach((agent) => agentsById.set(String(agent.id || agent.slug || agent.name), agent));
     const groups = new Map(THEMES.map((theme) => [theme.name, { ...theme, issues: [], repositories: new Set(), comments: 0, reactions: 0, score: 0 }]));
     const seen = new Set();
-    agentsById.forEach((agent) => (agent.evidenceIssues || []).forEach((issue) => {
+    agentsById.forEach((agent) => cleanIssueEvidence(agent.evidenceIssues || []).forEach((issue) => {
       const key = String(issue.id || issue.url);
       if (!key || seen.has(key)) return;
       seen.add(key);
