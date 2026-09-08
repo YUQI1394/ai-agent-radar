@@ -85,6 +85,9 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(listing, /What the reporter described/);
   assert.match(listing, /Search demand evidence/);
   assert.match(listing, /queryTerms\.every/);
+  assert.match(listing, /Filter opportunities by professional field/);
+  assert.match(listing, /activeDomain/);
+  assert.match(listing, /filterHref/);
   assert.match(ingestion, /excerpt: issueExcerpt\(issue\.body\)/);
   assert.match(detail, /Start free validation sprint/);
   assert.match(detail, /Reporter context/);
