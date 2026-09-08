@@ -30,6 +30,13 @@
       const { error } = await window.RadarAuth.client.from('user_workspace').delete().eq('record_type', kind).eq('record_key', String(key));
       if (error) throw error;
       return true;
+    },
+    async clear() {
+      if (!this.available) return false;
+      const auth = window.RadarAuth;
+      const { error } = await auth.client.from('user_workspace').delete().eq('user_id', auth.user.id);
+      if (error) throw error;
+      return true;
     }
   };
 
