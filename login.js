@@ -16,6 +16,7 @@
       loading.textContent = auth.error || 'Registration setup is being completed. Please check back shortly.';
       return;
     }
+    document.querySelectorAll('[data-provider]').forEach((button) => { button.hidden = !auth.providers.includes(button.dataset.provider); });
     actions.hidden = false;
   });
   document.querySelectorAll('[data-provider]').forEach((button) => button.addEventListener('click', async () => {

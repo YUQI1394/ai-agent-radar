@@ -19,6 +19,7 @@ test('registration routes and public auth configuration remain deployable', () =
   assert.equal(typeof config.configured, 'boolean');
   assert.equal(typeof config.url, 'string');
   assert.equal(typeof config.publishableKey, 'string');
+  assert.deepEqual(config.providers, ['email']);
 });
 
 test('account-gated pages load authentication before feature scripts', () => {

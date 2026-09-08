@@ -1,5 +1,6 @@
 {
   "configured": true,
   "url": "https://zgpwbipseknvygaawdwg.supabase.co",
-  "publishableKey": "sb_publishable_HvabjuT40mnzs-CAWqvx3A_GM14KN28"
+  "publishableKey": "sb_publishable_HvabjuT40mnzs-CAWqvx3A_GM14KN28",
+  "providers": ["email"]
 }

@@ -8,7 +8,7 @@
     } catch { return '/'; }
   };
   const api = {
-    client: null, user: null, configured: false, error: '',
+    client: null, user: null, configured: false, providers: ['email'], error: '',
     next(value) { return normalizeNext(value); },
     storagePrefix(kind) { return `ai-agent-radar:${kind}:${this.user?.id || 'guest'}:`; },
     savedKey() { return `ai-agent-radar-saved:${this.user?.id || 'guest'}`; },
@@ -77,6 +77,7 @@
       if (!response.ok) throw new Error(`Auth configuration request failed (${response.status})`);
       const config = await response.json();
       api.configured = Boolean(config.configured);
+      api.providers = Array.isArray(config.providers) ? config.providers.map(String) : ['email'];
       if (!api.configured) return api;
       if (!window.supabase?.createClient) throw new Error('The secure sign-in library did not load.');
       api.client = window.supabase.createClient(config.url, config.publishableKey, {
