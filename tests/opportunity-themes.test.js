@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { THEMES, cleanIssueEvidence, coachingPlan, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, cleanIssueEvidence, coachingPlan, isUsefulDemandSignal, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
 
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
@@ -41,4 +41,21 @@ test('cleans duplicate and maintenance-only evidence across stored history', () 
     { title: 'Human approval workflow', labels: [] }
   ];
   assert.deepEqual(cleanIssueEvidence(issues).map((issue) => issue.title), ['[FEAT]: Add Slack connector', 'Human approval workflow']);
+});
+
+test('rejects internal work and vague support posts without hiding explicit demand', () => {
+  const useful = [
+    { title: 'Proposal: Add approval gates before destructive tool calls', labels: [] },
+    { title: '[FEATURE] Support webhook retries with backoff', labels: [] },
+    { title: 'How can we support private registries?', labels: ['feature request'] }
+  ];
+  const noise = [
+    { title: 'chore(context): slim always-on instructions', labels: [] },
+    { title: '[Personas] Replace synthetic soak gate with acceptance proof', labels: [] },
+    { title: '[Intake] Need a Cloudflare token for one-time operations', labels: [] },
+    { title: 'How can I solve this installation error?', labels: [] },
+    { title: 'no results whatsoever', labels: [] }
+  ];
+  useful.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), true, issue.title));
+  noise.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), false, issue.title));
 });
