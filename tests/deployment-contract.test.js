@@ -105,6 +105,17 @@ test('workspace sync protects newer offline edits from stale cloud copies', () =
   assert.doesNotMatch(workspace, /Promise\.allSettled\(records\(\)\.map/);
 });
 
+test('opportunity pages expose stable search and social metadata', () => {
+  const listing = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');
+  const detail = fs.readFileSync(path.join(root, 'api', 'opportunity.js'), 'utf8');
+  assert.match(listing, /'@type': 'ItemList'/);
+  assert.match(listing, /itemListElement: opportunities\.slice\(0, 25\)/);
+  assert.match(listing, /twitter:card/);
+  assert.match(detail, /'@type': 'BreadcrumbList'/);
+  assert.match(detail, /mainEntityOfPage: canonical/);
+  assert.match(detail, /twitter:card/);
+});
+
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);
