@@ -75,3 +75,9 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(app, /function renderRadarField/);
   assert.match(app, /node\.textContent = `\$\{agent\.name\} · \$\{agent\.radarScore\}`/);
 });
+
+test('GitHub discovery includes narrow creative and design workflow searches', () => {
+  const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
+  assert.match(ingestion, /"creative agent" in:name,description,readme/);
+  assert.match(ingestion, /"design workflow" agent in:name,description,readme/);
+});

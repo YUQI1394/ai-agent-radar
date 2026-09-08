@@ -18,6 +18,8 @@ const SEARCHES = () => [
   { query: `"security agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"financial agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"marketing agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"creative agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"design workflow" agent in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
   { query: `"research agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 }
 ];
 const ISSUE_TARGETS_PER_SCAN = 10;
