@@ -99,11 +99,14 @@ test('curated selection preserves professional-domain representation', () => {
     agent({ id: 101, category: 'Security', score: { total: 45 }, stars: 100 }),
     agent({ id: 102, category: 'Security', score: { total: 44 }, stars: 90 }),
     agent({ id: 103, category: 'Finance', score: { total: 43 }, stars: 80 }),
-    agent({ id: 104, category: 'Finance', score: { total: 42 }, stars: 70 })
+    agent({ id: 104, category: 'Finance', score: { total: 42 }, stars: 70 }),
+    agent({ id: 105, category: 'Design', score: { total: 41 }, stars: 60 }),
+    agent({ id: 106, category: 'Design', score: { total: 40 }, stars: 50 })
   ];
   const selected = selectCuratedAgents([...coding, ...specialist], 36, 2);
   assert.equal(selected.filter((item) => item.category === 'Security').length, 2);
   assert.equal(selected.filter((item) => item.category === 'Finance').length, 2);
+  assert.equal(selected.filter((item) => item.category === 'Design').length, 2);
   assert.equal(selected.length, 36);
   assert.deepEqual(selected.map((item) => item.score.total), selected.map((item) => item.score.total).sort((a, b) => b - a));
 });
