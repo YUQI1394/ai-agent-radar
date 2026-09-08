@@ -125,6 +125,9 @@ test('all professional fields have discoverable structured reports', () => {
   assert.match(category, /'@type': 'ItemList'/);
   assert.match(category, /'@type': 'BreadcrumbList'/);
   assert.match(category, /twitter:card/);
+  assert.match(category, /agents\.length \? 'index, follow' : 'noindex, follow'/);
+  const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
+  assert.match(sitemap, /agents\.some\(\(agent\) => category\(agent\) === CATEGORY_NAMES\[slug\]\)/);
 });
 
 test('GitHub discovery includes narrow creative and design workflow searches', () => {

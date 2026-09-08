@@ -1,8 +1,9 @@
 const { createClient } = require('@vercel/kv');
-const { weekKey } = require('../lib/radar');
+const { category, weekKey } = require('../lib/radar');
 const { cleanIssueEvidence } = require('../lib/opportunity-themes');
 
 const SITE_URL = 'https://getaiagentradar.com';
+const CATEGORY_NAMES = { research: 'Research', security: 'Security', finance: 'Finance', coding: 'Coding', marketing: 'Marketing', design: 'Design', productivity: 'Productivity', infrastructure: 'Agent Infrastructure' };
 const escapeXml = (value) => String(value).replace(/[<>&'\"]/g, (character) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[character]);
 
 module.exports = async function handler(req, res) {
@@ -42,7 +43,7 @@ module.exports = async function handler(req, res) {
 
   const urls = [
     ...staticUrls.map((page) => ({ loc: `${SITE_URL}${page.path}`, lastmod: page.lastmod || updatedAt })),
-    ...categoryUrls.map((slug) => ({ loc: `${SITE_URL}/category/${slug}`, lastmod: updatedAt })),
+    ...categoryUrls.filter((slug) => agents.some((agent) => category(agent) === CATEGORY_NAMES[slug])).map((slug) => ({ loc: `${SITE_URL}/category/${slug}`, lastmod: updatedAt })),
     ...reportDates.map((date) => ({ loc: `${SITE_URL}/weekly/${date}`, lastmod: date })),
     ...agents.map((agent) => ({ loc: `${SITE_URL}/agent/${encodeURIComponent(agent.slug || agent.id)}`, lastmod: agent.lastSeenAt || agent.pushedAt || agent.updatedAt || updatedAt })),
     ...agents.flatMap((agent) => cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => ({ loc: `${SITE_URL}/opportunity/${encodeURIComponent(issue.id)}`, lastmod: issue.updatedAt || updatedAt })))
