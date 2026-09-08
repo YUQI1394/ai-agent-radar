@@ -208,7 +208,7 @@ module.exports = async function handler(req, res) {
     const updatedAt = new Date().toISOString();
     const ingestion = { searchesSucceeded: batches.length, searchesFailed: searchFailures, issuesSucceeded: issueBatches.length, issuesFailed: issueFailures, degraded: searchFailures > 0 || issueFailures > 0 };
     const payload = { updatedAt, count: agents.length, source: 'github', ingestion, agents };
-    const archivedAgents = mergeArchive(Array.isArray(storedArchive?.agents) ? storedArchive.agents : [], agents, updatedAt);
+    const archivedAgents = mergeArchive(Array.isArray(storedArchive?.agents) ? storedArchive.agents : [], agents, updatedAt).filter(qualifiesAsAgent);
     const report = weeklyReport(agents, updatedAt);
     const storedReports = await kv.get('weekly:reports');
     const reports = storedReports && typeof storedReports === 'object' && !Array.isArray(storedReports) ? storedReports : {};

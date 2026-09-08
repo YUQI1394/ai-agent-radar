@@ -149,6 +149,17 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   assert.match(patterns, /#validation-start/);
 });
 
+test('the open-source archive excludes projects without a verifiable license', () => {
+  const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
+  const radar = fs.readFileSync(path.join(root, 'lib', 'radar.js'), 'utf8');
+  const methodology = fs.readFileSync(path.join(root, 'methodology.html'), 'utf8');
+  assert.match(radar, /UNVERIFIED_LICENSES/);
+  assert.match(radar, /'NOASSERTION'/);
+  assert.match(ingestion, /mergeArchive[\s\S]*\.filter\(qualifiesAsAgent\)/);
+  assert.match(methodology, /verifiable SPDX license/);
+  assert.match(methodology, /Public source code is not automatically open source/);
+});
+
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);

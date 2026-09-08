@@ -52,6 +52,8 @@ test('accepts actionable agents and rejects model-only or generator products', (
     name: 'Quant Platform', tagline: 'Machine-learning investment platform equipped with RD-Agent',
     description: 'Explore ideas and implement quantitative models.', topics: ['finance', 'research']
   })), false);
+  assert.equal(qualifiesAsAgent(agent({ license: 'NOASSERTION' })), false);
+  assert.equal(qualifiesAsAgent(agent({ license: 'Not declared' })), false);
 });
 
 test('scores stay bounded and reward fresh, evidenced projects', () => {
