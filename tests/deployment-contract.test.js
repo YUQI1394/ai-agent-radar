@@ -39,3 +39,9 @@ test('workspace migration enforces per-user row-level security', () => {
   assert.match(sql, /revoke all.*anon/i);
   assert.match(sql, /primary key \(user_id, record_type, record_key\)/i);
 });
+
+test('sitemap applies the same opportunity quality filter as public rankings', () => {
+  const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
+  assert.match(sitemap, /cleanIssueEvidence\(agent\.evidenceIssues/);
+  assert.match(sitemap, /agent\.lastSeenAt \|\| agent\.pushedAt \|\| agent\.updatedAt/);
+});
