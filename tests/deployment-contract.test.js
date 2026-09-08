@@ -76,6 +76,18 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(app, /node\.textContent = `\$\{agent\.name\} · \$\{agent\.radarScore\}`/);
 });
 
+test('opportunities lead directly into the free guided execution sprint', () => {
+  const listing = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');
+  const detail = fs.readFileSync(path.join(root, 'api', 'opportunity.js'), 'utf8');
+  const validation = fs.readFileSync(path.join(root, 'validation.js'), 'utf8');
+  assert.match(listing, /Start guided sprint/);
+  assert.match(detail, /Start free validation sprint/);
+  assert.match(detail, /href="#validation-start"/);
+  assert.match(validation, /gate\.id = 'validation-start'/);
+  assert.match(validation, /workspace\.id = 'validation-start'/);
+  assert.match(validation, /location\.pathname}#validation-start/);
+});
+
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);

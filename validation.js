@@ -19,7 +19,8 @@
   if (!auth.user) {
     const gate = document.createElement('section');
     gate.className = 'auth-gate';
-    gate.innerHTML = `<span class="eyebrow">FREE REGISTRATION</span><h2>Ready to validate this signal?</h2><p>Create a free account to mark steps complete, save notes and build your execution queue.</p><a class="button button-primary" href="/login?next=${encodeURIComponent(location.pathname)}">Create free account or sign in</a>`;
+    gate.id = 'validation-start';
+    gate.innerHTML = `<span class="eyebrow">FREE REGISTRATION</span><h2>Ready to validate this signal?</h2><p>Create a free account to mark steps complete, save private notes and carry this sprint into your execution queue.</p><a class="button button-primary" href="/login?next=${encodeURIComponent(`${location.pathname}#validation-start`)}">Create free account or sign in</a>`;
     grid.before(gate);
     return;
   }
@@ -37,8 +38,10 @@
 
   const workspace = document.createElement('section');
   workspace.className = 'validation-workspace';
+  workspace.id = 'validation-start';
   workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>${cloud.available ? 'Securely synced to your free account.' : 'Saved locally; cloud sync will retry when available.'}</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Decision<select id="validation-decision"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
   grid.before(workspace);
+  if (location.hash === '#validation-start') requestAnimationFrame(() => workspace.scrollIntoView({ block: 'start' }));
   const notes = workspace.querySelector('textarea');
   const progress = workspace.querySelector('.workspace-progress');
   const saved = workspace.querySelector('.workspace-saved');

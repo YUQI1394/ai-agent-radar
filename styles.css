@@ -326,6 +326,9 @@ button, input { font: inherit; }
 .opportunity-detail-hero h1 { max-width: 900px; margin: 10px 0; font-size: clamp(2rem, 5vw, 4rem); line-height: 1.08; letter-spacing: -.045em; }
 .opportunity-detail-hero > p { color: var(--muted); }
 .opportunity-detail-hero > p a { color: var(--cyan); }
+.opportunity-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 22px; }
+.opportunity-hero-actions > span { color: var(--muted); font-size: .78rem; }
+#validation-start { scroll-margin-top: 24px; }
 .evidence-source { display: flex; justify-content: space-between; align-items: center; gap: 26px; margin-bottom: 24px; padding: 25px; border: 1px solid rgba(249,115,22,.3); border-radius: 18px; background: rgba(249,115,22,.07); }
 .evidence-source h2 { margin: 7px 0; }
 .evidence-source p { max-width: 650px; margin: 0; color: var(--muted); }
