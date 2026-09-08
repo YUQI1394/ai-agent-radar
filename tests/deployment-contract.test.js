@@ -56,3 +56,11 @@ test('production security headers and third-party authentication integrity stay 
     assert.match(html, /supabase\.min\.js" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/);
   }
 });
+
+test('RSS publishes filtered projects and opportunity signals', () => {
+  const feed = fs.readFileSync(path.join(root, 'api', 'feed.js'), 'utf8');
+  assert.match(feed, /cleanIssueEvidence\(agent\.evidenceIssues/);
+  assert.match(feed, /\[Opportunity\]/);
+  assert.match(feed, /\.slice\(0, 50\)/);
+  assert.doesNotMatch(feed, /agent\.createdAt \|\| payload\.updatedAt/);
+});

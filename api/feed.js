@@ -1,4 +1,5 @@
 const { createClient } = require('@vercel/kv');
+const { cleanIssueEvidence } = require('../lib/opportunity-themes');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const escapeXml = (value = '') => String(value).replace(/[<>&'\"]/g, (character) => ({
@@ -22,24 +23,34 @@ module.exports = async function handler(req, res) {
     console.error('RSS feed lookup failed:', { name: error?.name, message: error?.message });
   }
 
-  const items = (Array.isArray(payload.agents) ? payload.agents : []).map((agent) => {
+  const agents = Array.isArray(payload.agents) ? payload.agents : [];
+  const agentEntries = agents.map((agent) => {
     const slug = encodeURIComponent(agent.slug || agent.id);
-    const link = `${SITE_URL}/agent/${slug}`;
-    return `<item>
-      <title>${escapeXml(agent.name)}</title>
-      <link>${escapeXml(link)}</link>
-      <guid isPermaLink="true">${escapeXml(link)}</guid>
-      <description>${escapeXml(agent.description || agent.tagline)}</description>
-      <pubDate>${new Date(agent.createdAt || payload.updatedAt || Date.now()).toUTCString()}</pubDate>
-    </item>`;
-  }).join('\n');
+    return { title: `[Agent] ${agent.name}`, link: `${SITE_URL}/agent/${slug}`, description: agent.description || agent.tagline, publishedAt: agent.firstSeenAt || agent.updatedAt || payload.updatedAt };
+  });
+  const opportunityEntries = agents.flatMap((agent) => cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => ({
+    title: `[Opportunity] ${issue.title}`,
+    link: `${SITE_URL}/opportunity/${encodeURIComponent(issue.id)}`,
+    description: `Demand evidence from ${agent.name}: ${Number(issue.comments || 0)} comments and ${Number(issue.reactions || 0)} positive reactions.`,
+    publishedAt: issue.firstSeenAt || issue.updatedAt || payload.updatedAt
+  })));
+  const items = [...agentEntries, ...opportunityEntries]
+    .sort((a, b) => Date.parse(b.publishedAt || 0) - Date.parse(a.publishedAt || 0))
+    .slice(0, 50)
+    .map((entry) => `<item>
+      <title>${escapeXml(entry.title)}</title>
+      <link>${escapeXml(entry.link)}</link>
+      <guid isPermaLink="true">${escapeXml(entry.link)}</guid>
+      <description>${escapeXml(entry.description)}</description>
+      <pubDate>${new Date(entry.publishedAt || payload.updatedAt || Date.now()).toUTCString()}</pubDate>
+    </item>`).join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>AI Agent Radar</title>
     <link>${SITE_URL}</link>
-    <description>Professionally filtered open-source AI agent projects from GitHub, refreshed every six hours.</description>
+    <description>Professionally filtered open-source AI agent projects and traceable demand opportunities from GitHub, refreshed every six hours.</description>
     <language>en</language>
     <lastBuildDate>${new Date(payload.updatedAt || Date.now()).toUTCString()}</lastBuildDate>
     <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
