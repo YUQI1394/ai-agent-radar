@@ -76,6 +76,8 @@ test('professional domains take priority over infrastructure form', () => {
   assert.equal(category(agent({ name: 'Quant Agent', topics: ['ai-agents', 'quantitative-finance', 'agent-framework'] })), 'Finance');
   assert.equal(category(agent({ name: 'Red Team Agent', topics: ['ai-agents', 'penetration-testing', 'mcp-server'] })), 'Security');
   assert.equal(category(agent({ name: 'Research Agent', topics: ['ai-agents', 'deep-research', 'rag'] })), 'Research');
+  assert.equal(category(agent({ name: 'Model Studio CLI', tagline: 'CLI built for AI Agent frameworks with structured tool calls', topics: ['ai-agents', 'multimodal', 'video'] })), 'Agent Infrastructure');
+  assert.equal(category(agent({ name: 'AdCraft', tagline: 'Agentic video production workflow from idea to final campaign', topics: ['creative-agent', 'video-production'] })), 'Design');
 });
 
 test('enrichment preserves first-seen time and computes deltas', () => {
