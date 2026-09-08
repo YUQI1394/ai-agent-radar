@@ -116,6 +116,17 @@ test('opportunity pages expose stable search and social metadata', () => {
   assert.match(detail, /twitter:card/);
 });
 
+test('all professional fields have discoverable structured reports', () => {
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const category = fs.readFileSync(path.join(root, 'api', 'category.js'), 'utf8');
+  for (const slug of ['research', 'security', 'finance', 'coding', 'marketing', 'design', 'productivity', 'infrastructure']) {
+    assert.match(home, new RegExp(`/category/${slug}`));
+  }
+  assert.match(category, /'@type': 'ItemList'/);
+  assert.match(category, /'@type': 'BreadcrumbList'/);
+  assert.match(category, /twitter:card/);
+});
+
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);
