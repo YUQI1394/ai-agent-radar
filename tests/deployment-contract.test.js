@@ -136,6 +136,7 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(health, /issueCoverage: issueCoverageRatio >= 0\.5/);
   assert.match(health, /demandEvidence: evidenceSignals >= 5/);
   assert.match(workflow, /Verify production data health/);
+  assert.match(workflow, /for attempt in \{1\.\.12\}/);
   assert.match(workflow, /\.checks\.issueCoverage/);
   assert.match(workflow, /\.checks\.demandEvidence/);
 });

@@ -35,6 +35,14 @@ jobs:
       - name: Verify production data health
         shell: bash
         run: |
-          curl --fail --show-error --silent --retry 3 --retry-all-errors \
-            https://getaiagentradar.com/health \
-            | jq -e '.status == "healthy" and .checks.feedFresh and .checks.issueCoverage and .checks.demandEvidence and .checks.refreshComplete'
+          for attempt in {1..12}; do
+            health="$(curl --fail --show-error --silent --retry 3 --retry-all-errors https://getaiagentradar.com/health)" || true
+            if jq -e '.status == "healthy" and .checks.feedFresh and .checks.issueCoverage and .checks.demandEvidence and .checks.refreshComplete' <<<"${health}" >/dev/null; then
+              echo "Production data health verified on attempt ${attempt}."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Production data health did not become ready."
+          jq . <<<"${health}" || true
+          exit 1
