@@ -5,6 +5,7 @@ const { THEMES, cleanIssueEvidence, coachingPlan, issueFingerprint, opportunityT
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
   assert.equal(opportunityTheme({ title: 'Retry after provider timeout', labels: ['bug'] }).slug, 'reliability');
+  assert.equal(opportunityTheme({ title: 'Tracking: 429 / Capacity Issues', labels: [] }).slug, 'reliability');
   assert.equal(opportunityTheme({ title: 'Document local setup', labels: [] }).slug, 'developer-experience');
   assert.equal(opportunityTheme({ title: 'Persistent vector memory', labels: [] }).slug, 'memory-data');
   assert.equal(opportunityTheme({ title: 'Human approval workflow', labels: [] }).slug, 'agent-control');
