@@ -24,13 +24,20 @@
     return;
   }
   const storageKey = `${auth.storagePrefix('validation')}${opportunityId}`;
+  const cloud = await window.RadarCloud.ready;
   const steps = [...grid.querySelectorAll('article')];
   let state = { completed: [], notes: '' };
   try { state = { ...state, ...JSON.parse(localStorage.getItem(storageKey) || '{}') }; } catch (_) {}
+  if (cloud.available) {
+    try {
+      const remote = await cloud.get('validation', opportunityId);
+      if (remote && String(remote.updatedAt || '') >= String(state.updatedAt || '')) state = { ...state, ...remote };
+    } catch (_) { /* Keep the local offline copy. */ }
+  }
 
   const workspace = document.createElement('section');
   workspace.className = 'validation-workspace';
-  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>Free account required. Saved on this device.</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Decision<select id="validation-decision"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
+  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>${cloud.available ? 'Securely synced to your free account.' : 'Saved locally; cloud sync will retry when available.'}</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Decision<select id="validation-decision"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
   grid.before(workspace);
   const notes = workspace.querySelector('textarea');
   const progress = workspace.querySelector('.workspace-progress');
@@ -45,7 +52,8 @@
   state.title = document.querySelector('.opportunity-detail-hero h1')?.textContent.trim() || 'Opportunity validation';
   state.project = document.querySelector('.opportunity-detail-hero p a')?.textContent.trim() || '';
   state.updatedAt = new Date().toISOString();
-  function persist(message = 'Saved locally') {
+  let cloudTimer;
+  function persist(message = cloud.available ? 'Saved · syncing…' : 'Saved locally') {
     state.notes = notes.value;
     state.nextAction = nextAction.value.trim();
     state.dueDate = dueDate.value;
@@ -55,6 +63,14 @@
       localStorage.setItem(storageKey, JSON.stringify(state));
       saved.textContent = message;
       setTimeout(() => { saved.textContent = ''; }, 1600);
+      if (cloud.available) {
+        clearTimeout(cloudTimer);
+        cloudTimer = setTimeout(async () => {
+          try { await cloud.set('validation', opportunityId, state); saved.textContent = 'Synced'; }
+          catch (_) { saved.textContent = 'Saved locally · sync pending'; }
+          setTimeout(() => { saved.textContent = ''; }, 1600);
+        }, 450);
+      }
     } catch (_) { saved.textContent = 'Browser storage unavailable'; }
   }
   function updateProgress() {

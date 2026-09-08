@@ -26,5 +26,16 @@ test('account-gated pages load authentication before feature scripts', () => {
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const workspace = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
   assert.ok(home.indexOf('/auth.js') < home.indexOf('/app.js'));
+  assert.ok(home.indexOf('/auth.js') < home.indexOf('/cloud-storage.js'));
+  assert.ok(home.indexOf('/cloud-storage.js') < home.indexOf('/app.js'));
   assert.ok(workspace.indexOf('/auth.js') < workspace.indexOf('/workspace.js'));
+  assert.ok(workspace.indexOf('/cloud-storage.js') < workspace.indexOf('/workspace.js'));
+});
+
+test('workspace migration enforces per-user row-level security', () => {
+  const sql = fs.readFileSync(path.join(root, 'supabase', 'workspace.sql'), 'utf8');
+  assert.match(sql, /enable row level security/i);
+  assert.match(sql, /auth\.uid\(\).*user_id/i);
+  assert.match(sql, /revoke all.*anon/i);
+  assert.match(sql, /primary key \(user_id, record_type, record_key\)/i);
 });

@@ -1,6 +1,6 @@
 # Supabase authentication launch checklist
 
-AI Agent Radar uses Supabase only for free user authentication. Browser workspace content remains local for now.
+AI Agent Radar uses Supabase for free user authentication and private workspace synchronization.
 
 1. Create a Supabase project in the region closest to the primary audience.
 2. In **Authentication → URL Configuration**, set Site URL to `https://getaiagentradar.com`.
@@ -9,6 +9,8 @@ AI Agent Radar uses Supabase only for free user authentication. Browser workspac
 5. For Google and GitHub, enable each provider and use the Supabase callback URL shown on that provider's settings page.
 6. Copy the project URL and the `sb_publishable_...` key into `auth-config.json`; set `configured` to `true`.
 7. Never put the `service_role` key, OAuth provider secret or database password in the repository.
-8. Deploy, then test Google, GitHub and email sign-in in a private browser window. Confirm `/workspace` redirects logged-out users and opens for logged-in users.
+8. Open **SQL Editor → New query**, paste `supabase/workspace.sql`, and run it once. This creates the private workspace table and Row Level Security policies.
+9. Deploy, then test email sign-in in a private browser window. Confirm `/workspace` redirects logged-out users, opens for logged-in users, and shows `Cloud synced`.
+10. Enable Google or GitHub only after configuring the matching OAuth application, then add the provider name to `auth-config.json`.
 
-The publishable key is designed to be present in browser code. Authorization for any future cloud data must still be enforced with Supabase Row Level Security.
+The publishable key is designed to be present in browser code. Never disable Row Level Security on `user_workspace`.

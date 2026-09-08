@@ -8,6 +8,7 @@
     return;
   }
   const prefix = auth.storagePrefix('validation');
+  const cloud = await window.RadarCloud.ready;
   const list = document.querySelector('#workspace-list');
   const empty = document.querySelector('#workspace-empty');
   const exportButton = document.querySelector('#workspace-export');
@@ -30,6 +31,20 @@
     }
     return items.sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
   }
+  async function syncFromCloud() {
+    if (!cloud.available) return;
+    try {
+      const remote = await cloud.list('validation');
+      remote.forEach((item) => {
+        const key = `${prefix}${item.id}`;
+        let local = null;
+        try { local = JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) {}
+        if (!local || String(item.updatedAt || item.cloudUpdatedAt || '') >= String(local.updatedAt || '')) localStorage.setItem(key, JSON.stringify(item));
+        else cloud.set('validation', item.id, local).catch(() => {});
+      });
+      await Promise.allSettled(records().map((item) => cloud.set('validation', item.id, item)));
+    } catch (_) { /* Render the offline copy. */ }
+  }
   function render() {
     const items = records();
     const today = new Date().toISOString().slice(0, 10);
@@ -38,7 +53,7 @@
     document.querySelector('#workspace-count').textContent = items.length;
     document.querySelector('#workspace-steps').textContent = items.reduce((sum, item) => sum + (item.completed || []).length, 0);
     document.querySelector('#workspace-complete').textContent = items.filter((item) => item.decision).length;
-    document.querySelector('#workspace-due').textContent = scheduled.length ? `${scheduled.length} scheduled · ${overdue} overdue` : 'No scheduled actions';
+    document.querySelector('#workspace-due').textContent = `${cloud.available ? 'Cloud synced' : 'Offline copy'} · ${scheduled.length ? `${scheduled.length} scheduled · ${overdue} overdue` : 'No scheduled actions'}`;
     empty.hidden = items.length > 0;
     list.innerHTML = items.map((item) => {
       const count = (item.completed || []).length;
@@ -47,9 +62,12 @@
       const action = String(item.nextAction || '').trim();
       return `<article class="workspace-card"><div class="workspace-card-top"><span>${escapeHtml(item.project || 'Opportunity validation')}</span><strong>${count}/4 steps · ${escapeHtml(decision)}</strong></div><h2><a href="/opportunity/${encodeURIComponent(item.id)}">${escapeHtml(item.title)}</a></h2><div class="workspace-bar"><span style="width:${Math.min(100, count / 4 * 100)}%"></span></div>${action ? `<p class="workspace-next"><strong>Next:</strong> ${escapeHtml(action)}${item.dueDate ? ` · ${escapeHtml(item.dueDate)}` : ''}</p>` : ''}<p>${note ? escapeHtml(note.slice(0, 180)) : 'No research notes yet.'}${note.length > 180 ? '…' : ''}</p><div class="workspace-card-actions"><a href="/opportunity/${encodeURIComponent(item.id)}">Continue validation →</a><button type="button" data-remove="${escapeHtml(item.key)}">Remove</button></div></article>`;
     }).join('');
-    list.querySelectorAll('[data-remove]').forEach((button) => button.addEventListener('click', () => {
+    list.querySelectorAll('[data-remove]').forEach((button) => button.addEventListener('click', async () => {
       if (!window.confirm('Remove this validation from this browser? Export a backup first if you may need it later.')) return;
       localStorage.removeItem(button.dataset.remove);
+      if (cloud.available) {
+        try { await cloud.remove('validation', button.dataset.remove.slice(prefix.length)); } catch (_) {}
+      }
       render();
     }));
   }
@@ -71,6 +89,7 @@
       const payload = JSON.parse(await file.text());
       if (payload?.version !== 1 || !Array.isArray(payload.validations) || payload.validations.length > 100) throw new Error('Unsupported backup format');
       let imported = 0;
+      const writes = [];
       payload.validations.forEach((item) => {
         const id = String(item?.id || '');
         if (!/^\d+$/.test(id) || typeof item.title !== 'string' || !item.title.trim()) return;
@@ -83,13 +102,16 @@
           decision: ['build', 'narrow', 'stop'].includes(item.decision) ? item.decision : '', updatedAt: new Date().toISOString()
         };
         localStorage.setItem(`${prefix}${id}`, JSON.stringify(record));
+        if (cloud.available) writes.push(cloud.set('validation', id, record));
         imported += 1;
       });
+      await Promise.allSettled(writes);
       render();
       message.textContent = `${imported} validation${imported === 1 ? '' : 's'} imported`;
     } catch (error) {
       message.textContent = `Import failed: ${error.message}`;
     } finally { importInput.value = ''; }
   });
+  await syncFromCloud();
   render();
 })();

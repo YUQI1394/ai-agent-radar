@@ -187,6 +187,9 @@
       const key = saveButton.dataset.saveId;
       state.saved.has(key) ? state.saved.delete(key) : state.saved.add(key);
       localStorage.setItem(savedStorageKey(), JSON.stringify([...state.saved]));
+      window.RadarCloud.ready.then((cloud) => {
+        if (cloud.available) cloud.set('saved', 'agents', { ids: [...state.saved] }).catch(() => {});
+      });
       render(); return;
     }
     const shareLink = event.target.closest('.share-link');
@@ -194,6 +197,17 @@
   });
   window.RadarAuth.ready.then((auth) => {
     if (auth.user) state.saved = readSavedAgents();
-    loadAgents();
+    window.RadarCloud.ready.then(async (cloud) => {
+      if (auth.user && cloud.available) {
+        try {
+          const remote = await cloud.get('saved', 'agents');
+          if (Array.isArray(remote?.ids)) {
+            state.saved = new Set(remote.ids.map(String));
+            localStorage.setItem(savedStorageKey(), JSON.stringify([...state.saved]));
+          } else if (state.saved.size) await cloud.set('saved', 'agents', { ids: [...state.saved] });
+        } catch (_) { /* Keep local saved agents available offline. */ }
+      }
+      loadAgents();
+    });
   });
 })();
