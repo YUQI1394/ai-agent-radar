@@ -19,15 +19,21 @@
     async set(kind, key, value) {
       if (!this.available) return false;
       const auth = window.RadarAuth;
-      const { error } = await auth.client.from('user_workspace').upsert({
-        user_id: auth.user.id, record_type: kind, record_key: String(key), data: value, updated_at: new Date().toISOString()
-      }, { onConflict: 'user_id,record_type,record_key' });
+      const storedValue = { ...value };
+      delete storedValue.cloudUpdatedAt;
+      delete storedValue.pendingSync;
+      const { data, error } = await auth.client.from('user_workspace').upsert({
+        user_id: auth.user.id, record_type: kind, record_key: String(key), data: storedValue, updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id,record_type,record_key' }).select('updated_at').single();
       if (error) throw error;
-      return true;
+      return data?.updated_at || new Date().toISOString();
     },
     async remove(kind, key) {
       if (!this.available) return false;
-      const { error } = await window.RadarAuth.client.from('user_workspace').delete().eq('record_type', kind).eq('record_key', String(key));
+      const auth = window.RadarAuth;
+      const { error } = await auth.client.from('user_workspace').upsert({
+        user_id: auth.user.id, record_type: kind, record_key: String(key), data: { deleted: true }, updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id,record_type,record_key' });
       if (error) throw error;
       return true;
     },

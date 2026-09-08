@@ -35,14 +35,31 @@
     if (!cloud.available) return;
     try {
       const remote = await cloud.list('validation');
+      const remoteIds = new Set(remote.map((item) => String(item.id)));
+      const writes = [];
       remote.forEach((item) => {
         const key = `${prefix}${item.id}`;
+        if (item.deleted) {
+          localStorage.removeItem(key);
+          return;
+        }
         let local = null;
         try { local = JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) {}
-        if (!local || String(item.updatedAt || item.cloudUpdatedAt || '') >= String(local.updatedAt || '')) localStorage.setItem(key, JSON.stringify(item));
-        else cloud.set('validation', item.id, local).catch(() => {});
+        if (local?.pendingSync) {
+          writes.push(cloud.set('validation', item.id, local).then((cloudUpdatedAt) => {
+            const current = JSON.parse(localStorage.getItem(key) || 'null');
+            if (current?.updatedAt === local.updatedAt) localStorage.setItem(key, JSON.stringify({ ...current, pendingSync: false, cloudUpdatedAt }));
+          }));
+        } else {
+          localStorage.setItem(key, JSON.stringify({ ...item, pendingSync: false }));
+        }
       });
-      await Promise.allSettled(records().map((item) => cloud.set('validation', item.id, item)));
+      records().filter((item) => !remoteIds.has(String(item.id))).forEach((item) => {
+        writes.push(cloud.set('validation', item.id, item).then((cloudUpdatedAt) => {
+          localStorage.setItem(item.key, JSON.stringify({ ...item, pendingSync: false, cloudUpdatedAt, key: undefined }));
+        }));
+      });
+      await Promise.allSettled(writes);
     } catch (_) { /* Render the offline copy. */ }
   }
   function render() {
@@ -99,7 +116,7 @@
           completed: Array.isArray(item.completed) ? [...new Set(item.completed.filter((step) => Number.isInteger(step) && step >= 0 && step < 4))] : [],
           notes: String(item.notes || '').slice(0, 50000), nextAction: String(item.nextAction || '').slice(0, 180),
           dueDate: /^\d{4}-\d{2}-\d{2}$/.test(String(item.dueDate || '')) ? item.dueDate : '',
-          decision: ['build', 'narrow', 'stop'].includes(item.decision) ? item.decision : '', updatedAt: new Date().toISOString()
+          decision: ['build', 'narrow', 'stop'].includes(item.decision) ? item.decision : '', updatedAt: new Date().toISOString(), pendingSync: true
         };
         localStorage.setItem(`${prefix}${id}`, JSON.stringify(record));
         if (cloud.available) writes.push(cloud.set('validation', id, record));

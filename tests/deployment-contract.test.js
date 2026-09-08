@@ -91,6 +91,20 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(validation, /Added to execution queue/);
 });
 
+test('workspace sync protects newer offline edits from stale cloud copies', () => {
+  const cloud = fs.readFileSync(path.join(root, 'cloud-storage.js'), 'utf8');
+  const validation = fs.readFileSync(path.join(root, 'validation.js'), 'utf8');
+  const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
+  assert.match(cloud, /delete storedValue\.pendingSync/);
+  assert.match(cloud, /select\('updated_at'\)\.single\(\)/);
+  assert.match(validation, /state\.pendingSync = true/);
+  assert.match(validation, /state\.updatedAt === version/);
+  assert.match(workspace, /if \(local\?\.pendingSync\)/);
+  assert.match(workspace, /if \(item\.deleted\)/);
+  assert.match(cloud, /data: \{ deleted: true \}/);
+  assert.doesNotMatch(workspace, /Promise\.allSettled\(records\(\)\.map/);
+});
+
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);

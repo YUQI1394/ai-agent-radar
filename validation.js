@@ -32,7 +32,7 @@
   if (cloud.available) {
     try {
       const remote = await cloud.get('validation', opportunityId);
-      if (remote && String(remote.updatedAt || '') >= String(state.updatedAt || '')) state = { ...state, ...remote };
+      if (remote && !remote.deleted && !state.pendingSync && String(remote.cloudUpdatedAt || '') >= String(state.cloudUpdatedAt || '')) state = { ...state, ...remote, pendingSync: false };
     } catch (_) { /* Keep the local offline copy. */ }
   }
 
@@ -62,6 +62,7 @@
     state.dueDate = dueDate.value;
     state.decision = decision.value;
     state.updatedAt = new Date().toISOString();
+    state.pendingSync = true;
     try {
       localStorage.setItem(storageKey, JSON.stringify(state));
       saved.textContent = message;
@@ -69,7 +70,16 @@
       if (cloud.available) {
         clearTimeout(cloudTimer);
         cloudTimer = setTimeout(async () => {
-          try { await cloud.set('validation', opportunityId, state); saved.textContent = 'Synced'; }
+          const version = state.updatedAt;
+          try {
+            const cloudUpdatedAt = await cloud.set('validation', opportunityId, state);
+            if (state.updatedAt === version) {
+              state.pendingSync = false;
+              state.cloudUpdatedAt = cloudUpdatedAt;
+              localStorage.setItem(storageKey, JSON.stringify(state));
+            }
+            saved.textContent = 'Synced';
+          }
           catch (_) { saved.textContent = 'Saved locally · sync pending'; }
           setTimeout(() => { saved.textContent = ''; }, 1600);
         }, 450);
