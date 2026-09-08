@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { THEMES, cleanIssueEvidence, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, cleanIssueEvidence, coachingPlan, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
 
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
@@ -13,6 +13,15 @@ test('maps issue evidence into actionable demand themes', () => {
 
 test('theme slugs are stable and unique', () => {
   assert.equal(new Set(THEMES.map((theme) => theme.slug)).size, THEMES.length);
+});
+
+test('builds specialized coaching plans for opportunity themes', () => {
+  const reliability = coachingPlan({ title: 'Retry after timeout', labels: [] });
+  const integration = coachingPlan({ title: 'Add Slack connector', labels: [] });
+  assert.equal(reliability.questions.length, 5);
+  assert.match(reliability.experiment, /recovery|failure/i);
+  assert.match(integration.experiment, /connection/i);
+  assert.notEqual(reliability.hypothesis, integration.hypothesis);
 });
 
 test('issue fingerprints collapse cosmetic title duplicates', () => {
