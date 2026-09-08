@@ -1,1 +1,26 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Live data freshness and ingestion status for AI Agent Radar."><meta name="robots" content="index, follow"><link rel="canonical" href="https://getaiagentradar.com/status"><link rel="stylesheet" href="/styles.css"><link rel="icon" href="/favicon.svg"><title>System Status · AI Agent Radar</title></head><body><header class="site-header"><a class="brand" href="/">AI Agent Radar</a><nav class="site-nav"><a href="/">Home</a><a href="/opportunities">Opportunities</a><a href="/patterns">Patterns</a><a href="/methodology">Methodology</a></nav></header><main class="page-shell report-shell"><section class="report-hero"><span class="eyebrow">LIVE PRODUCTION DATA</span><h1>System <span>Status</span></h1><p>Current health of the public GitHub ingestion and opportunity evidence pipeline.</p></section><section id="status-panel" class="status-panel" aria-live="polite"><div class="status-heading"><span class="status-dot"></span><div><strong id="status-name">Checking…</strong><p id="status-time">Contacting the production health endpoint.</p></div></div><div class="status-grid"><div><strong id="status-projects">—</strong><span>Curated projects</span></div><div><strong id="status-freshness">—</strong><span>Data age</span></div><div><strong id="status-coverage">—</strong><span>Issue coverage</span></div><div><strong id="status-evidence">—</strong><span>Evidence signals</span></div></div></section><section class="method-card report-method"><h2>What healthy means</h2><p>Storage is reachable, the feed contains at least 20 curated projects, and production data was refreshed within the last 12 hours. This page does not test every outbound GitHub link or repository feature.</p><a class="methodology-link" href="/methodology">Read the full methodology →</a></section></main><footer class="site-footer"><p>AI Agent Radar · Independent open-source intelligence</p><nav class="footer-links"><a href="/methodology">Methodology</a><span>·</span><a href="/contact">Contact</a></nav></footer><script src="/status.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Live data freshness and ingestion status for AI Agent Radar.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://getaiagentradar.com/status">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="/favicon.svg">
+  <title>System Status · AI Agent Radar</title>
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="/">AI Agent Radar</a><nav class="site-nav"><a href="/">Home</a><a href="/opportunities">Opportunities</a><a href="/patterns">Patterns</a><a href="/methodology">Methodology</a></nav></header>
+  <main class="page-shell report-shell">
+    <section class="report-hero"><span class="eyebrow">LIVE PRODUCTION DATA</span><h1>System <span>Status</span></h1><p>Current health of the public GitHub ingestion and opportunity evidence pipeline.</p></section>
+    <section id="status-panel" class="status-panel" aria-live="polite">
+      <div class="status-heading"><span class="status-dot"></span><div><strong id="status-name">Checking…</strong><p id="status-time">Contacting the production health endpoint.</p></div></div>
+      <div class="status-grid"><div><strong id="status-projects">—</strong><span>Curated projects</span></div><div><strong id="status-freshness">—</strong><span>Data age</span></div><div><strong id="status-coverage">—</strong><span>Issue coverage</span></div><div><strong id="status-evidence">—</strong><span>Evidence signals</span></div></div>
+    </section>
+    <section class="method-card report-method"><h2>What healthy means</h2><p>Storage is reachable, the feed contains at least 20 curated projects, data is under 12 hours old, at least half of listed repositories have completed Issue scans, and the demand-evidence feed remains populated. This page does not test every outbound GitHub link or repository feature.</p><a class="methodology-link" href="/methodology">Read the full methodology →</a></section>
+  </main>
+  <footer class="site-footer"><p>AI Agent Radar · Independent open-source intelligence</p><nav class="footer-links"><a href="/methodology">Methodology</a><span>·</span><a href="/contact">Contact</a></nav></footer>
+  <script src="/status.js" defer></script>
+</body>
+</html>

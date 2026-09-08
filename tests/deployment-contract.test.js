@@ -130,6 +130,16 @@ test('all professional fields have discoverable structured reports', () => {
   assert.match(sitemap, /agents\.some\(\(agent\) => category\(agent\) === CATEGORY_NAMES\[slug\]\)/);
 });
 
+test('scheduled refreshes fail when production demand intelligence is unhealthy', () => {
+  const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
+  const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
+  assert.match(health, /issueCoverage: issueCoverageRatio >= 0\.5/);
+  assert.match(health, /demandEvidence: evidenceSignals >= 5/);
+  assert.match(workflow, /Verify production data health/);
+  assert.match(workflow, /\.checks\.issueCoverage/);
+  assert.match(workflow, /\.checks\.demandEvidence/);
+});
+
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);

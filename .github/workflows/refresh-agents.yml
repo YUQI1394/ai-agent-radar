@@ -32,3 +32,9 @@ jobs:
             -H "Authorization: Bearer ${oidc_token}" \
             -H "X-GitHub-Token: ${GITHUB_TOKEN}" \
             https://getaiagentradar.com/api/fetch-agents
+      - name: Verify production data health
+        shell: bash
+        run: |
+          curl --fail --show-error --silent --retry 3 --retry-all-errors \
+            https://getaiagentradar.com/health \
+            | jq -e '.status == "healthy" and .checks.feedFresh and .checks.issueCoverage and .checks.demandEvidence and .checks.refreshComplete'

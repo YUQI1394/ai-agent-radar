@@ -13,6 +13,7 @@ module.exports = async function handler(req, res) {
     const ageHours = Number.isFinite(updatedTime) ? Math.round((Date.now() - updatedTime) / 36000) / 100 : null;
     const scannedRepositories = agents.filter((agent) => agent.issueScannedAt).length;
     const evidenceSignals = agents.reduce((sum, agent) => sum + (Array.isArray(agent.evidenceIssues) ? agent.evidenceIssues.length : 0), 0);
+    const issueCoverageRatio = agents.length ? scannedRepositories / agents.length : 0;
     const domainCoverage = agents.reduce((counts, agent) => {
       const name = category(agent);
       counts[name] = (counts[name] || 0) + 1;
@@ -20,10 +21,10 @@ module.exports = async function handler(req, res) {
     }, {});
     const representedDomains = Object.values(domainCoverage).filter((count) => count > 0).length;
     const largestDomainShare = agents.length ? Math.max(...Object.values(domainCoverage)) / agents.length : 1;
-    const checks = { storage: true, feedPresent: agents.length > 0, feedFresh: ageHours !== null && ageHours <= 12, curatedDepth: agents.length >= 20, professionalBreadth: representedDomains >= 3 && largestDomainShare <= 0.85, refreshComplete: payload?.ingestion ? !payload.ingestion.degraded : true };
+    const checks = { storage: true, feedPresent: agents.length > 0, feedFresh: ageHours !== null && ageHours <= 12, curatedDepth: agents.length >= 20, issueCoverage: issueCoverageRatio >= 0.5, demandEvidence: evidenceSignals >= 5, professionalBreadth: representedDomains >= 3 && largestDomainShare <= 0.85, refreshComplete: payload?.ingestion ? !payload.ingestion.degraded : true };
     const healthy = Object.values(checks).every(Boolean);
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(healthy ? 200 : 503).json({ status: healthy ? 'healthy' : 'degraded', checkedAt, updatedAt: payload?.updatedAt || null, ageHours, projects: agents.length, issueCoverage: { scanned: scannedRepositories, total: agents.length }, evidenceSignals, ingestion: payload?.ingestion || null, professionalCoverage: { representedDomains, largestDomainShare: Math.round(largestDomainShare * 100), domains: domainCoverage }, checks });
+    return res.status(healthy ? 200 : 503).json({ status: healthy ? 'healthy' : 'degraded', checkedAt, updatedAt: payload?.updatedAt || null, ageHours, projects: agents.length, issueCoverage: { scanned: scannedRepositories, total: agents.length, percent: Math.round(issueCoverageRatio * 100) }, evidenceSignals, ingestion: payload?.ingestion || null, professionalCoverage: { representedDomains, largestDomainShare: Math.round(largestDomainShare * 100), domains: domainCoverage }, checks });
   } catch (error) {
     console.error('Health check failed:', { name: error?.name, message: error?.message });
     res.setHeader('Cache-Control', 'no-store');

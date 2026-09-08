@@ -12,7 +12,7 @@
     set('#status-time', `Checked ${new Date(health.checkedAt).toLocaleString()}`);
     set('#status-projects', health.projects ?? '—');
     set('#status-freshness', Number.isFinite(health.ageHours) ? `${health.ageHours}h` : 'Unknown');
-    set('#status-coverage', health.issueCoverage ? `${health.issueCoverage.scanned}/${health.issueCoverage.total}` : '—');
+    set('#status-coverage', health.issueCoverage ? `${health.issueCoverage.scanned}/${health.issueCoverage.total} (${health.issueCoverage.percent ?? '—'}%)` : '—');
     set('#status-evidence', health.evidenceSignals ?? '—');
     set('#status-domains', health.professionalCoverage?.representedDomains ?? '—');
     const ingestion = health.ingestion;
