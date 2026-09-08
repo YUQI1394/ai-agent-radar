@@ -23,6 +23,9 @@ test('issue fingerprints collapse cosmetic title duplicates', () => {
 test('cleans duplicate and maintenance-only evidence across stored history', () => {
   const issues = [
     { title: 'Canary: add a small documentation clarification', labels: [] },
+    { title: 'CI red on main', labels: ['ci-red-main'] },
+    { title: 'Comprehensive functionality review', labels: ['already-fixed'] },
+    { title: 'Routine dependency refresh', labels: ['automated'] },
     { title: '[FEAT]: Add Slack connector', labels: [] },
     { title: 'feat - add slack connector', labels: [] },
     { title: 'Human approval workflow', labels: [] }

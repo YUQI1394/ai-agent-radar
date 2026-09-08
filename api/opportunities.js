@@ -1,6 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { category, scoreBreakdown } = require('../lib/radar');
-const { opportunityTheme } = require('../lib/opportunity-themes');
+const { cleanIssueEvidence, opportunityTheme } = require('../lib/opportunity-themes');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
@@ -36,7 +36,7 @@ module.exports = async function handler(req, res) {
     [...(archive?.agents || []), ...(latest?.agents || [])].forEach((agent) => agentsById.set(String(agent.id || agent.slug || agent.name), agent));
     const seen = new Set();
     const opportunities = [];
-    agentsById.forEach((agent) => (agent.evidenceIssues || []).forEach((issue) => {
+    agentsById.forEach((agent) => cleanIssueEvidence(agent.evidenceIssues || []).forEach((issue) => {
       const key = String(issue.id || issue.url);
       if (!key || seen.has(key)) return;
       seen.add(key);
