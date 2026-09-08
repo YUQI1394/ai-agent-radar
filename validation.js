@@ -81,6 +81,7 @@
     progress.style.setProperty('--progress', `${state.completed.length / steps.length * 100}%`);
   }
   steps.forEach((card, index) => {
+    const stepAction = String(card.dataset.nextAction || card.querySelector('h2')?.textContent || '').trim().slice(0, 180);
     const control = document.createElement('label');
     control.className = 'coach-check';
     control.innerHTML = `<input type="checkbox" ${state.completed.includes(index) ? 'checked' : ''}><span>Mark this step complete</span>`;
@@ -91,6 +92,22 @@
       updateProgress();
       persist();
     });
+    const queueButton = document.createElement('button');
+    queueButton.className = 'coach-queue-action';
+    queueButton.type = 'button';
+    queueButton.textContent = 'Make this my next action →';
+    queueButton.addEventListener('click', () => {
+      nextAction.value = stepAction;
+      if (!dueDate.value) {
+        const target = new Date();
+        target.setDate(target.getDate() + 7);
+        dueDate.value = target.toISOString().slice(0, 10);
+      }
+      persist('Added to execution queue');
+      workspace.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      nextAction.focus({ preventScroll: true });
+    });
+    card.append(queueButton);
   });
   let notesTimer;
   notes.addEventListener('input', () => { clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });

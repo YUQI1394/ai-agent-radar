@@ -86,6 +86,9 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(validation, /gate\.id = 'validation-start'/);
   assert.match(validation, /workspace\.id = 'validation-start'/);
   assert.match(validation, /location\.pathname}#validation-start/);
+  assert.match(detail, /data-next-action=/);
+  assert.match(validation, /Make this my next action/);
+  assert.match(validation, /Added to execution queue/);
 });
 
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
