@@ -64,3 +64,14 @@ test('RSS publishes filtered projects and opportunity signals', () => {
   assert.match(feed, /\.slice\(0, 50\)/);
   assert.doesNotMatch(feed, /agent\.createdAt \|\| payload\.updatedAt/);
 });
+
+test('homepage presents the full discovery-to-action path with live project evidence', () => {
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  assert.match(home, /01 \/ DISCOVER/);
+  assert.match(home, /02 \/ UNDERSTAND/);
+  assert.match(home, /03 \/ EXECUTE/);
+  assert.match(home, /data-radar-node="0"/);
+  assert.match(app, /function renderRadarField/);
+  assert.match(app, /node\.textContent = `\$\{agent\.name\} · \$\{agent\.radarScore\}`/);
+});

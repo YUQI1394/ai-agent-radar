@@ -123,6 +123,17 @@
     elements.trendingWidget.hidden = leaders.length === 0;
   }
 
+  function renderRadarField() {
+    const nodes = [...document.querySelectorAll('[data-radar-node]')];
+    const signals = [...state.agents].sort((a, b) => b.radarScore - a.radarScore).slice(0, nodes.length);
+    nodes.forEach((node, index) => {
+      const agent = signals[index];
+      if (!agent) return;
+      node.textContent = `${agent.name} · ${agent.radarScore}`;
+      node.title = `${agent.name} · ${primaryCategory(agent)} · Radar ${agent.radarScore}`;
+    });
+  }
+
   function renderCountsAndSummary() {
     const counts = Object.fromEntries(CATEGORIES.map((category) => [category, state.agents.filter((agent) => categoryMatches(agent, category)).length]));
     elements.counts.forEach((element) => {
@@ -165,7 +176,7 @@
       if (!response.ok) throw new Error(`Request failed (${response.status})`);
       const data = await response.json();
       state.agents = (data.agents || []).map((agent) => ({ ...agent, radarScore: radarScore(agent) }));
-      showUpdatedAt(data.updatedAt); renderTrending(); render();
+      showUpdatedAt(data.updatedAt); renderRadarField(); renderTrending(); render();
     } catch (error) {
       elements.grid.setAttribute('aria-busy', 'false');
       elements.grid.innerHTML = `<div class="error-state"><h2>Could not load agents</h2><p>${escapeHtml(error.message)}. Please try again shortly.</p></div>`;
