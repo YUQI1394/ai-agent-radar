@@ -18,8 +18,26 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
+      - name: Wait for matching production deployment
+        if: github.event_name == 'push'
+        shell: bash
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          for attempt in {1..30}; do
+            health="$(curl --show-error --silent --retry 2 --retry-all-errors https://getaiagentradar.com/health)" || true
+            deployed="$(jq -r '.deploymentCommit // empty' <<<"${health}")"
+            if [[ "${deployed}" == "${EXPECTED_COMMIT}" ]]; then
+              echo "Matching production deployment verified on attempt ${attempt}."
+              exit 0
+            fi
+            echo "Waiting for production commit ${EXPECTED_COMMIT:0:7}; currently ${deployed:0:7}."
+            sleep 10
+          done
+          echo "Matching production deployment did not become ready."
+          exit 1
       - name: Refresh production feed
         shell: bash
         env:

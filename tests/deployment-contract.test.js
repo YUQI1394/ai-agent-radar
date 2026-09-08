@@ -141,6 +141,15 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(workflow, /\.checks\.demandEvidence/);
 });
 
+test('push refreshes wait for the matching production deployment', () => {
+  const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
+  const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
+  assert.match(health, /VERCEL_GIT_COMMIT_SHA/);
+  assert.match(workflow, /EXPECTED_COMMIT: \$\{\{ github\.sha \}\}/);
+  assert.match(workflow, /deploymentCommit/);
+  assert.ok(workflow.indexOf('Wait for matching production deployment') < workflow.indexOf('Refresh production feed'));
+});
+
 test('pattern intelligence uses qualified evidence and leads to an executable test', () => {
   const patterns = fs.readFileSync(path.join(root, 'api', 'patterns.js'), 'utf8');
   assert.match(patterns, /cleanIssueEvidence\(agent\.evidenceIssues/);
