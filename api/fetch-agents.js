@@ -2,6 +2,7 @@ const { kv } = require('@vercel/kv');
 const crypto = require('crypto');
 const { enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAgents, weeklyReport } = require('../lib/radar');
 const { githubHeaders, githubJson } = require('../lib/github-client');
+const { selectIssueTargets } = require('../lib/ingestion-selection');
 const { cleanIssueEvidence } = require('../lib/opportunity-themes');
 
 const GITHUB_API = 'https://api.github.com';
@@ -22,7 +23,6 @@ const SEARCHES = () => [
   { query: `"design workflow" agent in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
   { query: `"research agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 }
 ];
-const ISSUE_TARGETS_PER_SCAN = 10;
 const DEMAND_PATTERN = /feature|request|support|proposal|enhancement|workflow|integration|export|import|api|ux|documentation|docs|performance|slow|error|fail|bug|problem|missing|cannot|can't|unable|crash|session|memory|security/i;
 const CURATED_LIMIT = 36;
 const OIDC_ISSUER = 'https://token.actions.githubusercontent.com';
@@ -169,11 +169,11 @@ module.exports = async function handler(req, res) {
     const previous = await kv.get('agents:latest');
     const storedArchive = await kv.get('agents:archive');
     if (searchFailures) (previous?.agents || []).forEach((agent) => { if (!unique.has(agent.id)) unique.set(agent.id, agent); });
-    const previousByName = new Map((previous?.agents || []).map((agent) => [String(agent.name).toLowerCase(), agent]));
+    const currentAgents = Array.isArray(previous?.agents) ? previous.agents : [];
+    const archiveHistory = Array.isArray(storedArchive?.agents) ? storedArchive.agents : [];
+    const historyByName = new Map([...archiveHistory, ...currentAgents].map((agent) => [String(agent.name).toLowerCase(), agent]));
     const candidates = [...unique.values()].filter(qualifiesAsAgent);
-    const groups = Math.max(1, Math.ceil(candidates.length / ISSUE_TARGETS_PER_SCAN));
-    const groupIndex = Math.floor(Date.now() / (6 * 60 * 60 * 1000)) % groups;
-    const issueTargets = candidates.slice(groupIndex * ISSUE_TARGETS_PER_SCAN, (groupIndex + 1) * ISSUE_TARGETS_PER_SCAN);
+    const issueTargets = selectIssueTargets(candidates, currentAgents, archiveHistory);
     const issueResults = await Promise.allSettled(issueTargets.map(async (agent) => ({
       repository: agent.name,
       issues: await fetchRepositoryIssues(agent.name, apiToken)
@@ -184,7 +184,7 @@ module.exports = async function handler(req, res) {
     const evidenceByRepository = new Map();
     const issueScanTime = new Date().toISOString();
     issueBatches.forEach(({ repository, issues }) => {
-      const previousIssues = new Map((previousByName.get(repository.toLowerCase())?.evidenceIssues || []).map((issue) => [String(issue.id), issue]));
+      const previousIssues = new Map((historyByName.get(repository.toLowerCase())?.evidenceIssues || []).map((issue) => [String(issue.id), issue]));
       const evidence = cleanIssueEvidence(issues.map((issue) => issueEvidence(issue, repository)))
         .filter((issue) => {
           const searchable = `${issue.title} ${issue.labels.join(' ')}`;
@@ -199,8 +199,8 @@ module.exports = async function handler(req, res) {
       const wasScanned = evidenceByRepository.has(key);
       const evidence = cleanIssueEvidence(evidenceByRepository.has(key)
         ? evidenceByRepository.get(key)
-        : (previousByName.get(key)?.evidenceIssues || []));
-      const issueScannedAt = wasScanned ? issueScanTime : (previousByName.get(key)?.issueScannedAt || null);
+        : (historyByName.get(key)?.evidenceIssues || []));
+      const issueScannedAt = wasScanned ? issueScanTime : (historyByName.get(key)?.issueScannedAt || null);
       unique.set(id, { ...agent, painSignals: evidence.length, evidenceIssues: evidence, issueScannedAt });
     });
     const enrichedCandidates = [...unique.values()].filter(qualifiesAsAgent);
