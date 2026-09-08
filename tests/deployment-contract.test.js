@@ -83,6 +83,8 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   const validation = fs.readFileSync(path.join(root, 'validation.js'), 'utf8');
   assert.match(listing, /Start guided sprint/);
   assert.match(listing, /What the reporter described/);
+  assert.match(listing, /Search demand evidence/);
+  assert.match(listing, /queryTerms\.every/);
   assert.match(ingestion, /excerpt: issueExcerpt\(issue\.body\)/);
   assert.match(detail, /Start free validation sprint/);
   assert.match(detail, /Reporter context/);
