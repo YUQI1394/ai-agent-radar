@@ -235,6 +235,8 @@ test('push refreshes wait for the matching production deployment', () => {
   assert.match(ingestion, /x-expected-commit/);
   assert.match(workflow, /EXPECTED_COMMIT: \$\{\{ github\.sha \}\}/);
   assert.match(workflow, /X-Expected-Commit/);
+  assert.match(workflow, /\.ingestion\.deploymentCommit == \$commit/);
+  assert.match(workflow, /stale function; retrying/);
   assert.match(workflow, /checks\.refreshDeployment/);
   assert.match(workflow, /deploymentCommit/);
   assert.ok(workflow.indexOf('Wait for matching production deployment') < workflow.indexOf('Refresh production feed'));
