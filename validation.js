@@ -40,6 +40,8 @@
   workspace.className = 'validation-workspace';
   workspace.id = 'validation-start';
   workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>${cloud.available ? 'Securely synced to your free account.' : 'Saved locally; cloud sync will retry when available.'}</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Decision<select id="validation-decision"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
+  workspace.querySelector('.validation-plan').insertAdjacentHTML('beforeend', `<label for="validation-interviews">User interviews<input id="validation-interviews" type="number" min="0" max="20" inputmode="numeric" aria-describedby="validation-readiness"></label><label for="validation-commitments">Behavioral commitments<input id="validation-commitments" type="number" min="0" max="20" inputmode="numeric" aria-describedby="validation-readiness"></label>`);
+  workspace.querySelector('[for="validation-notes"]').insertAdjacentHTML('beforebegin', `<div class="readiness-guidance" id="validation-readiness" aria-live="polite"></div>`);
   grid.before(workspace);
   if (location.hash === '#validation-start') requestAnimationFrame(() => workspace.scrollIntoView({ block: 'start' }));
   const notes = workspace.querySelector('textarea');
@@ -48,10 +50,15 @@
   const nextAction = workspace.querySelector('#validation-next-action');
   const dueDate = workspace.querySelector('#validation-due');
   const decision = workspace.querySelector('#validation-decision');
+  const interviews = workspace.querySelector('#validation-interviews');
+  const commitments = workspace.querySelector('#validation-commitments');
+  const readiness = workspace.querySelector('#validation-readiness');
   notes.value = state.notes || '';
   nextAction.value = state.nextAction || '';
   dueDate.value = state.dueDate || '';
   decision.value = ['build', 'narrow', 'stop'].includes(state.decision) ? state.decision : '';
+  interviews.value = Math.min(20, Math.max(0, Number(state.interviews) || 0));
+  commitments.value = Math.min(20, Math.max(0, Number(state.commitments) || 0));
   state.title = document.querySelector('.opportunity-detail-hero h1')?.textContent.trim() || 'Opportunity validation';
   state.project = document.querySelector('.opportunity-detail-hero p a')?.textContent.trim() || '';
   state.updatedAt = new Date().toISOString();
@@ -61,6 +68,8 @@
     state.nextAction = nextAction.value.trim();
     state.dueDate = dueDate.value;
     state.decision = decision.value;
+    state.interviews = Math.min(20, Math.max(0, Number(interviews.value) || 0));
+    state.commitments = Math.min(20, Math.max(0, Number(commitments.value) || 0));
     state.updatedAt = new Date().toISOString();
     state.pendingSync = true;
     try {
@@ -89,6 +98,14 @@
   function updateProgress() {
     progress.textContent = `${state.completed.length} / ${steps.length}`;
     progress.style.setProperty('--progress', `${state.completed.length / steps.length * 100}%`);
+  }
+  function updateReadiness() {
+    const interviewCount = Math.min(20, Math.max(0, Number(interviews.value) || 0));
+    const commitmentCount = Math.min(20, Math.max(0, Number(commitments.value) || 0));
+    if (interviewCount < 5) readiness.innerHTML = `<strong>Next proof target:</strong> Interview ${5 - interviewCount} more potential user${5 - interviewCount === 1 ? '' : 's'} before deciding what to build.`;
+    else if (commitmentCount >= 3) readiness.innerHTML = '<strong>Build signal:</strong> You have repeated behavioral proof. Define the smallest paid or time-bound pilot.';
+    else if (commitmentCount > 0) readiness.innerHTML = '<strong>Narrow the test:</strong> Some users acted. Ask for two more concrete commitments before building.';
+    else readiness.innerHTML = '<strong>No behavioral proof yet:</strong> Ask users to join a pilot, share data, book time or pre-commit—then narrow or stop if nobody acts.';
   }
   steps.forEach((card, index) => {
     const stepAction = String(card.dataset.nextAction || card.querySelector('h2')?.textContent || '').trim().slice(0, 180);
@@ -124,6 +141,7 @@
   nextAction.addEventListener('input', () => { clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
   dueDate.addEventListener('change', () => persist());
   decision.addEventListener('change', () => persist('Decision saved'));
+  [interviews, commitments].forEach((input) => input.addEventListener('input', () => { updateReadiness(); persist('Evidence count saved'); }));
   workspace.querySelector('[data-copy-notes]').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(notes.value); saved.textContent = 'Notes copied'; }
     catch (_) { notes.select(); saved.textContent = 'Select and copy your notes'; }
@@ -135,5 +153,6 @@
     persist('Progress reset');
   });
   updateProgress();
+  updateReadiness();
   persist('');
 })();

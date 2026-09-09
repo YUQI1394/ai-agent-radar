@@ -107,6 +107,14 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(detail, /data-next-action=/);
   assert.match(validation, /Make this my next action/);
   assert.match(validation, /Added to execution queue/);
+  assert.match(validation, /User interviews/);
+  assert.match(validation, /Behavioral commitments/);
+  assert.match(validation, /Next proof target/);
+  assert.match(validation, /Build signal/);
+  assert.match(validation, /No behavioral proof yet/);
+  const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
+  assert.match(workspace, /interviews ·/);
+  assert.match(workspace, /commitments/);
 });
 
 test('workspace sync protects newer offline edits from stale cloud copies', () => {

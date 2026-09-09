@@ -77,7 +77,9 @@
       const note = String(item.notes || '').trim();
       const decision = item.decision ? item.decision.charAt(0).toUpperCase() + item.decision.slice(1) : 'Undecided';
       const action = String(item.nextAction || '').trim();
-      return `<article class="workspace-card"><div class="workspace-card-top"><span>${escapeHtml(item.project || 'Opportunity validation')}</span><strong>${count}/4 steps · ${escapeHtml(decision)}</strong></div><h2><a href="/opportunity/${encodeURIComponent(item.id)}">${escapeHtml(item.title)}</a></h2><div class="workspace-bar"><span style="width:${Math.min(100, count / 4 * 100)}%"></span></div>${action ? `<p class="workspace-next"><strong>Next:</strong> ${escapeHtml(action)}${item.dueDate ? ` · ${escapeHtml(item.dueDate)}` : ''}</p>` : ''}<p>${note ? escapeHtml(note.slice(0, 180)) : 'No research notes yet.'}${note.length > 180 ? '…' : ''}</p><div class="workspace-card-actions"><a href="/opportunity/${encodeURIComponent(item.id)}">Continue validation →</a><button type="button" data-remove="${escapeHtml(item.key)}">Remove</button></div></article>`;
+      const interviews = Math.min(20, Math.max(0, Number(item.interviews) || 0));
+      const commitments = Math.min(20, Math.max(0, Number(item.commitments) || 0));
+      return `<article class="workspace-card"><div class="workspace-card-top"><span>${escapeHtml(item.project || 'Opportunity validation')}</span><strong>${count}/4 steps · ${escapeHtml(decision)}</strong></div><h2><a href="/opportunity/${encodeURIComponent(item.id)}">${escapeHtml(item.title)}</a></h2><div class="workspace-bar"><span style="width:${Math.min(100, count / 4 * 100)}%"></span></div><p class="workspace-evidence"><strong>${interviews}</strong> interviews · <strong>${commitments}</strong> commitments</p>${action ? `<p class="workspace-next"><strong>Next:</strong> ${escapeHtml(action)}${item.dueDate ? ` · ${escapeHtml(item.dueDate)}` : ''}</p>` : ''}<p>${note ? escapeHtml(note.slice(0, 180)) : 'No research notes yet.'}${note.length > 180 ? '…' : ''}</p><div class="workspace-card-actions"><a href="/opportunity/${encodeURIComponent(item.id)}">Continue validation →</a><button type="button" data-remove="${escapeHtml(item.key)}">Remove</button></div></article>`;
     }).join('');
     list.querySelectorAll('[data-remove]').forEach((button) => button.addEventListener('click', async () => {
       if (!window.confirm('Remove this validation from this browser? Export a backup first if you may need it later.')) return;
@@ -116,6 +118,8 @@
           completed: Array.isArray(item.completed) ? [...new Set(item.completed.filter((step) => Number.isInteger(step) && step >= 0 && step < 4))] : [],
           notes: String(item.notes || '').slice(0, 50000), nextAction: String(item.nextAction || '').slice(0, 180),
           dueDate: /^\d{4}-\d{2}-\d{2}$/.test(String(item.dueDate || '')) ? item.dueDate : '',
+          interviews: Math.min(20, Math.max(0, Number(item.interviews) || 0)),
+          commitments: Math.min(20, Math.max(0, Number(item.commitments) || 0)),
           decision: ['build', 'narrow', 'stop'].includes(item.decision) ? item.decision : '', updatedAt: new Date().toISOString(), pendingSync: true
         };
         localStorage.setItem(`${prefix}${id}`, JSON.stringify(record));
