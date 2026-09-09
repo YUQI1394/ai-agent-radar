@@ -177,6 +177,9 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   if (!(await isAuthorized(req))) return res.status(401).json({ error: 'Unauthorized' });
+  const deploymentCommit = process.env.VERCEL_GIT_COMMIT_SHA || '';
+  const expectedCommit = String(req.headers['x-expected-commit'] || '');
+  if (expectedCommit && deploymentCommit !== expectedCommit) return res.status(409).json({ error: 'Deployment is still propagating', deploymentCommit });
 
   try {
     const apiToken = String(req.headers['x-github-token'] || '');
@@ -228,7 +231,7 @@ module.exports = async function handler(req, res) {
     const enrichedCandidates = [...unique.values()].filter(qualifiesAsAgent);
     const agents = selectCuratedAgents(enrichAgents(enrichedCandidates, Array.isArray(previous?.agents) ? previous.agents : [], Date.now()), CURATED_LIMIT);
     const updatedAt = new Date().toISOString();
-    const ingestion = { searchesSucceeded: batches.length, searchesFailed: searchFailures, issuesSucceeded: issueBatches.length, issuesFailed: issueFailures, degraded: searchFailures > 0 || issueFailures > 0 };
+    const ingestion = { deploymentCommit, searchesSucceeded: batches.length, searchesFailed: searchFailures, issuesSucceeded: issueBatches.length, issuesFailed: issueFailures, degraded: searchFailures > 0 || issueFailures > 0 };
     const payload = { updatedAt, count: agents.length, source: 'github', ingestion, agents };
     const archivedAgents = mergeArchive(Array.isArray(storedArchive?.agents) ? storedArchive.agents : [], agents, updatedAt).filter(qualifiesAsAgent);
     const report = weeklyReport(agents, updatedAt);

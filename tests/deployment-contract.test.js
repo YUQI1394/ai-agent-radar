@@ -229,8 +229,13 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
 test('push refreshes wait for the matching production deployment', () => {
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
+  const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(health, /VERCEL_GIT_COMMIT_SHA/);
+  assert.match(health, /refreshDeployment/);
+  assert.match(ingestion, /x-expected-commit/);
   assert.match(workflow, /EXPECTED_COMMIT: \$\{\{ github\.sha \}\}/);
+  assert.match(workflow, /X-Expected-Commit/);
+  assert.match(workflow, /checks\.refreshDeployment/);
   assert.match(workflow, /deploymentCommit/);
   assert.ok(workflow.indexOf('Wait for matching production deployment') < workflow.indexOf('Refresh production feed'));
 });
