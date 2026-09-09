@@ -74,7 +74,12 @@ async function main() {
   for (const [path, status] of headResults) assert.equal(status, 200, `HEAD ${path} returned ${status}`);
   console.log(`PASS sitemap HEAD coverage (${headResults.length} route families)`);
 
-  const response = await fetch(`${origin}/health`, { cache: 'no-store' });
+  let response;
+  for (let healthAttempt = 1; healthAttempt <= 12; healthAttempt += 1) {
+    response = await fetch(`${origin}/health`, { cache: 'no-store' });
+    if (response.status === 200 || healthAttempt === 12) break;
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  }
   const health = await response.json();
   assert.equal(response.status, 200, `/health returned ${response.status}`);
   assert.equal(health.status, 'healthy');

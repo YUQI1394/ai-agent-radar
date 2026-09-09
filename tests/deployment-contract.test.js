@@ -231,7 +231,7 @@ test('push refreshes wait for the matching production deployment', () => {
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(health, /VERCEL_GIT_COMMIT_SHA/);
-  assert.match(health, /refreshDeployment/);
+  assert.match(health, /refreshDeployment: payload\?\.ingestion\?\.deploymentCommit === deploymentCommit/);
   assert.match(ingestion, /x-expected-commit/);
   assert.match(workflow, /EXPECTED_COMMIT: \$\{\{ github\.sha \}\}/);
   assert.match(workflow, /X-Expected-Commit/);
@@ -256,6 +256,7 @@ test('production smoke monitoring covers the public conversion journey', () => {
   assert.match(smoke, /method: 'HEAD'/);
   assert.match(smoke, /auth\.configured/);
   assert.match(smoke, /content-security-policy/);
+  assert.match(smoke, /healthAttempt <= 12/);
   assert.match(smoke, /branded 404 recovery/);
   assert.match(smoke, /dynamic 404 recovery/);
 });
