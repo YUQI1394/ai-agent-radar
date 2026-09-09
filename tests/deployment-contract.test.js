@@ -249,6 +249,7 @@ test('production smoke monitoring covers the public conversion journey', () => {
   assert.match(smoke, /auth\.configured/);
   assert.match(smoke, /content-security-policy/);
   assert.match(smoke, /branded 404 recovery/);
+  assert.match(smoke, /dynamic 404 recovery/);
 });
 
 test('pattern intelligence uses qualified evidence and leads to an executable test', () => {

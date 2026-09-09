@@ -93,6 +93,14 @@ async function main() {
   assert.match(missingHtml, /Discover unmet needs/i, 'custom 404 lacks a demand-discovery path');
   assert.match(missingHtml, /Continue in workspace/i, 'custom 404 lacks an execution path');
   console.log('PASS branded 404 recovery');
+
+  const staleOpportunity = await fetch(`${origin}/opportunity/not-a-valid-id`, { redirect: 'manual' });
+  assert.equal(staleOpportunity.status, 404, `stale opportunity returned ${staleOpportunity.status}`);
+  assert.match(staleOpportunity.headers.get('x-robots-tag') || '', /noindex/i, 'stale opportunity is indexable');
+  const staleOpportunityHtml = await staleOpportunity.text();
+  assert.match(staleOpportunityHtml, /AI Agent Radar/i, 'dynamic 404 is not branded');
+  assert.match(staleOpportunityHtml, /Continue in workspace/i, 'dynamic 404 lacks an execution recovery path');
+  console.log('PASS dynamic 404 recovery');
 }
 
 main().catch((error) => {
