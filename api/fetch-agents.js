@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAgents, weeklyReport } = require('../lib/radar');
 const { githubHeaders, githubJson } = require('../lib/github-client');
 const { selectIssueTargets } = require('../lib/ingestion-selection');
-const { cleanIssueEvidence, issueExcerpt } = require('../lib/opportunity-themes');
+const { cleanIssueEvidence, evidenceEngagement, issueExcerpt } = require('../lib/opportunity-themes');
 
 const GITHUB_API = 'https://api.github.com';
 const recentCutoff = () => new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
@@ -207,7 +207,7 @@ module.exports = async function handler(req, res) {
           return DEMAND_PATTERN.test(searchable) && (issue.comments >= 2 || issue.reactions >= 2);
         })
         .map((issue) => ({ ...issue, firstSeenAt: previousIssues.get(String(issue.id))?.firstSeenAt || previous?.updatedAt || issueScanTime }))
-        .sort((a, b) => (b.comments + b.reactions) - (a.comments + a.reactions)).slice(0, 3);
+        .sort((a, b) => evidenceEngagement(b) - evidenceEngagement(a)).slice(0, 3);
       evidenceByRepository.set(repository.toLowerCase(), evidence);
     });
     unique.forEach((agent, id) => {

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { THEMES, cleanIssueEvidence, coachingPlan, isUsefulDemandSignal, issueExcerpt, issueFingerprint, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, cleanIssueEvidence, coachingPlan, evidenceEngagement, isUsefulDemandSignal, issueExcerpt, issueFingerprint, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
 
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
@@ -57,6 +57,15 @@ test('cleans duplicate and maintenance-only evidence across stored history', () 
     { title: 'Human approval workflow', labels: [] }
   ];
   assert.deepEqual(cleanIssueEvidence(issues).map((issue) => issue.title), ['[FEAT]: Add Slack connector', 'Human approval workflow']);
+});
+
+test('engagement uses diminishing returns and values independent positive reactions', () => {
+  const ordinary = evidenceEngagement({ comments: 10, reactions: 0 });
+  const repeated = evidenceEngagement({ comments: 1000, reactions: 0 });
+  const supported = evidenceEngagement({ comments: 10, reactions: 20 });
+  assert.ok(repeated - ordinary < 10, 'large comment counts should not dominate the ranking');
+  assert.ok(supported > repeated, 'independent positive reactions should outweigh comment volume alone');
+  assert.ok(repeated <= 24, 'comment-only engagement must stay capped');
 });
 
 test('rejects internal work and vague support posts without hiding explicit demand', () => {

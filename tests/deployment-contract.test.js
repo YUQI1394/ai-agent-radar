@@ -125,6 +125,7 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
   assert.match(workspace, /interviews ·/);
   assert.match(workspace, /commitments/);
+  assert.match(listing, /evidenceEngagement/);
 });
 
 test('workspace sync protects newer offline edits from stale cloud copies', () => {
@@ -233,6 +234,7 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   assert.match(patterns, /#validation-start/);
   assert.match(patterns, /opportunityPattern/);
   assert.match(patterns, /Specific problems/);
+  assert.match(patterns, /evidenceEngagement/);
   assert.match(patterns, /agent\.status === 'archived'/);
   const opportunities = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');
   assert.match(opportunities, /agent\.status === 'archived'/);
