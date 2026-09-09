@@ -78,6 +78,8 @@ test('weekly reports connect repository rankings to traceable demand evidence', 
   assert.match(weekly, /cleanIssueEvidence/);
   assert.match(weekly, /DEMAND INTELLIGENCE/);
   assert.match(weekly, /not proof of willingness to pay/);
+  assert.match(weekly, /evidenceEngagement/);
+  assert.doesNotMatch(weekly, /supported by ads/);
   assert.match(weekly, /\/opportunity\/\$\{encodeURIComponent\(issue\.id\)\}/);
 });
 

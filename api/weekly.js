@@ -2,6 +2,7 @@ const { createClient } = require("@vercel/kv");
 const { category, scoreBreakdown, weeklyReport } = require("../lib/radar");
 const {
   cleanIssueEvidence,
+  evidenceEngagement,
   opportunityTheme,
 } = require("../lib/opportunity-themes");
 
@@ -15,7 +16,7 @@ const escapeHtml = (value = "") =>
       ],
   );
 const footer =
-  '<footer class="site-footer"><p>AI Agent Radar · Independent AI agent discovery</p><p>This site is supported by ads. We do not sell user data.</p><nav class="footer-links"><a href="/about">About</a><span>·</span><a href="/contact">Contact</a><span>·</span><a href="/privacy-policy">Privacy Policy</a><span>·</span><a href="/terms-of-service">Terms of Service</a><span>·</span><a href="/feed.xml">RSS Feed</a></nav></footer>';
+  '<footer class="site-footer"><p>AI Agent Radar · Free, independent open-source intelligence</p><p>Rankings are never paid placements. We do not sell user data.</p><nav class="footer-links"><a href="/about">About</a><span>·</span><a href="/contact">Contact</a><span>·</span><a href="/privacy-policy">Privacy Policy</a><span>·</span><a href="/terms-of-service">Terms of Service</a><span>·</span><a href="/feed.xml">RSS Feed</a></nav></footer>';
 
 function card(agent, index) {
   const slug = encodeURIComponent(agent.slug || agent.id);
@@ -94,12 +95,7 @@ module.exports = async function handler(req, res) {
       )
       .join("");
     const evidenceMarkup = demandSignals
-      .sort(
-        (a, b) =>
-          Number(b.issue.comments || 0) + Number(b.issue.reactions || 0) -
-          Number(a.issue.comments || 0) -
-          Number(a.issue.reactions || 0),
-      )
+      .sort((a, b) => evidenceEngagement(b.issue) - evidenceEngagement(a.issue))
       .slice(0, 3)
       .map(
         ({ agent, issue }) =>
@@ -127,10 +123,6 @@ module.exports = async function handler(req, res) {
           .replace(
             "</nav></header>",
             '<a href="/login">Sign in</a></nav></header>',
-          )
-          .replace(
-            "<p>This site is supported by ads. We do not sell user data.</p>",
-            "",
           ),
       );
   } catch (error) {
