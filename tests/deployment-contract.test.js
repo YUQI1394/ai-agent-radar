@@ -183,6 +183,8 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   assert.match(patterns, /coachingPlan\(lead\.issue\)/);
   assert.match(patterns, /RECOMMENDED FIRST TEST/);
   assert.match(patterns, /#validation-start/);
+  assert.match(patterns, /opportunityPattern/);
+  assert.match(patterns, /Specific problems/);
 });
 
 test('the open-source archive excludes projects without a verifiable license', () => {

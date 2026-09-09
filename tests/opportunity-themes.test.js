@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { THEMES, cleanIssueEvidence, coachingPlan, isUsefulDemandSignal, issueExcerpt, issueFingerprint, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, cleanIssueEvidence, coachingPlan, isUsefulDemandSignal, issueExcerpt, issueFingerprint, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
 
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
@@ -14,6 +14,13 @@ test('maps issue evidence into actionable demand themes', () => {
 
 test('theme slugs are stable and unique', () => {
   assert.equal(new Set(THEMES.map((theme) => theme.slug)).size, THEMES.length);
+});
+
+test('separates broad themes into specific cross-repository problems', () => {
+  assert.equal(opportunityPattern({ title: 'Retry after workflow timeout' }).name, 'Failure recovery');
+  assert.equal(opportunityPattern({ title: 'Add Ollama provider support' }).name, 'Provider interoperability');
+  assert.equal(opportunityPattern({ title: 'Require human approval before tool execution' }).name, 'Human approval & safety');
+  assert.equal(opportunityPattern({ title: 'Improve vector retrieval quality' }).name, 'Retrieval & knowledge quality');
 });
 
 test('builds specialized coaching plans for opportunity themes', () => {
