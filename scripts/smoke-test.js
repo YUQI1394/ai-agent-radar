@@ -38,7 +38,8 @@ async function main() {
     fetch(`${origin}/sitemap.xml`), fetch(`${origin}/feed.xml`), fetch(`${origin}/auth-config.json`, { cache: 'no-store' })
   ]);
   assert.equal(sitemap.status, 200, '/sitemap.xml is unavailable');
-  assert.match(await sitemap.text(), /<urlset[\s>]/, 'sitemap XML is malformed');
+  const sitemapXml = await sitemap.text();
+  assert.match(sitemapXml, /<urlset[\s>]/, 'sitemap XML is malformed');
   assert.equal(feed.status, 200, '/feed.xml is unavailable');
   assert.match(await feed.text(), /<rss[\s>]/, 'RSS XML is malformed');
   assert.equal(authConfig.status, 200, '/auth-config.json is unavailable');
@@ -47,6 +48,21 @@ async function main() {
   assert.match(auth.publishableKey || '', /^sb_publishable_/, 'auth config does not expose a publishable key');
   assert.doesNotMatch(JSON.stringify(auth), /service_role|secret/i, 'auth config may expose privileged credentials');
   console.log('PASS discovery and registration endpoints');
+
+  const sitemapPaths = [...sitemapXml.matchAll(/<loc>https:\/\/[^/]+([^<]*)<\/loc>/g)]
+    .map((match) => match[1] || '/');
+  const headPaths = new Set(['/']);
+  for (const prefix of ['/agent/', '/opportunity/', '/category/', '/weekly', '/patterns', '/opportunities']) {
+    const match = sitemapPaths.find((path) => path === prefix || path.startsWith(prefix));
+    if (match) headPaths.add(match);
+  }
+  assert.ok(headPaths.size >= 7, 'sitemap is missing one or more public route families');
+  const headResults = await Promise.all([...headPaths].map(async (path) => {
+    const result = await fetch(`${origin}${path}`, { method: 'HEAD', redirect: 'follow' });
+    return [path, result.status];
+  }));
+  for (const [path, status] of headResults) assert.equal(status, 200, `HEAD ${path} returned ${status}`);
+  console.log(`PASS sitemap HEAD coverage (${headResults.length} route families)`);
 
   const response = await fetch(`${origin}/health`, { cache: 'no-store' });
   const health = await response.json();

@@ -20,7 +20,7 @@ AI Agent Radar is a free discovery site backed by Vercel Serverless Functions an
 - Indexable guided validation briefs for every qualified opportunity
 - Free Supabase authentication with Google, GitHub and email magic links
 - Account-gated, browser-saved validation progress and research notes
-- A local-only workspace for resuming multiple validation sprints (cloud sync is not yet enabled)
+- A private account workspace with offline-first progress and optional per-user Supabase cloud sync
 
 ## Authentication setup
 

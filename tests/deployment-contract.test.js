@@ -219,6 +219,8 @@ test('production smoke monitoring covers the public conversion journey', () => {
   assert.match(smoke, /opportunityHref/);
   assert.match(smoke, /Reporter context:/);
   assert.match(smoke, /sitemap\.xml/);
+  assert.match(smoke, /sitemap HEAD coverage/);
+  assert.match(smoke, /method: 'HEAD'/);
   assert.match(smoke, /auth\.configured/);
   assert.match(smoke, /content-security-policy/);
 });
