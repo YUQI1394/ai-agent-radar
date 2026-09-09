@@ -42,6 +42,7 @@ test('workspace migration enforces per-user row-level security', () => {
 test('sitemap applies the same opportunity quality filter as public rankings', () => {
   const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
   assert.match(sitemap, /cleanIssueEvidence\(agent\.evidenceIssues/);
+  assert.match(sitemap, /agent\.status !== 'archived'/);
   assert.match(sitemap, /agent\.lastSeenAt \|\| agent\.pushedAt \|\| agent\.updatedAt/);
 });
 
@@ -188,6 +189,10 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   assert.match(patterns, /#validation-start/);
   assert.match(patterns, /opportunityPattern/);
   assert.match(patterns, /Specific problems/);
+  assert.match(patterns, /agent\.status === 'archived'/);
+  const opportunities = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');
+  assert.match(opportunities, /agent\.status === 'archived'/);
+  assert.match(opportunities, /current curated feed/);
 });
 
 test('the open-source archive excludes projects without a verifiable license', () => {

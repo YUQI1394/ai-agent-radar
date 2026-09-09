@@ -20,7 +20,10 @@ module.exports = async function handler(req, res) {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
     const [latest, archive] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive')]);
     const agentsById = new Map();
-    [...(archive?.agents || []), ...(latest?.agents || [])].forEach((agent) => agentsById.set(String(agent.id || agent.slug || agent.name), agent));
+    [...(archive?.agents || []), ...(latest?.agents || [])].forEach((agent) => {
+      if (agent.status === 'archived') return;
+      agentsById.set(String(agent.id || agent.slug || agent.name), agent);
+    });
     const groups = new Map();
     const seen = new Set();
     agentsById.forEach((agent) => cleanIssueEvidence(agent.evidenceIssues || []).forEach((issue) => {
