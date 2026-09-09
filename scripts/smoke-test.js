@@ -85,6 +85,14 @@ async function main() {
   const workspaceHeaders = await fetch(`${origin}/workspace`, { method: 'HEAD' });
   assert.match(workspaceHeaders.headers.get('x-robots-tag') || pageBodies.get('/workspace') || '', /noindex/i);
   console.log('PASS security headers');
+
+  const missing = await fetch(`${origin}/this-page-should-not-exist-radar-check`, { redirect: 'manual' });
+  assert.equal(missing.status, 404, `unknown route returned ${missing.status}`);
+  const missingHtml = await missing.text();
+  assert.match(missingHtml, /SIGNAL LOST/i, 'custom 404 recovery page is missing');
+  assert.match(missingHtml, /Discover unmet needs/i, 'custom 404 lacks a demand-discovery path');
+  assert.match(missingHtml, /Continue in workspace/i, 'custom 404 lacks an execution path');
+  console.log('PASS branded 404 recovery');
 }
 
 main().catch((error) => {

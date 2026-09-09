@@ -22,6 +22,14 @@ test('registration routes and public auth configuration remain deployable', () =
   assert.deepEqual(config.providers, ['email']);
 });
 
+test('unknown routes recover into discovery and execution paths', () => {
+  const html = fs.readFileSync(path.join(root, '404.html'), 'utf8');
+  assert.match(html, /noindex, follow/);
+  assert.match(html, /SIGNAL LOST/);
+  assert.match(html, /href="\/opportunities"/);
+  assert.match(html, /href="\/workspace"/);
+});
+
 test('public feed starts independently while account-gated pages load authentication first', () => {
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const workspace = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
@@ -224,6 +232,7 @@ test('production smoke monitoring covers the public conversion journey', () => {
   assert.match(smoke, /method: 'HEAD'/);
   assert.match(smoke, /auth\.configured/);
   assert.match(smoke, /content-security-policy/);
+  assert.match(smoke, /branded 404 recovery/);
 });
 
 test('pattern intelligence uses qualified evidence and leads to an executable test', () => {
