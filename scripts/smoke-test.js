@@ -14,13 +14,39 @@ const pages = [
 ];
 
 async function main() {
+  const pageBodies = new Map();
   for (const [path, marker] of pages) {
     const response = await fetch(`${origin}${path}`, { redirect: 'follow' });
     assert.equal(response.status, 200, `${path} returned ${response.status}`);
     const html = await response.text();
+    pageBodies.set(path, html);
     assert.match(html, new RegExp(marker, 'i'), `${path} is missing ${marker}`);
     console.log(`PASS ${path}`);
   }
+
+  const opportunityHref = pageBodies.get('/opportunities')?.match(/href="(\/opportunity\/\d+)"/)?.[1];
+  assert.ok(opportunityHref, 'Opportunity Radar has no traceable detail link');
+  const detail = await fetch(`${origin}${opportunityHref}`);
+  assert.equal(detail.status, 200, `${opportunityHref} returned ${detail.status}`);
+  const detailHtml = await detail.text();
+  assert.match(detailHtml, /Reporter context:/i, 'opportunity detail lacks reporter evidence');
+  assert.match(detailHtml, /Start free validation sprint/i, 'opportunity detail lacks execution path');
+  assert.match(detailHtml, /Share this brief/i, 'opportunity detail lacks sharing');
+  console.log(`PASS ${opportunityHref} journey`);
+
+  const [sitemap, feed, authConfig] = await Promise.all([
+    fetch(`${origin}/sitemap.xml`), fetch(`${origin}/feed.xml`), fetch(`${origin}/auth-config.json`, { cache: 'no-store' })
+  ]);
+  assert.equal(sitemap.status, 200, '/sitemap.xml is unavailable');
+  assert.match(await sitemap.text(), /<urlset[\s>]/, 'sitemap XML is malformed');
+  assert.equal(feed.status, 200, '/feed.xml is unavailable');
+  assert.match(await feed.text(), /<rss[\s>]/, 'RSS XML is malformed');
+  assert.equal(authConfig.status, 200, '/auth-config.json is unavailable');
+  const auth = await authConfig.json();
+  assert.equal(auth.configured, true, 'free registration is not configured');
+  assert.match(auth.publishableKey || '', /^sb_publishable_/, 'auth config does not expose a publishable key');
+  assert.doesNotMatch(JSON.stringify(auth), /service_role|secret/i, 'auth config may expose privileged credentials');
+  console.log('PASS discovery and registration endpoints');
 
   const response = await fetch(`${origin}/health`, { cache: 'no-store' });
   const health = await response.json();
@@ -38,6 +64,9 @@ async function main() {
   const headers = await fetch(`${origin}/`, { method: 'HEAD' });
   assert.match(headers.headers.get('strict-transport-security') || '', /max-age=/i);
   assert.equal(headers.headers.get('x-frame-options'), 'DENY');
+  assert.match(headers.headers.get('content-security-policy') || '', /default-src 'self'/i);
+  const workspaceHeaders = await fetch(`${origin}/workspace`, { method: 'HEAD' });
+  assert.match(workspaceHeaders.headers.get('x-robots-tag') || pageBodies.get('/workspace') || '', /noindex/i);
   console.log('PASS security headers');
 }
 

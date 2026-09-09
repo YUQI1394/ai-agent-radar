@@ -187,6 +187,19 @@ test('push refreshes wait for the matching production deployment', () => {
   assert.ok(workflow.indexOf('Wait for matching production deployment') < workflow.indexOf('Refresh production feed'));
 });
 
+test('production smoke monitoring covers the public conversion journey', () => {
+  const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'production-smoke.yml'), 'utf8');
+  const smoke = fs.readFileSync(path.join(root, 'scripts', 'smoke-test.js'), 'utf8');
+  assert.match(workflow, /schedule:/);
+  assert.match(workflow, /Wait for matching production deployment/);
+  assert.match(workflow, /node scripts\/smoke-test\.js/);
+  assert.match(smoke, /opportunityHref/);
+  assert.match(smoke, /Reporter context:/);
+  assert.match(smoke, /sitemap\.xml/);
+  assert.match(smoke, /auth\.configured/);
+  assert.match(smoke, /content-security-policy/);
+});
+
 test('pattern intelligence uses qualified evidence and leads to an executable test', () => {
   const patterns = fs.readFileSync(path.join(root, 'api', 'patterns.js'), 'utf8');
   assert.match(patterns, /cleanIssueEvidence\(agent\.evidenceIssues/);
