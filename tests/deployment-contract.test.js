@@ -151,6 +151,11 @@ test('workspace sync protects newer offline edits from stale cloud copies', () =
   assert.match(workspace, /DO THIS NEXT/);
   assert.match(workspace, /orderedItems/);
   assert.match(workspace, /Continue this action/);
+  assert.match(workspace, /Choose one demand signal/);
+  assert.match(workspace, /Make one action concrete/);
+  assert.match(workspace, /Return with evidence/);
+  const workspaceHtml = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
+  assert.match(workspaceHtml, /secure account sync and an offline copy/);
 });
 
 test('opportunity pages expose stable search and social metadata', () => {

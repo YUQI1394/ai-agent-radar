@@ -1,10 +1,12 @@
 (async () => {
+  const emptyState = document.querySelector('#workspace-empty');
+  emptyState.innerHTML = `<span class="eyebrow">YOUR FIRST VALIDATION</span><h2>Start with one real problem—not an idea list</h2><p>Radar turns a public GitHub signal into a small validation sprint. Your first useful result can be one interview, one observed workaround, or one clear reason to stop.</p><ol class="workspace-onboarding"><li><strong>Choose one demand signal</strong><span>Open an Issue-backed opportunity that matches a field you understand.</span></li><li><strong>Make one action concrete</strong><span>Use “Make this my next action,” add a date, and keep the task small.</span></li><li><strong>Return with evidence</strong><span>Record interviews and commitments, then decide to build, narrow, or stop.</span></li></ol><a class="button button-primary" href="/opportunities">Choose my first opportunity →</a>`;
   const auth = await window.RadarAuth.ready;
   if (!auth.user) {
     document.querySelector('.workspace-summary').hidden = true;
     document.querySelector('.workspace-toolbar').hidden = true;
     document.querySelector('#workspace-empty').hidden = true;
-    document.querySelector('#workspace-list').innerHTML = `<section class="auth-gate"><span class="eyebrow">FREE REGISTRATION</span><h2>Sign in to use your workspace</h2><p>Create a free account to save validation progress on this device and keep different users' work separate.</p><a class="button button-primary" href="/login?next=%2Fworkspace">Create free account or sign in</a></section>`;
+    document.querySelector('#workspace-list').innerHTML = `<section class="auth-gate"><span class="eyebrow">FREE REGISTRATION</span><h2>Sign in to use your workspace</h2><p>Create a free account to save validation progress securely across signed-in devices, with an offline copy in this browser.</p><a class="button button-primary" href="/login?next=%2Fworkspace">Create free account or sign in</a></section>`;
     return;
   }
   const prefix = auth.storagePrefix('validation');
