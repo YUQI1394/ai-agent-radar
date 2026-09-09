@@ -61,6 +61,19 @@ test('recognizes professional agent teams described as AI staff or bot teams', (
   assert.equal(category(agent({ name: 'Campaign Crew', tagline: 'AI marketing staff with an 8-bot team for campaign automation', topics: ['marketing'] })), 'Marketing');
 });
 
+test('recognizes professional agents that use domain-specific action verbs', () => {
+  const social = agent({ name: 'Social Media Agent', tagline: 'An agent for sourcing, curating, and scheduling social media posts', topics: ['marketing'] });
+  const sales = agent({ name: 'Sales Agent', tagline: 'AI sales agent that analyzes accounts and automates outreach', topics: ['sales', 'marketing'] });
+  const video = agent({ name: 'Open Montage', tagline: 'Open-source agentic video production system with editing pipelines', topics: ['video-production'] });
+  assert.equal(qualifiesAsAgent(social), true);
+  assert.equal(category(social), 'Marketing');
+  assert.equal(qualifiesAsAgent(sales), true);
+  assert.equal(category(sales), 'Marketing');
+  assert.equal(qualifiesAsAgent(video), true);
+  assert.equal(category(video), 'Design');
+  assert.equal(qualifiesAsAgent(agent({ name: 'Social Media Agent Template', tagline: 'Agent that schedules social media posts', description: 'A simple single-purpose posting helper.', topics: ['marketing'] })), false);
+});
+
 test('scores stay bounded and reward fresh, evidenced projects', () => {
   const strong = scoreBreakdown(agent(), now);
   const stale = scoreBreakdown(agent({ pushedAt: '2023-01-01T00:00:00.000Z', evidenceIssues: [] }), now);
