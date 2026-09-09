@@ -190,6 +190,10 @@
   elements.grid.addEventListener('click', async (event) => {
     const saveButton = event.target.closest('[data-save-id]');
     if (saveButton) {
+      if (!window.RadarAuth) {
+        location.assign(`/login?next=${encodeURIComponent(location.pathname + location.search)}`);
+        return;
+      }
       const auth = await window.RadarAuth.ready;
       if (!auth.user) {
         location.assign(`/login?next=${encodeURIComponent(location.pathname + location.search)}`);
@@ -206,9 +210,10 @@
     const shareLink = event.target.closest('.share-link');
     if (shareLink) { event.preventDefault(); window.open(shareLink.href, 'share-on-x', 'popup,width=680,height=520,noopener,noreferrer'); }
   });
-  window.RadarAuth.ready.then((auth) => {
+  async function syncAccountState() {
+    const auth = await window.RadarAuth.ready;
     if (auth.user) state.saved = readSavedAgents();
-    window.RadarCloud.ready.then(async (cloud) => {
+    if (window.RadarCloud) window.RadarCloud.ready.then(async (cloud) => {
       if (auth.user && cloud.available) {
         try {
           const remote = await cloud.get('saved', 'agents');
@@ -218,7 +223,10 @@
           } else if (state.saved.size) await cloud.set('saved', 'agents', { ids: [...state.saved] });
         } catch (_) { /* Keep local saved agents available offline. */ }
       }
-      loadAgents();
+      render();
     });
-  });
+  }
+  loadAgents();
+  if (window.RadarAuth) syncAccountState();
+  else document.addEventListener('radar:auth-ready', syncAccountState, { once: true });
 })();

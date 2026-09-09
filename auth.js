@@ -94,7 +94,10 @@
         document.dispatchEvent(new CustomEvent('radar:auth', { detail: { event, user: api.user } }));
       });
     } catch (error) { api.error = error.message || 'Authentication is temporarily unavailable.'; }
-    finally { updateNavigation(); }
+    finally {
+      updateNavigation();
+      document.dispatchEvent(new CustomEvent('radar:auth-ready'));
+    }
     return api;
   })();
   window.RadarAuth = api;

@@ -22,12 +22,11 @@ test('registration routes and public auth configuration remain deployable', () =
   assert.deepEqual(config.providers, ['email']);
 });
 
-test('account-gated pages load authentication before feature scripts', () => {
+test('public feed starts independently while account-gated pages load authentication first', () => {
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const workspace = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
-  assert.ok(home.indexOf('/auth.js') < home.indexOf('/app.js'));
+  assert.ok(home.indexOf('/app.js') < home.indexOf('/auth.js'));
   assert.ok(home.indexOf('/auth.js') < home.indexOf('/cloud-storage.js'));
-  assert.ok(home.indexOf('/cloud-storage.js') < home.indexOf('/app.js'));
   assert.ok(workspace.indexOf('/auth.js') < workspace.indexOf('/workspace.js'));
   assert.ok(workspace.indexOf('/cloud-storage.js') < workspace.indexOf('/workspace.js'));
 });
@@ -82,6 +81,10 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(home, /data-radar-node="0"/);
   assert.match(app, /function renderRadarField/);
   assert.match(app, /node\.textContent = `\$\{agent\.name\} · \$\{agent\.radarScore\}`/);
+  assert.ok(home.indexOf('/app.js') < home.indexOf('@supabase/supabase-js'), 'public feed must start before the optional auth library');
+  assert.match(app, /loadAgents\(\);[\s\S]*radar:auth-ready/);
+  const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');
+  assert.match(auth, /radar:auth-ready/);
 });
 
 test('opportunities lead directly into the free guided execution sprint', () => {
