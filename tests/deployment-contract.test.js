@@ -194,6 +194,7 @@ test('production smoke monitoring covers the public conversion journey', () => {
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'production-smoke.yml'), 'utf8');
   const smoke = fs.readFileSync(path.join(root, 'scripts', 'smoke-test.js'), 'utf8');
   assert.match(workflow, /schedule:/);
+  assert.match(workflow, /actions\/checkout@v7/);
   assert.match(workflow, /Wait for matching production deployment/);
   assert.match(workflow, /node scripts\/smoke-test\.js/);
   assert.match(smoke, /opportunityHref/);
