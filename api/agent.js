@@ -1,5 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { scoreBreakdown } = require('../lib/radar');
+const { sendNotFound } = require('../lib/http-pages');
 
 const SITE_URL = 'https://getaiagentradar.com';
 
@@ -156,7 +157,7 @@ module.exports = async function handler(req, res) {
     const archiveAgents = archive?.agents || [];
     const agent = currentAgents.find((item) => String(item.slug) === requested || String(item.id) === requested)
       || archiveAgents.find((item) => String(item.slug) === requested || String(item.id) === requested);
-    if (!agent) return res.status(404).send('<!doctype html><title>Agent not found · AI Agent Radar</title><h1>Agent not found</h1><p><a href="/">Return to AI Agent Radar</a></p>');
+    if (!agent) return sendNotFound(res, { headline: 'Agent project not found.', message: 'The repository may have moved, been archived or fallen outside the current open-source quality rules.', primaryHref: '/', primaryLabel: 'Browse current projects' });
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
     return res.status(200).send(renderPage(agent, archiveAgents.length ? archiveAgents : currentAgents)

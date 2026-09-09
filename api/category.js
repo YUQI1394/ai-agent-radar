@@ -1,5 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { category, scoreBreakdown } = require('../lib/radar');
+const { sendNotFound } = require('../lib/http-pages');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const DOMAINS = {
@@ -24,7 +25,7 @@ module.exports = async function handler(req, res) {
   if (!['GET', 'HEAD'].includes(req.method)) return res.status(405).send('Method not allowed');
   const slug = String(req.query.slug || '').toLowerCase();
   const domain = DOMAINS[slug];
-  if (!domain) return res.status(404).send('Professional domain not found');
+  if (!domain) return sendNotFound(res, { headline: 'Professional field not found.', primaryHref: '/', primaryLabel: 'Browse all professional fields' });
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Agent storage is not configured');
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });

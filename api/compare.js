@@ -1,5 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { category, peers, scoreBreakdown } = require('../lib/radar');
+const { sendNotFound } = require('../lib/http-pages');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
@@ -15,7 +16,7 @@ module.exports = async function handler(req, res) {
     let first = agents.find((agent) => requested.includes(String(agent.slug || agent.id))) || agents[0];
     let second = agents.find((agent) => String(agent.slug || agent.id) === requested[1]);
     if (!second && first) second = peers(first, agents, 1)[0] || agents.find((agent) => agent !== first);
-    if (!first || !second) return res.status(404).send('Not enough agents to compare');
+    if (!first || !second) return sendNotFound(res, { headline: 'This comparison is no longer available.', message: 'One of these projects may have left the current curated feed. Choose two current projects from the Radar.', primaryHref: '/', primaryLabel: 'Choose current projects' });
     const a = first.score || scoreBreakdown(first);
     const b = second.score || scoreBreakdown(second);
     const winner = a.total === b.total ? 'The two products are tied on the current Radar signal.' : `${a.total > b.total ? first.name : second.name} has the stronger current discovery signal, driven by the score components shown below.`;

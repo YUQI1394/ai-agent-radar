@@ -1,6 +1,7 @@
 const { createClient } = require('@vercel/kv');
 const { category, scoreBreakdown } = require('../lib/radar');
 const { coachingPlan } = require('../lib/opportunity-themes');
+const { sendNotFound } = require('../lib/http-pages');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
@@ -22,7 +23,7 @@ function openDays(createdAt) {
 module.exports = async function handler(req, res) {
   if (!['GET', 'HEAD'].includes(req.method)) return res.status(405).send('Method not allowed');
   const id = String(req.query.id || '');
-  if (!/^\d+$/.test(id)) return res.status(404).send('Opportunity not found');
+  if (!/^\d+$/.test(id)) return sendNotFound(res, { headline: 'Opportunity signal not found.' });
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Opportunity storage is not configured');
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
@@ -30,7 +31,7 @@ module.exports = async function handler(req, res) {
     const agentsById = new Map();
     [...(archive?.agents || []), ...(latest?.agents || [])].forEach((agent) => agentsById.set(String(agent.id || agent.slug || agent.name), agent));
     const match = findOpportunity([...agentsById.values()], id);
-    if (!match) return res.status(404).send('Opportunity not found');
+    if (!match) return sendNotFound(res, { headline: 'This opportunity signal has gone quiet.', message: 'The source Issue may have closed or left the current curated feed. Explore current evidence before starting a new validation.' });
     const { agent, issue } = match;
     const projectSlug = encodeURIComponent(agent.slug || agent.id);
     const canonical = `${SITE_URL}/opportunity/${id}`;

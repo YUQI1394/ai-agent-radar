@@ -28,6 +28,15 @@ test('unknown routes recover into discovery and execution paths', () => {
   assert.match(html, /SIGNAL LOST/);
   assert.match(html, /href="\/opportunities"/);
   assert.match(html, /href="\/workspace"/);
+  const { sendNotFound } = require('../lib/http-pages');
+  const response = { headers: {}, setHeader(key, value) { this.headers[key] = value; }, status(code) { this.statusCode = code; return this; }, send(body) { this.body = body; return this; } };
+  sendNotFound(response, { headline: 'Missing test signal' });
+  assert.equal(response.statusCode, 404);
+  assert.match(response.headers['X-Robots-Tag'], /noindex/);
+  assert.match(response.body, /Missing test signal/);
+  for (const file of ['agent.js', 'category.js', 'compare.js', 'opportunity.js', 'weekly.js']) {
+    assert.match(fs.readFileSync(path.join(root, 'api', file), 'utf8'), /sendNotFound/);
+  }
 });
 
 test('public feed starts independently while account-gated pages load authentication first', () => {

@@ -1,5 +1,6 @@
 const { createClient } = require("@vercel/kv");
 const { category, scoreBreakdown, weeklyReport } = require("../lib/radar");
+const { sendNotFound } = require("../lib/http-pages");
 const {
   cleanIssueEvidence,
   evidenceEngagement,
@@ -69,9 +70,9 @@ module.exports = async function handler(req, res) {
       return res.status(308).send("Permanent Redirect");
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(requested))
-      return res.status(404).send("Weekly report not found");
+      return sendNotFound(res, { headline: "Weekly report not found.", primaryHref: "/weekly", primaryLabel: "Open the latest weekly report" });
     const report = reports[requested];
-    if (!report) return res.status(404).send("Weekly report not found");
+    if (!report) return sendNotFound(res, { headline: "This weekly report is not available.", primaryHref: "/weekly", primaryLabel: "Open the latest weekly report" });
     const ranked = report.agents || [];
     const demandSignals = ranked.flatMap((agent) =>
       cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => ({
