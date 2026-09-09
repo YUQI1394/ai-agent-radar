@@ -82,6 +82,10 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(home, /data-radar-node="0"/);
   assert.match(app, /function renderRadarField/);
   assert.match(app, /node\.textContent = `\$\{agent\.name\} · \$\{agent\.radarScore\}`/);
+  assert.match(app, /data-share-url/);
+  const share = fs.readFileSync(path.join(root, 'share.js'), 'utf8');
+  assert.match(share, /navigator\.share/);
+  assert.match(share, /navigator\.clipboard\.writeText/);
   assert.ok(home.indexOf('/app.js') < home.indexOf('@supabase/supabase-js'), 'public feed must start before the optional auth library');
   assert.match(app, /loadAgents\(\);[\s\S]*radar:auth-ready/);
   const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');
@@ -109,6 +113,8 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(validation, /workspace\.id = 'validation-start'/);
   assert.match(validation, /location\.pathname}#validation-start/);
   assert.match(detail, /data-next-action=/);
+  assert.match(detail, /Share this brief/);
+  assert.match(detail, /\/share\.js/);
   assert.match(validation, /Make this my next action/);
   assert.match(validation, /Added to execution queue/);
   assert.match(validation, /User interviews/);

@@ -91,7 +91,6 @@
     const key = agentKey(agent);
     const detailId = encodeURIComponent(key);
     const detailSlug = encodeURIComponent(agent.slug || agent.id || key);
-    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Just discovered ${agent.name || 'an AI Agent'} on AI Agent Radar 🚀 https://getaiagentradar.com`)}`;
     const signal = signalFor(agent);
     const score = agent.score || { total: agent.radarScore, adoption: 0, maintenance: 0, quality: 0, relevance: 0, demand: 0, momentum: 0 };
     const peer = state.agents.filter((item) => agentKey(item) !== key).sort((a, b) => {
@@ -109,7 +108,7 @@
       <p class="best-for">Best for: <strong>${escapeHtml(primaryCategory(agent))}</strong></p>
       <div class="repo-facts" aria-label="Repository evidence"><span class="quality-label">${escapeHtml(agent.qualityLabel || 'REVIEWED')}</span>${Number(agent.painSignals || 0) ? `<span class="demand-label">${Number(agent.painSignals)} demand signal${Number(agent.painSignals) === 1 ? '' : 's'}</span>` : ''}<span>${escapeHtml(agent.language || 'Unknown')}</span><span>${escapeHtml(agent.license || 'No license')}</span><span>⑂ ${Number(agent.forks || 0).toLocaleString()} forks</span><span>◯ ${Number(agent.openIssues || 0).toLocaleString()} issues</span></div>
       <div class="topics">${topics || '<span class="topic">AI Agent</span>'}</div>
-      <div class="card-actions"><a class="card-link details-link" href="/agent/${detailSlug}">Analysis</a><a class="card-link compare-link" href="${compareHref}">Compare</a><a class="card-link visit-link" href="${safeUrl(agent.githubUrl || agent.url)}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a class="card-link share-link" href="${shareUrl}" target="_blank" rel="noopener noreferrer" aria-label="Share ${escapeHtml(agent.name)} on X">Share on X</a></div>
+      <div class="card-actions"><a class="card-link details-link" href="/agent/${detailSlug}">Analysis</a><a class="card-link compare-link" href="${compareHref}">Compare</a><a class="card-link visit-link" href="${safeUrl(agent.githubUrl || agent.url)}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a class="card-link share-link" href="/agent/${detailSlug}" data-share-url="/agent/${detailSlug}" data-share-title="${escapeHtml(agent.name)} · AI Agent Radar" aria-label="Share ${escapeHtml(agent.name)}">Share</a></div>
     </article>`;
   }
 
@@ -207,8 +206,6 @@
       });
       render(); return;
     }
-    const shareLink = event.target.closest('.share-link');
-    if (shareLink) { event.preventDefault(); window.open(shareLink.href, 'share-on-x', 'popup,width=680,height=520,noopener,noreferrer'); }
   });
   async function syncAccountState() {
     const auth = await window.RadarAuth.ready;
