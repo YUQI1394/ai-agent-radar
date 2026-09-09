@@ -242,5 +242,7 @@ test('the open-source archive excludes projects without a verifiable license', (
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);
+  assert.match(ingestion, /"creative agents" in:name,description,readme/);
+  assert.match(ingestion, /"marketing agents" in:name,description,readme/);
   assert.match(ingestion, /"design workflow" agent in:name,description,readme/);
 });

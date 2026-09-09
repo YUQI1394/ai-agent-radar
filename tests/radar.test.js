@@ -56,6 +56,11 @@ test('accepts actionable agents and rejects model-only or generator products', (
   assert.equal(qualifiesAsAgent(agent({ license: 'Not declared' })), false);
 });
 
+test('recognizes professional agent teams described as AI staff or bot teams', () => {
+  assert.equal(qualifiesAsAgent(agent({ name: 'Campaign Crew', tagline: 'AI marketing staff with an 8-bot team that researches, plans, audits, and runs campaigns', topics: ['marketing', 'automation'] })), true);
+  assert.equal(category(agent({ name: 'Campaign Crew', tagline: 'AI marketing staff with an 8-bot team for campaign automation', topics: ['marketing'] })), 'Marketing');
+});
+
 test('scores stay bounded and reward fresh, evidenced projects', () => {
   const strong = scoreBreakdown(agent(), now);
   const stale = scoreBreakdown(agent({ pushedAt: '2023-01-01T00:00:00.000Z', evidenceIssues: [] }), now);
