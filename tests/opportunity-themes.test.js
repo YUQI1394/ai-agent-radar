@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { THEMES, cleanIssueEvidence, coachingPlan, evidenceEngagement, isUsefulDemandSignal, issueExcerpt, issueFingerprint, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, cleanIssueEvidence, coachingPlan, evidenceEngagement, evidenceFreshness, evidenceStrength, isUsefulDemandSignal, issueExcerpt, issueFingerprint, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
 
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
@@ -66,6 +66,15 @@ test('engagement uses diminishing returns and values independent positive reacti
   assert.ok(repeated - ordinary < 10, 'large comment counts should not dominate the ranking');
   assert.ok(supported > repeated, 'independent positive reactions should outweigh comment volume alone');
   assert.ok(repeated <= 24, 'comment-only engagement must stay capped');
+});
+
+test('recently active evidence outranks otherwise equal stale threads', () => {
+  const now = Date.parse('2026-09-09T00:00:00Z');
+  const active = { comments: 8, reactions: 3, updatedAt: '2026-09-01T00:00:00Z' };
+  const stale = { comments: 8, reactions: 3, updatedAt: '2024-01-01T00:00:00Z' };
+  assert.equal(evidenceFreshness(active, now), 10);
+  assert.equal(evidenceFreshness(stale, now), 0);
+  assert.ok(evidenceStrength(active, now) > evidenceStrength(stale, now));
 });
 
 test('rejects internal work and vague support posts without hiding explicit demand', () => {

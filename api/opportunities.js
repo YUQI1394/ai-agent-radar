@@ -1,6 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { category, scoreBreakdown } = require('../lib/radar');
-const { cleanIssueEvidence, evidenceEngagement, opportunityTheme } = require('../lib/opportunity-themes');
+const { cleanIssueEvidence, evidenceEngagement, evidenceFreshness, evidenceStrength, opportunityTheme } = require('../lib/opportunity-themes');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
@@ -12,9 +12,10 @@ function openDays(createdAt) {
 
 function evidenceScore(issue, agent) {
   const engagement = evidenceEngagement(issue);
-  const persistence = Math.min(22, Math.log2(openDays(issue.createdAt) + 1) * 3);
+  const persistence = Math.min(12, Math.log2(openDays(issue.createdAt) + 1) * 1.8);
+  const freshness = evidenceFreshness(issue);
   const project = Number(agent.score?.total || scoreBreakdown(agent).total) * 0.28;
-  return Math.min(100, Math.round(engagement + persistence + project));
+  return Math.min(100, Math.round(engagement + persistence + freshness + project));
 }
 
 function opportunityCard(item, index) {
@@ -48,7 +49,7 @@ module.exports = async function handler(req, res) {
       const isNew = Number.isFinite(firstSeen) && Date.now() - firstSeen <= 48 * 60 * 60 * 1000;
       opportunities.push({ issue, agent, theme: opportunityTheme(issue).name, score: evidenceScore(issue, agent), isNew });
     }));
-    opportunities.sort((a, b) => b.score - a.score || evidenceEngagement(b.issue) - evidenceEngagement(a.issue));
+    opportunities.sort((a, b) => b.score - a.score || evidenceStrength(b.issue) - evidenceStrength(a.issue));
     const themeCounts = opportunities.reduce((counts, item) => counts.set(item.theme, (counts.get(item.theme) || 0) + 1), new Map());
     const domainCounts = opportunities.reduce((counts, item) => {
       const domain = item.agent.category || category(item.agent);

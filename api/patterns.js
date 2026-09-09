@@ -1,5 +1,5 @@
 const { createClient } = require('@vercel/kv');
-const { cleanIssueEvidence, coachingPlan, evidenceEngagement, opportunityPattern } = require('../lib/opportunity-themes');
+const { cleanIssueEvidence, coachingPlan, evidenceEngagement, evidenceStrength, opportunityPattern } = require('../lib/opportunity-themes');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
@@ -41,7 +41,7 @@ module.exports = async function handler(req, res) {
     const patterns = [...groups.values()].filter((group) => group.issues.length).map((group) => {
       const engagement = group.issues.reduce((sum, item) => sum + evidenceEngagement(item.issue), 0);
       group.score = group.repositories.size * 24 + group.issues.length * 6 + Math.min(30, Math.round(engagement * 0.5));
-      group.issues.sort((a, b) => evidenceEngagement(b.issue) - evidenceEngagement(a.issue));
+      group.issues.sort((a, b) => evidenceStrength(b.issue) - evidenceStrength(a.issue));
       return group;
     }).sort((a, b) => b.score - a.score);
     const recurring = patterns.filter((pattern) => pattern.repositories.size >= 2).length;

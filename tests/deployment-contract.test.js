@@ -267,6 +267,7 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   assert.match(opportunities, /current curated feed/);
   const methodology = fs.readFileSync(path.join(root, 'methodology.html'), 'utf8');
   assert.match(methodology, /capped, logarithmic weighting/);
+  assert.match(methodology, /old, abandoned thread/);
   assert.match(methodology, /Independent repository repetition carries more weight/);
 });
 

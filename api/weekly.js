@@ -4,6 +4,7 @@ const { sendNotFound } = require("../lib/http-pages");
 const {
   cleanIssueEvidence,
   evidenceEngagement,
+  evidenceStrength,
   opportunityTheme,
 } = require("../lib/opportunity-themes");
 
@@ -96,7 +97,7 @@ module.exports = async function handler(req, res) {
       )
       .join("");
     const evidenceMarkup = demandSignals
-      .sort((a, b) => evidenceEngagement(b.issue) - evidenceEngagement(a.issue))
+      .sort((a, b) => evidenceStrength(b.issue) - evidenceStrength(a.issue))
       .slice(0, 3)
       .map(
         ({ agent, issue }) =>
