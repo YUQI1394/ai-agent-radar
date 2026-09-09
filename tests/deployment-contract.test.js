@@ -65,6 +65,14 @@ test('RSS publishes filtered projects and opportunity signals', () => {
   assert.doesNotMatch(feed, /agent\.createdAt \|\| payload\.updatedAt/);
 });
 
+test('weekly reports connect repository rankings to traceable demand evidence', () => {
+  const weekly = fs.readFileSync(path.join(root, 'api', 'weekly.js'), 'utf8');
+  assert.match(weekly, /cleanIssueEvidence/);
+  assert.match(weekly, /DEMAND INTELLIGENCE/);
+  assert.match(weekly, /not proof of willingness to pay/);
+  assert.match(weekly, /\/opportunity\/\$\{encodeURIComponent\(issue\.id\)\}/);
+});
+
 test('homepage presents the full discovery-to-action path with live project evidence', () => {
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');

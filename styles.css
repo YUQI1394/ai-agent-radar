@@ -260,6 +260,17 @@ button, input { font: inherit; }
 .weekly-brief, .comparison-verdict { margin-bottom: 22px; padding: 26px; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(145deg, rgba(124,58,237,.12), rgba(6,182,212,.05)), var(--card); }
 .weekly-brief h2, .comparison-verdict h2 { margin: 7px 0; font-size: 1.45rem; }
 .weekly-brief p, .weekly-brief small, .comparison-verdict p { color: var(--muted); }
+.weekly-demand { display: grid; grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); gap: 26px; margin-bottom: 22px; padding: 26px; border: 1px solid rgba(249,115,22,.25); border-radius: 18px; background: linear-gradient(135deg, rgba(249,115,22,.08), rgba(6,182,212,.04)), var(--card); }
+.weekly-demand h2 { margin: 7px 0; font-size: 1.35rem; }
+.weekly-demand p { color: var(--muted); font-size: .85rem; }
+.weekly-demand nav { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+.weekly-demand nav a { padding: 7px 9px; color: #fdba74; border: 1px solid rgba(249,115,22,.25); border-radius: 999px; font-size: .72rem; }
+.weekly-demand nav a strong { margin-left: 3px; }
+.weekly-demand ol { display: grid; gap: 10px; margin: 0; padding-left: 21px; }
+.weekly-demand li { padding-left: 5px; }
+.weekly-demand li a { display: block; font-weight: 750; line-height: 1.35; }
+.weekly-demand li a:hover { color: var(--cyan); }
+.weekly-demand li span { display: block; margin-top: 4px; color: var(--muted); font-size: .72rem; }
 .weekly-list { display: grid; gap: 12px; }
 .weekly-item { display: grid; grid-template-columns: 58px minmax(0,1fr); gap: 16px; padding: 22px; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; background: var(--card); }
 .weekly-rank { color: #fb923c; font-size: 1.25rem; font-weight: 900; }
@@ -503,6 +514,7 @@ button, input { font: inherit; }
   .card-actions { grid-template-columns: 1fr; }
   .weekly-banner { align-items: flex-start; flex-direction: column; }
   .weekly-item { grid-template-columns: 1fr; }
+  .weekly-demand { grid-template-columns: 1fr; }
   .opportunity-card { grid-template-columns: 1fr; }
   .opportunity-search > div { flex-direction: column; }
   .evidence-source { align-items: flex-start; flex-direction: column; }
