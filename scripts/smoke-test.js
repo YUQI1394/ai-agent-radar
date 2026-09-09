@@ -24,6 +24,12 @@ async function main() {
     console.log(`PASS ${path}`);
   }
 
+  const filteredOpportunities = await fetch(`${origin}/opportunities?q=memory`);
+  assert.equal(filteredOpportunities.status, 200, `filtered opportunities returned ${filteredOpportunities.status}`);
+  assert.match(filteredOpportunities.headers.get('x-robots-tag') || '', /noindex/i, 'filtered opportunities lack an HTTP noindex signal');
+  assert.match(await filteredOpportunities.text(), /<meta name="robots" content="noindex, follow">/i, 'filtered opportunities lack an HTML noindex signal');
+  console.log('PASS filtered opportunity indexing controls');
+
   const opportunityHref = pageBodies.get('/opportunities')?.match(/href="(\/opportunity\/\d+)"/)?.[1];
   assert.ok(opportunityHref, 'Opportunity Radar has no traceable detail link');
   const detail = await fetch(`${origin}${opportunityHref}`);
