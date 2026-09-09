@@ -55,7 +55,7 @@ jobs:
         run: |
           for attempt in {1..12}; do
             health="$(curl --fail --show-error --silent --retry 3 --retry-all-errors https://getaiagentradar.com/health)" || true
-            if jq -e '.status == "healthy" and .checks.feedFresh and .checks.issueCoverage and .checks.demandEvidence and .checks.refreshComplete' <<<"${health}" >/dev/null; then
+            if jq -e '.status == "healthy" and .checks.feedFresh and .checks.issueCoverage and .checks.demandEvidence and .checks.evidenceContext and .checks.professionalBreadth and .checks.refreshComplete' <<<"${health}" >/dev/null; then
               echo "Production data health verified on attempt ${attempt}."
               exit 0
             fi
