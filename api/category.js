@@ -21,7 +21,7 @@ function card(agent, index) {
 }
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).send('Method not allowed');
+  if (!['GET', 'HEAD'].includes(req.method)) return res.status(405).send('Method not allowed');
   const slug = String(req.query.slug || '').toLowerCase();
   const domain = DOMAINS[slug];
   if (!domain) return res.status(404).send('Professional domain not found');

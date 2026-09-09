@@ -6,7 +6,7 @@ const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '
 const metric = (label, a, b) => `<tr><th>${label}</th><td>${escapeHtml(a)}</td><td>${escapeHtml(b)}</td></tr>`;
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).send('Method not allowed');
+  if (!['GET', 'HEAD'].includes(req.method)) return res.status(405).send('Method not allowed');
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
     const [payload, archive] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive')]);

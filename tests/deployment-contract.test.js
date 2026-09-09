@@ -155,6 +155,13 @@ test('opportunity pages expose stable search and social metadata', () => {
   assert.match(detail, /twitter:card/);
 });
 
+test('all sitemap-backed dynamic pages support link-checking HEAD requests', () => {
+  for (const file of ['agent.js', 'category.js', 'opportunities.js', 'opportunity.js', 'patterns.js', 'weekly.js', 'sitemap.js', 'feed.js']) {
+    const source = fs.readFileSync(path.join(root, 'api', file), 'utf8');
+    assert.match(source, /['"]HEAD['"]/, `${file} does not allow HEAD`);
+  }
+});
+
 test('all professional fields have discoverable structured reports', () => {
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const category = fs.readFileSync(path.join(root, 'api', 'category.js'), 'utf8');

@@ -20,7 +20,7 @@ function openDays(createdAt) {
 }
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).send('Method not allowed');
+  if (!['GET', 'HEAD'].includes(req.method)) return res.status(405).send('Method not allowed');
   const id = String(req.query.id || '');
   if (!/^\d+$/.test(id)) return res.status(404).send('Opportunity not found');
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Opportunity storage is not configured');

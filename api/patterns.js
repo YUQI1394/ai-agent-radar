@@ -14,7 +14,7 @@ function patternCard(pattern, index) {
 }
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'GET') return res.status(405).send('Method not allowed');
+  if (!['GET', 'HEAD'].includes(req.method)) return res.status(405).send('Method not allowed');
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Pattern storage is not configured');
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });

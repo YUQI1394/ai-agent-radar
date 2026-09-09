@@ -7,7 +7,7 @@ const escapeXml = (value = '') => String(value).replace(/[<>&'\"]/g, (character)
 })[character]);
 
 module.exports = async function handler(req, res) {
-  if (req.method !== 'GET') {
+  if (!['GET', 'HEAD'].includes(req.method)) {
     res.setHeader('Allow', 'GET');
     return res.status(405).send('Method not allowed');
   }
