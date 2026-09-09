@@ -5,10 +5,6 @@ on:
     - cron: "0 */6 * * *"
   push:
     branches: [main]
-    paths:
-      - "api/fetch-agents.js"
-      - "lib/radar.js"
-      - ".github/workflows/refresh-agents.yml"
   workflow_dispatch:
 
 permissions:
@@ -27,7 +23,7 @@ jobs:
           EXPECTED_COMMIT: ${{ github.sha }}
         run: |
           for attempt in {1..30}; do
-            health="$(curl --show-error --silent --retry 2 --retry-all-errors https://getaiagentradar.com/health)" || true
+            health="$(curl --show-error --silent --retry 2 --retry-all-errors https://getaiagentradar.com/health?deployment=1)" || true
             deployed="$(jq -r '.deploymentCommit // empty' <<<"${health}")"
             if [[ "${deployed}" == "${EXPECTED_COMMIT}" ]]; then
               echo "Matching production deployment verified on attempt ${attempt}."

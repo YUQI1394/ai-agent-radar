@@ -230,7 +230,9 @@ test('push refreshes wait for the matching production deployment', () => {
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
+  const smokeWorkflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'production-smoke.yml'), 'utf8');
   assert.match(health, /VERCEL_GIT_COMMIT_SHA/);
+  assert.match(health, /deployment-ready/);
   assert.match(health, /refreshDeployment: payload\?\.ingestion\?\.deploymentCommit === deploymentCommit/);
   assert.match(ingestion, /x-expected-commit/);
   assert.match(workflow, /EXPECTED_COMMIT: \$\{\{ github\.sha \}\}/);
@@ -239,6 +241,9 @@ test('push refreshes wait for the matching production deployment', () => {
   assert.match(workflow, /stale function; retrying/);
   assert.match(workflow, /checks\.refreshDeployment/);
   assert.match(workflow, /deploymentCommit/);
+  assert.match(workflow, /health\?deployment=1/);
+  assert.match(smokeWorkflow, /health\?deployment=1/);
+  assert.doesNotMatch(workflow, /push:\s*\n\s+branches: \[main\]\s*\n\s+paths:/);
   assert.ok(workflow.indexOf('Wait for matching production deployment') < workflow.indexOf('Refresh production feed'));
 });
 

@@ -22,7 +22,7 @@ jobs:
           EXPECTED_COMMIT: ${{ github.sha }}
         run: |
           for attempt in {1..30}; do
-            deployed="$(curl --show-error --silent --retry 2 --retry-all-errors https://getaiagentradar.com/health | jq -r '.deploymentCommit // empty')" || true
+            deployed="$(curl --show-error --silent --retry 2 --retry-all-errors https://getaiagentradar.com/health?deployment=1 | jq -r '.deploymentCommit // empty')" || true
             if [[ "${deployed}" == "${EXPECTED_COMMIT}" ]]; then
               echo "Matching production deployment verified."
               exit 0
