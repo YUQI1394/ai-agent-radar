@@ -255,6 +255,9 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   const opportunities = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');
   assert.match(opportunities, /agent\.status === 'archived'/);
   assert.match(opportunities, /current curated feed/);
+  const methodology = fs.readFileSync(path.join(root, 'methodology.html'), 'utf8');
+  assert.match(methodology, /capped, logarithmic weighting/);
+  assert.match(methodology, /Independent repository repetition carries more weight/);
 });
 
 test('the open-source archive excludes projects without a verifiable license', () => {
