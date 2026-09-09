@@ -30,6 +30,10 @@ async function main() {
   assert.match(await filteredOpportunities.text(), /<meta name="robots" content="noindex, follow">/i, 'filtered opportunities lack an HTML noindex signal');
   console.log('PASS filtered opportunity indexing controls');
 
+  const opportunityCache = await fetch(`${origin}/opportunities`, { method: 'HEAD' });
+  assert.match(opportunityCache.headers.get('cache-control') || '', /public/i, 'opportunity intelligence is not publicly cacheable');
+  console.log('PASS public intelligence cache policy');
+
   const opportunityHref = pageBodies.get('/opportunities')?.match(/href="(\/opportunity\/\d+)"/)?.[1];
   assert.ok(opportunityHref, 'Opportunity Radar has no traceable detail link');
   const detail = await fetch(`${origin}${opportunityHref}`);
@@ -74,6 +78,7 @@ async function main() {
   const health = await response.json();
   assert.equal(response.status, 200, `/health returned ${response.status}`);
   assert.equal(health.status, 'healthy');
+  assert.match(response.headers.get('cache-control') || '', /no-store/i, 'health status may be served stale');
   assert.ok(health.projects >= 20, 'curated project depth is below 20');
   assert.equal(health.checks?.feedFresh, true, 'feed is stale');
   assert.equal(health.checks?.issueCoverage, true, 'Issue scan coverage is below 50%');
