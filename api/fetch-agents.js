@@ -137,14 +137,27 @@ async function isAuthorized(req) {
 }
 
 async function notifyIndexNow(agents, report) {
-  const urlList = [`${SITE_URL}/`, `${SITE_URL}/about`, `${SITE_URL}/feed.xml`, `${SITE_URL}/weekly/${report.week}`,
-    ...agents.map((agent) => `${SITE_URL}/agent/${encodeURIComponent(agent.slug || agent.id)}`)];
+  const categorySlugs = new Map([
+    ['Research', 'research'], ['Security', 'security'], ['Finance', 'finance'], ['Coding', 'coding'],
+    ['Marketing', 'marketing'], ['Design', 'design'], ['Productivity', 'productivity'], ['Agent Infrastructure', 'infrastructure']
+  ]);
+  const representedCategories = [...new Set(agents.map((agent) => categorySlugs.get(agent.category)).filter(Boolean))];
+  const opportunityUrls = agents.flatMap((agent) => cleanIssueEvidence(agent.evidenceIssues || [])
+    .map((issue) => `${SITE_URL}/opportunity/${encodeURIComponent(issue.id)}`));
+  const urlList = [...new Set([
+    `${SITE_URL}/`, `${SITE_URL}/opportunities`, `${SITE_URL}/patterns`, `${SITE_URL}/weekly`,
+    `${SITE_URL}/feed.xml`, `${SITE_URL}/weekly/${report.week}`,
+    ...representedCategories.map((slug) => `${SITE_URL}/category/${slug}`),
+    ...agents.map((agent) => `${SITE_URL}/agent/${encodeURIComponent(agent.slug || agent.id)}`),
+    ...opportunityUrls
+  ])];
   try {
     const response = await fetch('https://api.indexnow.org/indexnow', {
       method: 'POST', headers: { 'Content-Type': 'application/json; charset=utf-8' },
       body: JSON.stringify({ host: 'getaiagentradar.com', key: INDEXNOW_KEY, keyLocation: `${SITE_URL}/${INDEXNOW_KEY}.txt`, urlList })
     });
     if (!response.ok && response.status !== 202) console.warn(`IndexNow returned ${response.status}`);
+    else console.log(`IndexNow accepted ${urlList.length} current URLs`);
   } catch (error) {
     console.warn('IndexNow notification failed:', { name: error?.name, message: error?.message });
   }

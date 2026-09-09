@@ -169,6 +169,16 @@ test('all professional fields have discoverable structured reports', () => {
   assert.match(sitemap, /agents\.some\(\(agent\) => category\(agent\) === CATEGORY_NAMES\[slug\]\)/);
 });
 
+test('refreshes submit current projects, demand and professional pages to IndexNow', () => {
+  const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
+  assert.match(ingestion, /representedCategories/);
+  assert.match(ingestion, /opportunityUrls/);
+  assert.match(ingestion, /`\$\{SITE_URL\}\/opportunities`/);
+  assert.match(ingestion, /`\$\{SITE_URL\}\/patterns`/);
+  assert.match(ingestion, /`\$\{SITE_URL\}\/category\/\$\{slug\}`/);
+  assert.match(ingestion, /new Set\(\[/);
+});
+
 test('scheduled refreshes fail when production demand intelligence is unhealthy', () => {
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
