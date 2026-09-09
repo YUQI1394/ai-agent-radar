@@ -217,7 +217,7 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(health, /issueCoverage: issueCoverageRatio >= 0\.5/);
   assert.match(health, /demandEvidence: evidenceSignals >= 30/);
   assert.match(health, /evidenceContext: contextRatio >= 0\.75/);
-  assert.match(health, /representedDomains >= 6/);
+  assert.match(health, /representedDomains >= 7/);
   assert.match(health, /evidenceContext: \{ available: contextSignals/);
   assert.match(workflow, /Verify production data health/);
   assert.match(workflow, /for attempt in \{1\.\.12\}/);
@@ -288,4 +288,6 @@ test('GitHub discovery includes narrow creative and design workflow searches', (
   assert.match(ingestion, /"creative agents" in:name,description,readme/);
   assert.match(ingestion, /"marketing agents" in:name,description,readme/);
   assert.match(ingestion, /"design workflow" agent in:name,description,readme/);
+  assert.match(ingestion, /"pentest agent" in:name,description,readme/);
+  assert.match(ingestion, /"AI penetration testing" in:name,description,readme/);
 });

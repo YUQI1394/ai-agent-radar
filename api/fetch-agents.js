@@ -17,6 +17,8 @@ const SEARCHES = () => [
   { query: `topic:ai-agents finance in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `topic:ai-agents research in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"security agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: '"pentest agent" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 15 },
+  { query: '"AI penetration testing" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 15 },
   { query: `"financial agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"marketing agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"marketing agents" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
