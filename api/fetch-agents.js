@@ -20,11 +20,15 @@ const SEARCHES = () => [
   { query: '"pentest agent" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 15 },
   { query: '"AI penetration testing" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 15 },
   { query: `"financial agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: '"investment agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: `"marketing agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"marketing agents" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
+  { query: '"social media agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
+  { query: '"sales agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: `"creative agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"creative agents" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
   { query: `"design workflow" agent in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
+  { query: '"agentic video production" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: `"research agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 }
 ];
 const DEMAND_PATTERN = /feature|request|support|proposal|enhancement|workflow|integration|export|import|api|ux|documentation|docs|performance|slow|error|fail|bug|problem|missing|cannot|can't|unable|crash|session|memory|security/i;

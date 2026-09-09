@@ -290,5 +290,9 @@ test('GitHub discovery includes narrow creative and design workflow searches', (
   assert.match(ingestion, /"marketing agents" in:name,description,readme/);
   assert.match(ingestion, /"design workflow" agent in:name,description,readme/);
   assert.match(ingestion, /"pentest agent" in:name,description,readme/);
+  assert.match(ingestion, /"social media agent" in:name,description,readme/);
+  assert.match(ingestion, /"sales agent" in:name,description,readme/);
+  assert.match(ingestion, /"investment agent" in:name,description,readme/);
+  assert.match(ingestion, /"agentic video production" in:name,description,readme/);
   assert.match(ingestion, /"AI penetration testing" in:name,description,readme/);
 });
