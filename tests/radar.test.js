@@ -85,6 +85,7 @@ test('professional domains take priority over infrastructure form', () => {
   assert.equal(category(agent({ name: 'Research Agent', topics: ['ai-agents', 'deep-research', 'rag'] })), 'Research');
   assert.equal(category(agent({ name: 'Model Studio CLI', tagline: 'CLI built for AI Agent frameworks with structured tool calls', topics: ['ai-agents', 'multimodal', 'video'] })), 'Agent Infrastructure');
   assert.equal(category(agent({ name: 'AdCraft', tagline: 'Agentic video production workflow from idea to final campaign', topics: ['creative-agent', 'video-production'] })), 'Design');
+  assert.equal(category(agent({ name: 'JarvisHub', tagline: 'An open harness for canvas-native multimodal creative agents', topics: [] })), 'Design');
 });
 
 test('enrichment preserves first-seen time and computes deltas', () => {
