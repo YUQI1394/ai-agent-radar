@@ -11,6 +11,10 @@
   const cloud = await window.RadarCloud.ready;
   const list = document.querySelector('#workspace-list');
   const empty = document.querySelector('#workspace-empty');
+  const focus = document.createElement('section');
+  focus.className = 'workspace-focus';
+  focus.hidden = true;
+  document.querySelector('.workspace-toolbar').after(focus);
   const exportButton = document.querySelector('#workspace-export');
   const importButton = document.createElement('button');
   const importInput = document.createElement('input');
@@ -67,12 +71,28 @@
     const today = new Date().toISOString().slice(0, 10);
     const scheduled = items.filter((item) => item.nextAction && item.dueDate);
     const overdue = scheduled.filter((item) => item.dueDate < today && !item.decision).length;
+    const actionable = items.filter((item) => item.nextAction && !item.decision).sort((a, b) => {
+      if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+      return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+    });
+    const next = actionable[0];
     document.querySelector('#workspace-count').textContent = items.length;
     document.querySelector('#workspace-steps').textContent = items.reduce((sum, item) => sum + (item.completed || []).length, 0);
     document.querySelector('#workspace-complete').textContent = items.filter((item) => item.decision).length;
     document.querySelector('#workspace-due').textContent = `${cloud.available ? 'Cloud synced' : 'Offline copy'} · ${scheduled.length ? `${scheduled.length} scheduled · ${overdue} overdue` : 'No scheduled actions'}`;
     empty.hidden = items.length > 0;
-    list.innerHTML = items.map((item) => {
+    focus.hidden = !next;
+    focus.innerHTML = next ? `<div><span class="analysis-label">${next.dueDate && next.dueDate < today ? 'OVERDUE · DO THIS NEXT' : 'FOCUS · DO THIS NEXT'}</span><h2>${escapeHtml(next.nextAction)}</h2><p>${escapeHtml(next.title)}${next.dueDate ? ` · Target ${escapeHtml(next.dueDate)}` : ' · Choose a target date when you continue'}</p></div><a class="button button-primary" href="/opportunity/${encodeURIComponent(next.id)}#validation-start">Continue this action →</a>` : '';
+    const orderedItems = [...items].sort((a, b) => {
+      const aRank = a.decision ? 3 : a.nextAction && a.dueDate ? 0 : a.nextAction ? 1 : 2;
+      const bRank = b.decision ? 3 : b.nextAction && b.dueDate ? 0 : b.nextAction ? 1 : 2;
+      if (aRank !== bRank) return aRank - bRank;
+      if (aRank === 0 && a.dueDate !== b.dueDate) return String(a.dueDate).localeCompare(String(b.dueDate));
+      return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+    });
+    list.innerHTML = orderedItems.map((item) => {
       const count = (item.completed || []).length;
       const note = String(item.notes || '').trim();
       const decision = item.decision ? item.decision.charAt(0).toUpperCase() + item.decision.slice(1) : 'Undecided';

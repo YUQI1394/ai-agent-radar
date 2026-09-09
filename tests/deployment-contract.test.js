@@ -139,6 +139,9 @@ test('workspace sync protects newer offline edits from stale cloud copies', () =
   assert.match(workspace, /if \(item\.deleted\)/);
   assert.match(cloud, /data: \{ deleted: true \}/);
   assert.doesNotMatch(workspace, /Promise\.allSettled\(records\(\)\.map/);
+  assert.match(workspace, /DO THIS NEXT/);
+  assert.match(workspace, /orderedItems/);
+  assert.match(workspace, /Continue this action/);
 });
 
 test('opportunity pages expose stable search and social metadata', () => {
