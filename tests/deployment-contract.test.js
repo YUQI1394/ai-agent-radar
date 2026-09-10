@@ -215,10 +215,14 @@ test('refreshes submit current projects, demand and professional pages to IndexN
 test('scheduled refreshes fail when production demand intelligence is unhealthy', () => {
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
+  const smoke = fs.readFileSync(path.join(root, 'scripts', 'smoke-test.js'), 'utf8');
   assert.match(health, /issueCoverage: issueCoverageRatio >= 0\.5/);
   assert.match(health, /demandEvidence: evidenceSignals >= 30/);
   assert.match(health, /evidenceContext: contextRatio >= 0\.75/);
-  assert.match(health, /representedDomains >= 7/);
+  assert.match(health, /representedDomains === TARGET_DOMAINS\.length/);
+  assert.match(health, /minimumDomainCount >= 2/);
+  assert.match(smoke, /representedDomains, 8/);
+  assert.match(smoke, /minimumDomainCount >= 2/);
   assert.match(health, /evidenceContext: \{ available: contextSignals/);
   assert.match(workflow, /Verify production data health/);
   assert.match(workflow, /for attempt in \{1\.\.12\}/);
