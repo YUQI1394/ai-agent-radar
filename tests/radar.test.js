@@ -102,6 +102,9 @@ test('professional domains take priority over infrastructure form', () => {
   assert.equal(category(agent({ name: 'OpenPencil', tagline: 'AI-native vector design tool with concurrent Agent Teams and Design-as-Code', topics: ['developer-tools', 'design'] })), 'Design');
   assert.equal(category(agent({ name: 'Agent Development Kit for Java', tagline: 'A code-first Java toolkit for building, evaluating, and deploying sophisticated AI agents', topics: ['workflow', 'java'] })), 'Agent Infrastructure');
   assert.equal(category(agent({ name: 'Nanobot', tagline: 'Ultra-lightweight, open-source, self-hosted personal AI agent with tools, memory and workflows', topics: ['workflow', 'automation'] })), 'Productivity');
+  const personalAssistant = agent({ name: 'QwenPaw', tagline: 'Your Personal AI Assistant; deploy on your own machine or in the cloud', description: 'Supports multiple chat apps with extensible capabilities.', topics: ['ai-agent', 'agent-harness', 'personal-ai-assistant', 'self-hosted'] });
+  assert.equal(qualifiesAsAgent(personalAssistant), true);
+  assert.equal(category(personalAssistant), 'Productivity');
 });
 
 test('enrichment preserves first-seen time and computes deltas', () => {
