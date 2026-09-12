@@ -21,6 +21,15 @@ test('separates broad themes into specific cross-repository problems', () => {
   assert.equal(opportunityPattern({ title: 'Add Ollama provider support' }).name, 'Provider interoperability');
   assert.equal(opportunityPattern({ title: 'Require human approval before tool execution' }).name, 'Human approval & safety');
   assert.equal(opportunityPattern({ title: 'Improve vector retrieval quality' }).name, 'Retrieval & knowledge quality');
+  assert.equal(opportunityPattern({ title: 'Fine-grained access controls' }).name, 'Human approval & safety');
+  assert.equal(opportunityPattern({ title: 'Logs about token consumption' }).name, 'Cost & token efficiency');
+  assert.equal(opportunityPattern({ title: 'Make the agent less of a sycophant' }).name, 'Agent behavior & reasoning');
+  assert.equal(opportunityPattern({ title: 'Support dynamic tool addition after agent creation' }).name, 'Tool execution & lifecycle');
+  assert.equal(opportunityPattern({ title: 'Native WSL execution support for Windows users' }).name, 'Runtime & deployment environments');
+  assert.equal(opportunityPattern({ title: 'Support event-based DAG triggers' }).name, 'Events & conditional automation');
+  assert.equal(opportunityPattern({ title: 'Structured strategy representation and provenance' }).name, 'Strategy & provenance');
+  assert.equal(opportunityPattern({ title: 'Support multi-user administration' }).name, 'Multi-user & team routing');
+  assert.equal(opportunityPattern({ title: '知识库支持文档分类和批量导入' }).name, 'Knowledge organization');
 });
 
 test('builds specialized coaching plans for opportunity themes', () => {
