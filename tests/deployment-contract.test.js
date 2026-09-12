@@ -279,6 +279,7 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   assert.match(patterns, /coachingPlan\(lead\.issue\)/);
   assert.match(patterns, /RECOMMENDED FIRST TEST/);
   assert.match(patterns, /#validation-start/);
+  assert.match(patterns, /opportunities\?pattern=/);
   assert.match(patterns, /opportunityPattern/);
   assert.match(patterns, /Specific problems/);
   assert.match(patterns, /evidenceEngagement/);
@@ -288,6 +289,9 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   const opportunities = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');
   assert.match(opportunities, /agent\.status === 'archived'/);
   assert.match(opportunities, /current curated feed/);
+  assert.match(opportunities, /activePattern/);
+  assert.match(opportunities, /item\.pattern === activePattern/);
+  assert.match(opportunities, /Specific problem:/);
   const methodology = fs.readFileSync(path.join(root, 'methodology.html'), 'utf8');
   assert.match(methodology, /capped, logarithmic weighting/);
   assert.match(methodology, /old, abandoned thread/);
