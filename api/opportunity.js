@@ -1,6 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { category, scoreBreakdown } = require('../lib/radar');
-const { coachingPlan } = require('../lib/opportunity-themes');
+const { cleanIssueEvidence, coachingPlan } = require('../lib/opportunity-themes');
 const { sendNotFound } = require('../lib/http-pages');
 
 const SITE_URL = 'https://getaiagentradar.com';
@@ -9,7 +9,7 @@ const safeUrl = (value = '') => /^https:\/\/github\.com\//i.test(String(value)) 
 
 function findOpportunity(agents, id) {
   for (const agent of agents) {
-    const issue = (agent.evidenceIssues || []).find((item) => String(item.id) === id);
+    const issue = cleanIssueEvidence(agent.evidenceIssues || []).find((item) => String(item.id) === id);
     if (issue) return { agent, issue };
   }
   return null;

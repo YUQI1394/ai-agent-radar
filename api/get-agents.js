@@ -1,4 +1,5 @@
 const { createClient } = require('@vercel/kv');
+const { cleanIssueEvidence } = require('../lib/opportunity-themes');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -21,7 +22,10 @@ module.exports = async function handler(req, res) {
     const kv = createClient({ url, token });
     const stored = await kv.get('agents:latest');
     const payload = stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {};
-    const agents = Array.isArray(payload.agents) ? payload.agents : [];
+    const agents = (Array.isArray(payload.agents) ? payload.agents : []).map((agent) => {
+      const evidenceIssues = cleanIssueEvidence(agent.evidenceIssues || []);
+      return { ...agent, evidenceIssues, painSignals: evidenceIssues.length };
+    });
 
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
     return res.status(200).json({

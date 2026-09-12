@@ -327,6 +327,16 @@ test('health counts the same cleaned evidence users can actually see', () => {
   assert.doesNotMatch(health, /sum \+ \(Array\.isArray\(agent\.evidenceIssues\) \? agent\.evidenceIssues\.length/);
 });
 
+test('every public project and opportunity reader reapplies the current evidence rules', () => {
+  const feed = fs.readFileSync(path.join(root, 'api', 'get-agents.js'), 'utf8');
+  const agent = fs.readFileSync(path.join(root, 'api', 'agent.js'), 'utf8');
+  const opportunity = fs.readFileSync(path.join(root, 'api', 'opportunity.js'), 'utf8');
+  assert.match(feed, /cleanIssueEvidence\(agent\.evidenceIssues \|\| \[\]\)/);
+  assert.match(feed, /painSignals: evidenceIssues\.length/);
+  assert.match(agent, /cleanIssueEvidence\(agent\.evidenceIssues \|\| \[\]\)\.map/);
+  assert.match(opportunity, /cleanIssueEvidence\(agent\.evidenceIssues \|\| \[\]\)\.find/);
+});
+
 test('push refreshes wait for the matching production deployment', () => {
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');

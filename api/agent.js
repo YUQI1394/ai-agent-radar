@@ -1,5 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { scoreBreakdown } = require('../lib/radar');
+const { cleanIssueEvidence } = require('../lib/opportunity-themes');
 const { sendNotFound } = require('../lib/http-pages');
 
 const SITE_URL = 'https://getaiagentradar.com';
@@ -89,7 +90,7 @@ function renderPage(agent, agents) {
   const statusLabel = agent.status === 'archived' ? 'PREVIOUS RADAR PICK' : 'CURRENT RADAR PICK';
   const featureItems = analysis.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join('');
   const comparisonItems = analysis.peers.map((peer) => `<li><a href="/agent/${encodeURIComponent(peer.slug || peer.id)}">${escapeHtml(peer.name)}</a><span>${escapeHtml(profileFor(peer).lens)} · ★ ${Number(peer.stars ?? peer.votes ?? 0).toLocaleString()}</span></li>`).join('');
-  const issueItems = (agent.evidenceIssues || []).map((issue) => `<li><a href="${safeUrl(issue.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(issue.title)}</a><span>${Number(issue.comments || 0)} comments · ${Number(issue.reactions || 0)} positive reactions</span></li>`).join('');
+  const issueItems = cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => `<li><a href="${safeUrl(issue.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(issue.title)}</a><span>${Number(issue.comments || 0)} comments · ${Number(issue.reactions || 0)} positive reactions</span></li>`).join('');
   const limitations = [
     'The listing is based on public launch information rather than a hands-on product review.',
     'Features, pricing and availability may change; verify important details with the provider.',
