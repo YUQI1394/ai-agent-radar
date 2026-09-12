@@ -1,5 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { category } = require('../lib/radar');
+const { cleanIssueEvidence } = require('../lib/opportunity-themes');
 
 const TARGET_DOMAINS = ['Security', 'Finance', 'Research', 'Coding', 'Marketing', 'Design', 'Productivity', 'Agent Infrastructure'];
 
@@ -19,8 +20,9 @@ module.exports = async function handler(req, res) {
     const updatedTime = Date.parse(payload?.updatedAt || '');
     const ageHours = Number.isFinite(updatedTime) ? Math.round((Date.now() - updatedTime) / 36000) / 100 : null;
     const scannedRepositories = agents.filter((agent) => agent.issueScannedAt).length;
-    const evidenceSignals = agents.reduce((sum, agent) => sum + (Array.isArray(agent.evidenceIssues) ? agent.evidenceIssues.length : 0), 0);
-    const contextSignals = agents.reduce((sum, agent) => sum + (Array.isArray(agent.evidenceIssues) ? agent.evidenceIssues.filter((issue) => issue.excerpt).length : 0), 0);
+    const evidenceFor = (agent) => cleanIssueEvidence(Array.isArray(agent.evidenceIssues) ? agent.evidenceIssues : []);
+    const evidenceSignals = agents.reduce((sum, agent) => sum + evidenceFor(agent).length, 0);
+    const contextSignals = agents.reduce((sum, agent) => sum + evidenceFor(agent).filter((issue) => issue.excerpt).length, 0);
     const contextRatio = evidenceSignals ? contextSignals / evidenceSignals : 0;
     const issueCoverageRatio = agents.length ? scannedRepositories / agents.length : 0;
     const domainCoverage = agents.reduce((counts, agent) => {
@@ -30,7 +32,7 @@ module.exports = async function handler(req, res) {
     }, {});
     const domainEvidenceCoverage = agents.reduce((counts, agent) => {
       const name = category(agent);
-      counts[name] = (counts[name] || 0) + (Array.isArray(agent.evidenceIssues) ? agent.evidenceIssues.length : 0);
+      counts[name] = (counts[name] || 0) + evidenceFor(agent).length;
       return counts;
     }, {});
     const representedDomains = TARGET_DOMAINS.filter((name) => Number(domainCoverage[name] || 0) > 0).length;

@@ -86,6 +86,7 @@ function issueEvidence(issue, repository) {
     url: issue.html_url,
     comments: Number(issue.comments || 0),
     reactions: Number(issue.reactions?.['+1'] || 0),
+    authorAssociation: String(issue.author_association || 'UNKNOWN').toUpperCase(),
     createdAt: issue.created_at || null,
     updatedAt: issue.updated_at || null,
     labels: (issue.labels || []).map((label) => typeof label === 'string' ? label : label.name).filter(Boolean).slice(0, 5)

@@ -109,6 +109,8 @@ test('weekly reports connect repository rankings to traceable demand evidence', 
 test('homepage presents the full discovery-to-action path with live project evidence', () => {
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  assert.match(home, /<title>Open-Source AI Agents &amp; GitHub Demand · AI Agent Radar<\/title>/);
+  assert.match(home, /rel="canonical" href="https:\/\/getaiagentradar\.com\/"/);
   assert.match(home, /01 \/ DISCOVER/);
   assert.match(home, /02 \/ UNDERSTAND/);
   assert.match(home, /03 \/ EXECUTE/);
@@ -301,6 +303,13 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(workflow, /\.checks\.demandEvidence/);
 });
 
+test('health counts the same cleaned evidence users can actually see', () => {
+  const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
+  assert.match(health, /cleanIssueEvidence/);
+  assert.match(health, /const evidenceFor/);
+  assert.doesNotMatch(health, /sum \+ \(Array\.isArray\(agent\.evidenceIssues\) \? agent\.evidenceIssues\.length/);
+});
+
 test('push refreshes wait for the matching production deployment', () => {
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
@@ -413,4 +422,5 @@ test('GitHub discovery broadens thin professional domains without burst concurre
   assert.match(radar, /minimumPerDomain = 3/);
   const selection = fs.readFileSync(path.join(root, 'lib', 'ingestion-selection.js'), 'utf8');
   assert.match(selection, /categoryBalanced/);
+  assert.match(ingestion, /authorAssociation: String\(issue\.author_association/);
 });

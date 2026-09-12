@@ -125,3 +125,15 @@ test('rejects internal work and vague support posts without hiding explicit dema
   useful.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), true, issue.title));
   noise.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), false, issue.title));
 });
+
+test('rejects maintainer-authored backlog and repository-specific defects as market demand', () => {
+  const noise = [
+    { title: 'Bind GitHub tools to the active Project and reuse execution credential availability', labels: ['bug'], authorAssociation: 'COLLABORATOR', comments: 8, reactions: 0 },
+    { title: 'Security-file guard census: 8 more demonstrated gaps, including an SSRF enforcement point', labels: [], authorAssociation: 'OWNER', comments: 8, reactions: 0 },
+    { title: '[BUG] /discover returns HTTP 500 — search_blueprint crashes', labels: [], authorAssociation: 'CONTRIBUTOR', comments: 22, reactions: 1 },
+    { title: '[BUG] 5 user-facing routes return 404 after deployment drift', labels: [], authorAssociation: 'CONTRIBUTOR', comments: 12, reactions: 0 }
+  ];
+  noise.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), false, issue.title));
+  assert.equal(isUsefulDemandSignal({ title: 'Feature request: add approval gates for destructive commands', labels: [], authorAssociation: 'NONE', comments: 3, reactions: 0 }), true);
+  assert.equal(isUsefulDemandSignal({ title: 'Proposal: support audited agent actions', labels: [], authorAssociation: 'OWNER', comments: 8, reactions: 3 }), true);
+});
