@@ -178,7 +178,6 @@
     const relative = hours === null ? 'Waiting for first update' : hours === 0 ? 'Updated just now' : `Updated ${hours} hour${hours === 1 ? '' : 's'} ago`;
     elements.updatedAt.textContent = relative;
     elements.heroUpdatedAt.textContent = hours === null ? 'Updated every 6 hours • Last updated: pending' : hours === 0 ? 'Updated every 6 hours • Last updated: just now' : `Updated every 6 hours • Last updated: ${hours} hour${hours === 1 ? '' : 's'} ago`;
-    document.title = hours === null ? 'AI Agent Radar' : `AI Agent Radar — ${relative}`;
   }
 
   async function loadAgents() {

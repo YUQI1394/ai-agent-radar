@@ -90,7 +90,12 @@ function renderPage(agent, agents) {
   const statusLabel = agent.status === 'archived' ? 'PREVIOUS RADAR PICK' : 'CURRENT RADAR PICK';
   const featureItems = analysis.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join('');
   const comparisonItems = analysis.peers.map((peer) => `<li><a href="/agent/${encodeURIComponent(peer.slug || peer.id)}">${escapeHtml(peer.name)}</a><span>${escapeHtml(profileFor(peer).lens)} · ★ ${Number(peer.stars ?? peer.votes ?? 0).toLocaleString()}</span></li>`).join('');
-  const issueItems = cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => `<li><a href="${safeUrl(issue.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(issue.title)}</a><span>${Number(issue.comments || 0)} comments · ${Number(issue.reactions || 0)} positive reactions</span></li>`).join('');
+  const issueItems = cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => {
+    const id = String(issue.id || '');
+    const hasBrief = /^\d+$/.test(id);
+    const briefUrl = hasBrief ? `/opportunity/${encodeURIComponent(id)}` : safeUrl(issue.url);
+    return `<li><div class="evidence-copy"><a href="${briefUrl}">${escapeHtml(issue.title)}</a><span>${Number(issue.comments || 0)} comments · ${Number(issue.reactions || 0)} positive reactions</span></div><div class="evidence-actions">${hasBrief ? `<a href="${briefUrl}">Open guided brief →</a>` : ''}<a href="${safeUrl(issue.url)}" target="_blank" rel="noopener noreferrer">Original GitHub ↗</a></div></li>`;
+  }).join('');
   const limitations = [
     'The listing is based on public launch information rather than a hands-on product review.',
     'Features, pricing and availability may change; verify important details with the provider.',
@@ -131,7 +136,7 @@ function renderPage(agent, agents) {
       </section>
       <section class="radar-context"><h2>Main capabilities</h2><ul>${featureItems || `<li>${escapeHtml(agent.tagline || 'AI-assisted workflow automation.')}</li>`}</ul></section>
       <section class="radar-context"><h2>Practical use cases</h2><p>${escapeHtml(agent.name)} may be useful for ${escapeHtml(analysis.profile.use)}. The strongest fit depends on how well it integrates with a team’s existing tools, data and review process.</p></section>
-      <section class="radar-context"><h2>Open demand signals</h2>${issueItems ? `<p>These public GitHub Issues indicate requested capabilities or unresolved user needs. Read the original discussion before drawing product conclusions.</p><ul class="comparison-list evidence-list">${issueItems}</ul>` : '<p>No high-engagement open demand signal matched this project in the current scan. This does not mean demand is absent.</p>'}</section>
+      <section class="radar-context"><h2>Open demand signals</h2>${issueItems ? `<p>These public GitHub Issues indicate requested capabilities or unresolved user needs. Open a guided brief to turn one signal into a focused seven-day validation sprint.</p><ul class="comparison-list evidence-list">${issueItems}</ul>` : '<p>No high-engagement open demand signal matched this project in the current scan. This does not mean demand is absent.</p>'}</section>
       <section class="pros-limits"><div><h2>Potential advantages</h2><ul><li>Focused on ${escapeHtml(analysis.profile.lens)}.</li><li>Shows ★ ${Number(agent.stars ?? agent.votes ?? 0).toLocaleString()} GitHub stars and ${Number(agent.forks || 0).toLocaleString()} forks.</li><li>Provides public source code and project history that can be independently verified.</li></ul></div><div><h2>Limits to consider</h2><ul>${limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div></section>
       <section class="radar-context"><h2>Similar agents to compare</h2>${comparisonItems ? `<ul class="comparison-list">${comparisonItems}</ul>` : '<p>No close comparison is currently available in this Radar update.</p>'}</section>
       <section class="trend-observation"><span class="analysis-label">OPEN-SOURCE SIGNAL</span><h2>What the evidence suggests</h2><p>${escapeHtml(agent.name)} ranks #${analysis.rank} among ${agents.length} tracked projects using public GitHub adoption, maintenance, quality, relevance, demand and momentum signals.</p><small>Automatically generated from public repository and Issue metadata. It is not a paid placement, endorsement, security audit or hands-on review.</small></section>

@@ -126,8 +126,17 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(share, /navigator\.clipboard\.writeText/);
   assert.ok(home.indexOf('/app.js') < home.indexOf('@supabase/supabase-js'), 'public feed must start before the optional auth library');
   assert.match(app, /loadAgents\(\);[\s\S]*radar:auth-ready/);
+  assert.doesNotMatch(app, /document\.title\s*=/, 'runtime scripts must not replace the descriptive SEO title');
   const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');
   assert.match(auth, /radar:auth-ready/);
+});
+
+test('project evidence leads into an internal guided brief before GitHub', () => {
+  const agent = fs.readFileSync(path.join(root, 'api', 'agent.js'), 'utf8');
+  assert.match(agent, /\/opportunity\/\$\{encodeURIComponent\(id\)\}/);
+  assert.match(agent, /Open guided brief/);
+  assert.match(agent, /Original GitHub/);
+  assert.match(agent, /focused seven-day validation sprint/);
 });
 
 test('opportunities lead directly into the free guided execution sprint', () => {

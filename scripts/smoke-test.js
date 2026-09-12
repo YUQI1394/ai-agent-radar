@@ -98,6 +98,12 @@ async function main() {
   assert.equal(agentFeed.status, 200, 'starter recommendation feed is unavailable');
   const agentFeedPayload = await agentFeed.json();
   assert.ok((agentFeedPayload.agents || []).some((agent) => (agent.evidenceIssues || []).length), 'starter recommendation feed has no current opportunities');
+  const sampleAgent = (agentFeedPayload.agents || []).find((agent) => (agent.evidenceIssues || []).length);
+  const sampleAgentResponse = await fetch(`${origin}/agent/${encodeURIComponent(sampleAgent.slug || sampleAgent.id)}`);
+  assert.equal(sampleAgentResponse.status, 200, 'a current project detail page is unavailable');
+  const sampleAgentHtml = await sampleAgentResponse.text();
+  assert.match(sampleAgentHtml, /Open guided brief/i, 'project evidence does not lead into the validation journey');
+  assert.match(sampleAgentHtml, /Original GitHub/i, 'project evidence loses its traceable source link');
   const auth = await authConfig.json();
   assert.equal(auth.configured, true, 'free registration is not configured');
   assert.match(auth.publishableKey || '', /^sb_publishable_/, 'auth config does not expose a publishable key');
