@@ -46,7 +46,7 @@
     const picker = document.querySelector('#starter-picker');
     if (!picker || records().length) return;
     try {
-      const response = await fetch('/api/agents');
+      const response = await fetch('/api/get-agents');
       if (!response.ok) throw new Error('The live feed is temporarily unavailable');
       const payload = await response.json();
       const agents = Array.isArray(payload.agents) ? payload.agents : [];
@@ -59,7 +59,8 @@
         opportunities.push({
           id, title: String(issue.title), project: String(agent.name || agent.slug || 'Open-source project'),
           domain: String(agent.category || 'General AI'), comments: Math.max(0, Number(issue.comments) || 0),
-          reactions: Math.max(0, Number(issue.reactions) || 0), radar: Math.max(0, Number(agent.score?.total) || 0)
+          reactions: Math.max(0, Number(issue.reactions) || 0), radar: Math.max(0, Number(agent.score?.total) || 0),
+          updatedAt: String(issue.updatedAt || issue.createdAt || '')
         });
       }));
       if (!opportunities.length) throw new Error('No current opportunities are available');
@@ -67,10 +68,20 @@
       const domainOrder = ['Research', 'Security', 'Finance', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure'];
       const domains = domainOrder.filter((domain) => opportunities.some((item) => item.domain === domain));
       const initial = domains.includes(preferred) ? preferred : 'All fields';
-      const strength = (item) => item.comments * 2 + item.reactions * 3 + item.radar / 20;
+      const strength = (item) => {
+        const ageDays = Math.max(0, (Date.now() - Date.parse(item.updatedAt)) / 86400000);
+        const freshness = Number.isFinite(ageDays) ? ageDays <= 30 ? 10 : ageDays <= 90 ? 7 : ageDays <= 365 ? 3 : 0 : 0;
+        return Math.min(24, Math.log2(item.comments + 1) * 4.5) + Math.min(24, Math.log2(item.reactions + 1) * 6) + freshness + item.radar / 20;
+      };
       const renderRecommendations = (domain) => {
-        const candidates = opportunities.filter((item) => domain === 'All fields' || item.domain === domain)
-          .sort((a, b) => strength(b) - strength(a) || a.title.localeCompare(b.title)).slice(0, 3);
+        const ranked = opportunities.filter((item) => domainOrder.includes(item.domain) && (domain === 'All fields' || item.domain === domain))
+          .sort((a, b) => strength(b) - strength(a) || a.title.localeCompare(b.title));
+        const seenDomains = new Set();
+        const candidates = (domain === 'All fields' ? ranked.filter((item) => {
+          if (seenDomains.has(item.domain)) return false;
+          seenDomains.add(item.domain);
+          return true;
+        }) : ranked).slice(0, 3);
         picker.querySelectorAll('[data-starter-domain]').forEach((button) => {
           const active = button.dataset.starterDomain === domain;
           button.classList.toggle('active', active);

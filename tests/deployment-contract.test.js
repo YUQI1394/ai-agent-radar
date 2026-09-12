@@ -199,12 +199,15 @@ test('registration explains the concrete free outcome before asking users to sig
 
 test('an empty registered workspace recommends live opportunities by professional field', () => {
   const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
-  assert.match(workspace, /fetch\('\/api\/agents'\)/);
+  assert.match(workspace, /fetch\('\/api\/get-agents'\)/);
   assert.match(workspace, /Recommended from live evidence/);
   assert.match(workspace, /data-starter-domain/);
   assert.match(workspace, /Start this 7-day sprint/);
   assert.match(workspace, /#validation-start/);
   assert.match(workspace, /ai-agent-radar:preferred-domain/);
+  assert.match(workspace, /const seenDomains = new Set/);
+  assert.match(workspace, /Math\.log2\(item\.comments \+ 1\)/);
+  assert.match(workspace, /ageDays <= 30/);
   assert.match(workspace, /Build, Narrow or Stop/);
 });
 

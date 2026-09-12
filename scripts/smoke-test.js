@@ -71,8 +71,8 @@ async function main() {
   assert.match(await workspaceScript.text(), /Recommended from live evidence/, 'new workspaces lack live starter recommendations');
   console.log('PASS privacy-preserving conversion analytics');
 
-  const [sitemap, feed, authConfig] = await Promise.all([
-    fetch(`${origin}/sitemap.xml`), fetch(`${origin}/feed.xml`), fetch(`${origin}/auth-config.json`, { cache: 'no-store' })
+  const [sitemap, feed, authConfig, agentFeed] = await Promise.all([
+    fetch(`${origin}/sitemap.xml`), fetch(`${origin}/feed.xml`), fetch(`${origin}/auth-config.json`, { cache: 'no-store' }), fetch(`${origin}/api/get-agents`)
   ]);
   assert.equal(sitemap.status, 200, '/sitemap.xml is unavailable');
   const sitemapXml = await sitemap.text();
@@ -80,6 +80,9 @@ async function main() {
   assert.equal(feed.status, 200, '/feed.xml is unavailable');
   assert.match(await feed.text(), /<rss[\s>]/, 'RSS XML is malformed');
   assert.equal(authConfig.status, 200, '/auth-config.json is unavailable');
+  assert.equal(agentFeed.status, 200, 'starter recommendation feed is unavailable');
+  const agentFeedPayload = await agentFeed.json();
+  assert.ok((agentFeedPayload.agents || []).some((agent) => (agent.evidenceIssues || []).length), 'starter recommendation feed has no current opportunities');
   const auth = await authConfig.json();
   assert.equal(auth.configured, true, 'free registration is not configured');
   assert.match(auth.publishableKey || '', /^sb_publishable_/, 'auth config does not expose a publishable key');
