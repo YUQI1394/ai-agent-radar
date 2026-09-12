@@ -96,6 +96,8 @@ async function main() {
   assert.equal(health.status, 'healthy');
   assert.match(response.headers.get('cache-control') || '', /no-store/i, 'health status may be served stale');
   assert.ok(health.projects >= 20, 'curated project depth is below 20');
+  const sitemapAgentCount = sitemapPaths.filter((path) => path.startsWith('/agent/')).length;
+  assert.equal(sitemapAgentCount, health.projects, 'sitemap includes agents outside the current curated feed');
   assert.equal(health.checks?.feedFresh, true, 'feed is stale');
   assert.equal(health.checks?.issueCoverage, true, 'Issue scan coverage is below 50%');
   assert.equal(health.checks?.demandEvidence, true, 'demand evidence feed is empty or too shallow');

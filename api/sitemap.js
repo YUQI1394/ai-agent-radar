@@ -30,8 +30,8 @@ module.exports = async function handler(req, res) {
   try {
     if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
       const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
-      const [payload, archive, reports] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive'), kv.get('weekly:reports')]);
-      agents = Array.isArray(archive?.agents) && archive.agents.length ? archive.agents : (Array.isArray(payload?.agents) ? payload.agents : []);
+      const [payload, reports] = await Promise.all([kv.get('agents:latest'), kv.get('weekly:reports')]);
+      agents = Array.isArray(payload?.agents) ? payload.agents : [];
       updatedAt = payload?.updatedAt || updatedAt;
       reportDates = reports && typeof reports === 'object' && !Array.isArray(reports) ? Object.keys(reports) : [];
       const currentWeek = weekKey(updatedAt);
@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
     ...categoryUrls.filter((slug) => agents.some((agent) => category(agent) === CATEGORY_NAMES[slug])).map((slug) => ({ loc: `${SITE_URL}/category/${slug}`, lastmod: updatedAt })),
     ...reportDates.map((date) => ({ loc: `${SITE_URL}/weekly/${date}`, lastmod: date })),
     ...agents.map((agent) => ({ loc: `${SITE_URL}/agent/${encodeURIComponent(agent.slug || agent.id)}`, lastmod: agent.lastSeenAt || agent.pushedAt || agent.updatedAt || updatedAt })),
-    ...agents.filter((agent) => agent.status !== 'archived').flatMap((agent) => cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => ({ loc: `${SITE_URL}/opportunity/${encodeURIComponent(issue.id)}`, lastmod: issue.updatedAt || updatedAt })))
+    ...agents.flatMap((agent) => cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => ({ loc: `${SITE_URL}/opportunity/${encodeURIComponent(issue.id)}`, lastmod: issue.updatedAt || updatedAt })))
   ];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((url) => `  <url><loc>${escapeXml(url.loc)}</loc><lastmod>${escapeXml(new Date(url.lastmod).toISOString())}</lastmod></url>`).join('\n')}\n</urlset>`;
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');

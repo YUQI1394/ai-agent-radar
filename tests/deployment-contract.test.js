@@ -65,8 +65,12 @@ test('workspace migration enforces per-user row-level security', () => {
 test('sitemap applies the same opportunity quality filter as public rankings', () => {
   const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
   assert.match(sitemap, /cleanIssueEvidence\(agent\.evidenceIssues/);
-  assert.match(sitemap, /agent\.status !== 'archived'/);
+  assert.doesNotMatch(sitemap, /agents:archive/);
+  assert.match(sitemap, /Array\.isArray\(payload\?\.agents\)/);
   assert.match(sitemap, /agent\.lastSeenAt \|\| agent\.pushedAt \|\| agent\.updatedAt/);
+  const agent = fs.readFileSync(path.join(root, 'api', 'agent.js'), 'utf8');
+  assert.match(agent, /agent\.status === 'archived' \? 'noindex, follow' : 'index, follow'/);
+  assert.match(agent, /X-Robots-Tag', 'noindex, follow'/);
 });
 
 test('production security headers and third-party authentication integrity stay enforced', () => {
@@ -244,6 +248,7 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(smoke, /representedDomains, 8/);
   assert.match(smoke, /minimumDomainCount >= 2/);
   assert.match(smoke, /minimumDomainEvidence >= 2/);
+  assert.match(smoke, /sitemapAgentCount/);
   assert.match(workflow, /professionalDemandBreadth/);
   assert.match(health, /evidenceContext: \{ available: contextSignals/);
   assert.match(workflow, /Verify production data health/);

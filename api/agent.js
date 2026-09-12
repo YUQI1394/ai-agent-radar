@@ -102,7 +102,7 @@ function renderPage(agent, agents) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="${escapeHtml(description)}">
-  <meta name="robots" content="index, follow">
+  <meta name="robots" content="${agent.status === 'archived' ? 'noindex, follow' : 'index, follow'}">
   <meta property="og:type" content="website">
   <meta property="og:title" content="${escapeHtml(agent.name)} · AI Agent Radar">
   <meta property="og:description" content="${escapeHtml(description)}">
@@ -158,6 +158,7 @@ module.exports = async function handler(req, res) {
     const agent = currentAgents.find((item) => String(item.slug) === requested || String(item.id) === requested)
       || archiveAgents.find((item) => String(item.slug) === requested || String(item.id) === requested);
     if (!agent) return sendNotFound(res, { headline: 'Agent project not found.', message: 'The repository may have moved, been archived or fallen outside the current open-source quality rules.', primaryHref: '/', primaryLabel: 'Browse current projects' });
+    if (agent.status === 'archived') res.setHeader('X-Robots-Tag', 'noindex, follow');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
     return res.status(200).send(renderPage(agent, archiveAgents.length ? archiveAgents : currentAgents)
