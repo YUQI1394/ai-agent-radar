@@ -280,6 +280,8 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   assert.match(patterns, /Specific problems/);
   assert.match(patterns, /evidenceEngagement/);
   assert.match(patterns, /agent\.status === 'archived'/);
+  const detail = fs.readFileSync(path.join(root, 'api', 'opportunity.js'), 'utf8');
+  assert.match(detail, /coach\.pattern\.name/);
   const opportunities = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');
   assert.match(opportunities, /agent\.status === 'archived'/);
   assert.match(opportunities, /current curated feed/);

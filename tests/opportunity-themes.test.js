@@ -41,6 +41,18 @@ test('builds specialized coaching plans for opportunity themes', () => {
   assert.notEqual(reliability.hypothesis, integration.hypothesis);
 });
 
+test('turns specific demand patterns into tailored validation experiments', () => {
+  const cost = coachingPlan({ title: 'Logs about token consumption and cost', labels: [] });
+  const tools = coachingPlan({ title: 'Support dynamic tool addition after agent creation', labels: [] });
+  const interfacePlan = coachingPlan({ title: 'Markdown rendering breaks the task interface', labels: [] });
+  assert.equal(cost.pattern.name, 'Cost & token efficiency');
+  assert.match(cost.experiment, /instrument|baseline/i);
+  assert.equal(tools.pattern.name, 'Tool execution & lifecycle');
+  assert.match(tools.proof, /state transition/i);
+  assert.equal(interfacePlan.pattern.name, 'Interface & rendering');
+  assert.match(interfacePlan.experiment, /usability/i);
+});
+
 test('issue fingerprints collapse cosmetic title duplicates', () => {
   assert.equal(issueFingerprint('[FEAT]: Add Slack connector'), issueFingerprint('feat - add slack connector'));
   assert.equal(issueFingerprint('Canary: add a small documentation clarification'), 'canary add a small documentation clarification');
