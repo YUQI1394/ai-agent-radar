@@ -206,6 +206,12 @@ test('all professional fields have discoverable structured reports', () => {
   assert.match(category, /'@type': 'ItemList'/);
   assert.match(category, /'@type': 'BreadcrumbList'/);
   assert.match(category, /twitter:card/);
+  assert.match(category, /LIVE GITHUB DEMAND/);
+  assert.match(category, /cleanIssueEvidence/);
+  assert.match(category, /opportunityPattern/);
+  assert.match(category, /#demand/);
+  assert.match(category, /Start guided sprint/);
+  assert.match(category, /opportunities\?domain=/);
   assert.match(category, /agents\.length \? 'index, follow' : 'noindex, follow'/);
   const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
   assert.match(sitemap, /agents\.some\(\(agent\) => category\(agent\) === CATEGORY_NAMES\[slug\]\)/);
