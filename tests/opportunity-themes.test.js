@@ -52,6 +52,12 @@ test('cleans duplicate and maintenance-only evidence across stored history', () 
     { title: 'CI red on main', labels: ['ci-red-main'] },
     { title: 'Comprehensive functionality review', labels: ['already-fixed'] },
     { title: 'Routine dependency refresh', labels: ['automated'] },
+    { title: 'Daily security sweep — backlog', labels: ['dependencies', 'security'] },
+    { title: 'Security Policy not fully set up', labels: [] },
+    { title: 'Triage the security-scanning baseline before preview', labels: ['tests'] },
+    { title: 'You do not have a valid license of this product.', labels: ['kind/bug'] },
+    { title: 'Denied request, used Claude Review', labels: [] },
+    { title: "Ctrl+V dosen't work", labels: ['bug'] },
     { title: '[FEAT]: Add Slack connector', labels: [] },
     { title: 'feat - add slack connector', labels: [] },
     { title: 'Human approval workflow', labels: [] }
