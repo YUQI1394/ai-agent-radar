@@ -1,6 +1,6 @@
 const { kv } = require('@vercel/kv');
 const crypto = require('crypto');
-const { enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAgents, weeklyReport } = require('../lib/radar');
+const { category, enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAgents, weeklyReport } = require('../lib/radar');
 const { githubHeaders, githubJson } = require('../lib/github-client');
 const { selectIssueTargets } = require('../lib/ingestion-selection');
 const { cleanIssueEvidence, evidenceStrength, issueExcerpt } = require('../lib/opportunity-themes');
@@ -220,7 +220,7 @@ module.exports = async function handler(req, res) {
     const currentAgents = Array.isArray(previous?.agents) ? previous.agents : [];
     const archiveHistory = Array.isArray(storedArchive?.agents) ? storedArchive.agents : [];
     const historyByName = new Map([...archiveHistory, ...currentAgents].map((agent) => [String(agent.name).toLowerCase(), agent]));
-    const candidates = [...unique.values()].filter(qualifiesAsAgent);
+    const candidates = [...unique.values()].filter(qualifiesAsAgent).map((agent) => ({ ...agent, category: agent.category || category(agent) }));
     const issueTargets = selectIssueTargets(candidates, currentAgents, archiveHistory);
     const issueResults = await Promise.allSettled(issueTargets.map(async (agent) => ({
       repository: agent.name,

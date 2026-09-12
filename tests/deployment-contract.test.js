@@ -404,4 +404,6 @@ test('GitHub discovery broadens thin professional domains without burst concurre
   assert.match(ingestion, /concurrency = 6/);
   const radar = fs.readFileSync(path.join(root, 'lib', 'radar.js'), 'utf8');
   assert.match(radar, /minimumPerDomain = 3/);
+  const selection = fs.readFileSync(path.join(root, 'lib', 'ingestion-selection.js'), 'utf8');
+  assert.match(selection, /categoryBalanced/);
 });

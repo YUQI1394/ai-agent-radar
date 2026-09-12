@@ -23,3 +23,13 @@ test('archived scan history prevents rediscovered candidates from losing priorit
   const selected = selectIssueTargets(candidates, [], archive, 2);
   assert.deepEqual(selected.map((agent) => agent.name), ['never-scanned', 'rediscovered']);
 });
+
+test('Issue scanning rotates across professional categories before filling by age', () => {
+  const categories = ['Security', 'Finance', 'Research', 'Coding', 'Marketing', 'Design', 'Productivity', 'Agent Infrastructure'];
+  const candidates = categories.flatMap((category, categoryIndex) => [0, 1].map((offset) => ({ name: `${category}-${offset}`, category })));
+  const current = candidates.map((item, index) => ({ ...item, issueScannedAt: `2026-09-${String(index + 1).padStart(2, '0')}T00:00:00.000Z` }));
+  const selected = selectIssueTargets(candidates, current, [], 7);
+  assert.equal(selected.length, 7);
+  assert.equal(new Set(selected.map((item) => item.category)).size, 7);
+  assert.deepEqual(selected.map((item) => item.category), categories.slice(0, 7));
+});
