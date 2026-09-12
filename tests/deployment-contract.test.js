@@ -188,6 +188,22 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(workspace, /text\/markdown/);
 });
 
+test('privacy-preserving page analytics covers discovery and conversion routes', () => {
+  const analytics = fs.readFileSync(path.join(root, 'analytics.js'), 'utf8');
+  const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');
+  const privacy = fs.readFileSync(path.join(root, 'privacy-policy.html'), 'utf8');
+  assert.match(analytics, /getaiagentradar\\\.com/);
+  assert.match(analytics, /\/_vercel\/insights\/script\.js/);
+  assert.doesNotMatch(analytics, /email|notes|localStorage|user_workspace/);
+  assert.match(auth, /script\[src="\/analytics\.js"\]/);
+  assert.match(privacy, /does not use cookies/);
+  assert.match(privacy, /does not receive account email addresses/);
+  for (const file of ['agent.js', 'category.js', 'weekly.js', 'opportunities.js', 'opportunity.js', 'patterns.js', 'compare.js']) {
+    const source = fs.readFileSync(path.join(root, 'api', file), 'utf8');
+    assert.match(source, /\/analytics\.js/, `${file} must load page analytics`);
+  }
+});
+
 test('workspace sync protects newer offline edits from stale cloud copies', () => {
   const cloud = fs.readFileSync(path.join(root, 'cloud-storage.js'), 'utf8');
   const validation = fs.readFileSync(path.join(root, 'validation.js'), 'utf8');

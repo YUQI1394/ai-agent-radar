@@ -125,7 +125,8 @@ module.exports = async function handler(req, res) {
           .replace(
             "</nav></header>",
             '<a href="/login">Sign in</a></nav></header>',
-          ),
+          )
+          .replace('</body>', '<script src="/analytics.js"></script></body>'),
       );
   } catch (error) {
     console.error("Weekly report failed:", {

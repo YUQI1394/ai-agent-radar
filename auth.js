@@ -1,6 +1,12 @@
 (() => {
   'use strict';
 
+  if (!document.querySelector('script[src="/analytics.js"]')) {
+    const analytics = document.createElement('script');
+    analytics.src = '/analytics.js';
+    document.head.append(analytics);
+  }
+
   const normalizeNext = (value) => {
     try {
       const url = new URL(value || '/', location.origin);

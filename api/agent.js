@@ -164,7 +164,8 @@ module.exports = async function handler(req, res) {
     return res.status(200).send(renderPage(agent, archiveAgents.length ? archiveAgents : currentAgents)
       .replace('</nav></header>', '<a href="/login">Sign in</a></nav></header>')
       .replace('<p>This site is supported by ads. We do not sell user data.</p>', '')
-      .replace('AI Agent Radar · Independent AI agent discovery', 'AI Agent Radar · Free, independent open-source intelligence'));
+      .replace('AI Agent Radar · Independent AI agent discovery', 'AI Agent Radar · Free, independent open-source intelligence')
+      .replace('</body>', '<script src="/analytics.js"></script></body>'));
   } catch (error) {
     console.error('Agent page render failed:', { name: error?.name, message: error?.message });
     return res.status(500).send('Unable to render agent page');
