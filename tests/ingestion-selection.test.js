@@ -27,9 +27,18 @@ test('archived scan history prevents rediscovered candidates from losing priorit
 test('Issue scanning rotates across professional categories before filling by age', () => {
   const categories = ['Security', 'Finance', 'Research', 'Coding', 'Marketing', 'Design', 'Productivity', 'Agent Infrastructure'];
   const candidates = categories.flatMap((category, categoryIndex) => [0, 1].map((offset) => ({ name: `${category}-${offset}`, category })));
-  const current = candidates.map((item, index) => ({ ...item, issueScannedAt: `2026-09-${String(index + 1).padStart(2, '0')}T00:00:00.000Z` }));
+  const current = candidates.map((item, index) => ({ ...item, evidenceIssues: [{}, {}], issueScannedAt: `2026-09-${String(index + 1).padStart(2, '0')}T00:00:00.000Z` }));
   const selected = selectIssueTargets(candidates, current, [], 7);
   assert.equal(selected.length, 7);
   assert.equal(new Set(selected.map((item) => item.category)).size, 7);
   assert.deepEqual(selected.map((item) => item.category), categories.slice(0, 7));
+});
+
+test('Issue scanning prioritizes every current project in a domain below the evidence floor', () => {
+  const marketing = Array.from({ length: 3 }, (_, index) => ({ name: `marketing-${index}`, category: 'Marketing' }));
+  const coding = Array.from({ length: 8 }, (_, index) => ({ name: `coding-${index}`, category: 'Coding' }));
+  const candidates = [...marketing, ...coding];
+  const current = candidates.map((item, index) => ({ ...item, evidenceIssues: item.category === 'Marketing' ? [] : [{}, {}], issueScannedAt: `2026-08-${String(index + 1).padStart(2, '0')}T00:00:00.000Z` }));
+  const selected = selectIssueTargets(candidates, current, [], 7);
+  assert.deepEqual(selected.filter((item) => item.category === 'Marketing').map((item) => item.name), marketing.map((item) => item.name));
 });

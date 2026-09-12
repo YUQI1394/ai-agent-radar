@@ -237,7 +237,7 @@ module.exports = async function handler(req, res) {
       const evidence = cleanIssueEvidence(issues.map((issue) => issueEvidence(issue, repository)))
         .filter((issue) => {
           const searchable = `${issue.title} ${issue.labels.join(' ')}`;
-          return DEMAND_PATTERN.test(searchable) && (issue.comments >= 2 || issue.reactions >= 2);
+          return (DEMAND_PATTERN.test(searchable) || issue.reactions >= 3) && (issue.comments >= 2 || issue.reactions >= 2);
         })
         .map((issue) => ({ ...issue, firstSeenAt: previousIssues.get(String(issue.id))?.firstSeenAt || previous?.updatedAt || issueScanTime }))
         .sort((a, b) => evidenceStrength(b) - evidenceStrength(a)).slice(0, 3);

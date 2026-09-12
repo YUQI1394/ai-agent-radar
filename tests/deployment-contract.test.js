@@ -423,4 +423,7 @@ test('GitHub discovery broadens thin professional domains without burst concurre
   const selection = fs.readFileSync(path.join(root, 'lib', 'ingestion-selection.js'), 'utf8');
   assert.match(selection, /categoryBalanced/);
   assert.match(ingestion, /authorAssociation: String\(issue\.author_association/);
+  assert.match(ingestion, /issue\.reactions >= 3/);
+  assert.match(selection, /evidenceByCategory/);
+  assert.match(selection, /recoveryNames/);
 });
