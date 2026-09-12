@@ -175,6 +175,10 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(validation, /Next proof target/);
   assert.match(validation, /Build signal/);
   assert.match(validation, /No behavioral proof yet/);
+  assert.match(detail, /professionalDomain/);
+  assert.match(detail, /VALIDATION LENS/);
+  assert.match(detail, /Professional constraint/);
+  assert.match(detail, /coach\.audience/);
   const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
   assert.match(workspace, /interviews ·/);
   assert.match(workspace, /commitments/);

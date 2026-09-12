@@ -68,6 +68,8 @@ async function main() {
   assert.match(detailHtml, /Reporter context:/i, 'opportunity detail lacks reporter evidence');
   assert.match(detailHtml, /Start free validation sprint/i, 'opportunity detail lacks execution path');
   assert.match(detailHtml, /Share this brief/i, 'opportunity detail lacks sharing');
+  assert.match(detailHtml, /VALIDATION LENS/i, 'opportunity detail lacks a professional coaching lens');
+  assert.match(detailHtml, /Professional constraint/i, 'opportunity detail lacks a domain-specific guardrail');
   assert.match(detailHtml, /\/analytics\.js/, 'opportunity journey lacks anonymous page analytics');
   console.log(`PASS ${opportunityHref} journey`);
 

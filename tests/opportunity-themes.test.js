@@ -41,6 +41,17 @@ test('builds specialized coaching plans for opportunity themes', () => {
   assert.notEqual(reliability.hypothesis, integration.hypothesis);
 });
 
+test('adds professional recruitment and guardrails to coaching plans', () => {
+  const security = coachingPlan({ title: 'Add human approval before tool execution' }, 'Security');
+  const marketing = coachingPlan({ title: 'Support social campaign scheduling' }, 'Marketing');
+  const research = coachingPlan({ title: 'Improve source retrieval quality' }, 'Research');
+  assert.match(security.audience, /security engineers/);
+  assert.match(security.constraint, /authorized/);
+  assert.match(marketing.recruitment, /current campaign/);
+  assert.match(marketing.constraint, /clicks or compliments/);
+  assert.match(research.constraint, /citation accuracy/);
+});
+
 test('turns specific demand patterns into tailored validation experiments', () => {
   const cost = coachingPlan({ title: 'Logs about token consumption and cost', labels: [] });
   const tools = coachingPlan({ title: 'Support dynamic tool addition after agent creation', labels: [] });
