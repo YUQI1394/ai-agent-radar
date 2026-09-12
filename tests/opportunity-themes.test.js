@@ -79,6 +79,11 @@ test('cleans duplicate and maintenance-only evidence across stored history', () 
     { title: 'You do not have a valid license of this product.', labels: ['kind/bug'] },
     { title: 'Denied request, used Claude Review', labels: [] },
     { title: "Ctrl+V dosen't work", labels: ['bug'] },
+    { title: 'Epic: Hive Mind: Unlimited Agent Swarm with Complete MCP Integration', labels: ['enhancement'] },
+    { title: 'Harden the tag-driven workflow for stable and preview releases', labels: ['platform'] },
+    { title: 'Prime Agent v0.8: five-stack integration tracker', labels: [] },
+    { title: 'Harden clean-room evaluation and evaluate the verifier on the current corpus', labels: ['conformance'] },
+    { title: '感谢大佬的教程，学完后分享出来共同学习', labels: ['feedback'] },
     { title: '[FEAT]: Add Slack connector', labels: [] },
     { title: 'feat - add slack connector', labels: [] },
     { title: 'Human approval workflow', labels: [] }
