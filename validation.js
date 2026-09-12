@@ -53,6 +53,7 @@
   const interviews = workspace.querySelector('#validation-interviews');
   const commitments = workspace.querySelector('#validation-commitments');
   const readiness = workspace.querySelector('#validation-readiness');
+  const startedFromBrief = location.hash === '#validation-start' && !state.nextAction;
   notes.value = state.notes || '';
   nextAction.value = state.nextAction || '';
   dueDate.value = state.dueDate || '';
@@ -136,6 +137,15 @@
     });
     card.append(queueButton);
   });
+  if (startedFromBrief && steps[0]) {
+    nextAction.value = String(steps[0].dataset.nextAction || steps[0].querySelector('h2')?.textContent || '').trim().slice(0, 180);
+    if (!dueDate.value) {
+      const target = new Date();
+      target.setDate(target.getDate() + 7);
+      dueDate.value = target.toISOString().slice(0, 10);
+    }
+    state.startedAt = state.startedAt || new Date().toISOString();
+  }
   let notesTimer;
   notes.addEventListener('input', () => { clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
   nextAction.addEventListener('input', () => { clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
@@ -154,5 +164,5 @@
   });
   updateProgress();
   updateReadiness();
-  persist('');
+  persist(startedFromBrief ? 'Sprint started · first action scheduled' : '');
 })();

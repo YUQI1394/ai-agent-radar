@@ -136,6 +136,9 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(detail, /Share this brief/);
   assert.match(detail, /\/share\.js/);
   assert.match(validation, /Make this my next action/);
+  assert.match(validation, /startedFromBrief/);
+  assert.match(validation, /Sprint started · first action scheduled/);
+  assert.match(validation, /setDate\(target\.getDate\(\) \+ 7\)/);
   assert.match(validation, /Added to execution queue/);
   assert.match(validation, /User interviews/);
   assert.match(validation, /Behavioral commitments/);
