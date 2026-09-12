@@ -230,8 +230,12 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(health, /evidenceContext: contextRatio >= 0\.75/);
   assert.match(health, /representedDomains === TARGET_DOMAINS\.length/);
   assert.match(health, /minimumDomainCount >= 2/);
+  assert.match(health, /professionalDemandBreadth/);
+  assert.match(health, /minimumDomainEvidence >= 2/);
   assert.match(smoke, /representedDomains, 8/);
   assert.match(smoke, /minimumDomainCount >= 2/);
+  assert.match(smoke, /minimumDomainEvidence >= 2/);
+  assert.match(workflow, /professionalDemandBreadth/);
   assert.match(health, /evidenceContext: \{ available: contextSignals/);
   assert.match(workflow, /Verify production data health/);
   assert.match(workflow, /for attempt in \{1\.\.12\}/);

@@ -90,8 +90,11 @@ async function main() {
   assert.equal(health.checks?.demandEvidence, true, 'demand evidence feed is empty or too shallow');
   assert.equal(health.checks?.evidenceContext, true, 'reporter context coverage is below 75%');
   assert.equal(health.checks?.professionalBreadth, true, 'professional domain coverage has collapsed');
+  assert.equal(health.checks?.professionalDemandBreadth, true, 'professional demand evidence coverage has collapsed');
   assert.equal(health.professionalCoverage?.representedDomains, 8, 'not all eight professional domains are represented');
   assert.ok(health.professionalCoverage?.minimumDomainCount >= 2, 'a professional domain has fewer than two projects');
+  assert.equal(health.professionalDemandCoverage?.representedDomains, 8, 'not all eight professional domains have demand evidence');
+  assert.ok(health.professionalDemandCoverage?.minimumDomainEvidence >= 2, 'a professional domain has fewer than two demand signals');
   if (health.ingestion) assert.equal(health.ingestion.degraded, false, 'latest GitHub refresh was partial');
   console.log(`PASS /health (${health.projects} projects, ${health.evidenceSignals} evidence signals)`);
 
