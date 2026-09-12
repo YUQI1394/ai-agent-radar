@@ -1,6 +1,6 @@
 (async () => {
   const emptyState = document.querySelector('#workspace-empty');
-  emptyState.innerHTML = `<span class="eyebrow">YOUR FIRST VALIDATION</span><h2>Start with one real problem—not an idea list</h2><p>Radar turns a public GitHub signal into a small validation sprint. Your first useful result can be one interview, one observed workaround, or one clear reason to stop.</p><ol class="workspace-onboarding"><li><strong>Choose one demand signal</strong><span>Open an Issue-backed opportunity that matches a field you understand.</span></li><li><strong>Make one action concrete</strong><span>Use “Make this my next action,” add a date, and keep the task small.</span></li><li><strong>Return with evidence</strong><span>Record interviews and commitments, then decide to build, narrow, or stop.</span></li></ol><a class="button button-primary" href="/opportunities">Choose my first opportunity →</a>`;
+  emptyState.innerHTML = `<span class="eyebrow">YOUR FIRST VALIDATION</span><h2>Choose a real need in a field you understand</h2><p>These recommendations come from the current qualified GitHub evidence feed. Pick one and Radar will schedule its first action for the next seven days.</p><div class="starter-picker" id="starter-picker" aria-live="polite"><p class="starter-loading">Loading current opportunities…</p></div><ol class="workspace-onboarding"><li><strong>Start with source evidence</strong><span>Every recommendation links back to the original public GitHub discussion.</span></li><li><strong>Do one concrete action</strong><span>Your first task and seven-day target are created when you start.</span></li><li><strong>Leave with a decision</strong><span>Record interviews and commitments, then choose Build, Narrow or Stop.</span></li></ol><a class="workspace-all-opportunities" href="/opportunities">Or browse every qualified opportunity →</a>`;
   const auth = await window.RadarAuth.ready;
   if (!auth.user) {
     document.querySelector('.workspace-summary').hidden = true;
@@ -41,6 +41,50 @@
       try { const data = JSON.parse(localStorage.getItem(key)); if (data?.title) items.push({ ...data, key, id: key.slice(prefix.length) }); } catch (_) {}
     }
     return items.sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+  }
+  async function loadStarterRecommendations() {
+    const picker = document.querySelector('#starter-picker');
+    if (!picker || records().length) return;
+    try {
+      const response = await fetch('/api/agents');
+      if (!response.ok) throw new Error('The live feed is temporarily unavailable');
+      const payload = await response.json();
+      const agents = Array.isArray(payload.agents) ? payload.agents : [];
+      const opportunities = [];
+      const seen = new Set();
+      agents.forEach((agent) => (Array.isArray(agent.evidenceIssues) ? agent.evidenceIssues : []).forEach((issue) => {
+        const id = String(issue.id || '');
+        if (!/^\d+$/.test(id) || !issue.title || seen.has(id)) return;
+        seen.add(id);
+        opportunities.push({
+          id, title: String(issue.title), project: String(agent.name || agent.slug || 'Open-source project'),
+          domain: String(agent.category || 'General AI'), comments: Math.max(0, Number(issue.comments) || 0),
+          reactions: Math.max(0, Number(issue.reactions) || 0), radar: Math.max(0, Number(agent.score?.total) || 0)
+        });
+      }));
+      if (!opportunities.length) throw new Error('No current opportunities are available');
+      const preferred = localStorage.getItem('ai-agent-radar:preferred-domain') || 'All fields';
+      const domainOrder = ['Research', 'Security', 'Finance', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure'];
+      const domains = domainOrder.filter((domain) => opportunities.some((item) => item.domain === domain));
+      const initial = domains.includes(preferred) ? preferred : 'All fields';
+      const strength = (item) => item.comments * 2 + item.reactions * 3 + item.radar / 20;
+      const renderRecommendations = (domain) => {
+        const candidates = opportunities.filter((item) => domain === 'All fields' || item.domain === domain)
+          .sort((a, b) => strength(b) - strength(a) || a.title.localeCompare(b.title)).slice(0, 3);
+        picker.querySelectorAll('[data-starter-domain]').forEach((button) => {
+          const active = button.dataset.starterDomain === domain;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        picker.querySelector('.starter-recommendations').innerHTML = candidates.map((item) => `<article class="starter-card"><div><span>${escapeHtml(item.domain)}</span><small>${item.comments} comments · ${item.reactions} reactions</small></div><h3>${escapeHtml(item.title)}</h3><p>Evidence in ${escapeHtml(item.project)}</p><a class="button button-primary" href="/opportunity/${encodeURIComponent(item.id)}#validation-start">Start this 7-day sprint →</a></article>`).join('');
+        if (domain !== 'All fields') localStorage.setItem('ai-agent-radar:preferred-domain', domain);
+      };
+      picker.innerHTML = `<div class="starter-picker-heading"><strong>Recommended from live evidence</strong><span>Choose your field</span></div><div class="starter-domains" role="group" aria-label="Choose a professional field"><button type="button" data-starter-domain="All fields">All</button>${domains.map((domain) => `<button type="button" data-starter-domain="${escapeHtml(domain)}">${escapeHtml(domain === 'Agent Infrastructure' ? 'Infrastructure' : domain)}</button>`).join('')}</div><div class="starter-recommendations"></div>`;
+      picker.querySelectorAll('[data-starter-domain]').forEach((button) => button.addEventListener('click', () => renderRecommendations(button.dataset.starterDomain)));
+      renderRecommendations(initial);
+    } catch (error) {
+      picker.innerHTML = `<p class="starter-loading">${escapeHtml(error.message)}. <a href="/opportunities">Browse Opportunity Radar →</a></p>`;
+    }
   }
   async function syncFromCloud() {
     if (!cloud.available) return;
@@ -173,4 +217,5 @@
   });
   await syncFromCloud();
   render();
+  await loadStarterRecommendations();
 })();

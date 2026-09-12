@@ -188,10 +188,24 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(login, /Build, Narrow or Stop decision/);
   assert.match(login, /A concrete first action/);
   assert.match(login, /A decision brief you can use/);
+  assert.match(login, /WHAT YOU LEAVE WITH/);
+  assert.match(login, /Example outcome/);
+  assert.match(login, /BUILD A NARROW PILOT/);
   assert.match(workspace, /Stop weak ideas before they consume weeks of work/);
   assert.match(workspace, /Export decision brief/);
   assert.match(workspace, /decisionBrief\(item\)/);
   assert.match(workspace, /text\/markdown/);
+});
+
+test('an empty registered workspace recommends live opportunities by professional field', () => {
+  const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
+  assert.match(workspace, /fetch\('\/api\/agents'\)/);
+  assert.match(workspace, /Recommended from live evidence/);
+  assert.match(workspace, /data-starter-domain/);
+  assert.match(workspace, /Start this 7-day sprint/);
+  assert.match(workspace, /#validation-start/);
+  assert.match(workspace, /ai-agent-radar:preferred-domain/);
+  assert.match(workspace, /Build, Narrow or Stop/);
 });
 
 test('privacy-preserving page analytics covers discovery and conversion routes', () => {
@@ -225,9 +239,9 @@ test('workspace sync protects newer offline edits from stale cloud copies', () =
   assert.match(workspace, /DO THIS NEXT/);
   assert.match(workspace, /orderedItems/);
   assert.match(workspace, /Continue this action/);
-  assert.match(workspace, /Choose one demand signal/);
-  assert.match(workspace, /Make one action concrete/);
-  assert.match(workspace, /Return with evidence/);
+  assert.match(workspace, /Choose a real need in a field you understand/);
+  assert.match(workspace, /Do one concrete action/);
+  assert.match(workspace, /Leave with a decision/);
   const workspaceHtml = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
   assert.match(workspaceHtml, /secure account sync and an offline copy/);
 });

@@ -56,8 +56,8 @@ async function main() {
   assert.match(detailHtml, /\/analytics\.js/, 'opportunity journey lacks anonymous page analytics');
   console.log(`PASS ${opportunityHref} journey`);
 
-  const [analyticsLoader, insightsScript, authScript] = await Promise.all([
-    fetch(`${origin}/analytics.js`), fetch(`${origin}/_vercel/insights/script.js`), fetch(`${origin}/auth.js`)
+  const [analyticsLoader, insightsScript, authScript, loginScript, workspaceScript] = await Promise.all([
+    fetch(`${origin}/analytics.js`), fetch(`${origin}/_vercel/insights/script.js`), fetch(`${origin}/auth.js`), fetch(`${origin}/login.js`), fetch(`${origin}/workspace.js`)
   ]);
   assert.equal(analyticsLoader.status, 200, '/analytics.js is unavailable');
   assert.match(await analyticsLoader.text(), /\/_vercel\/insights\/script\.js/, 'analytics loader does not use Vercel Insights');
@@ -65,6 +65,10 @@ async function main() {
   assert.match(insightsScript.headers.get('content-type') || '', /javascript/i, 'Vercel analytics route is not JavaScript');
   assert.equal(authScript.status, 200, '/auth.js is unavailable');
   assert.match(await authScript.text(), /\/analytics\.js/, 'registration journey does not load anonymous analytics');
+  assert.equal(loginScript.status, 200, '/login.js is unavailable');
+  assert.match(await loginScript.text(), /WHAT YOU LEAVE WITH/, 'registration page lacks a concrete outcome preview');
+  assert.equal(workspaceScript.status, 200, '/workspace.js is unavailable');
+  assert.match(await workspaceScript.text(), /Recommended from live evidence/, 'new workspaces lack live starter recommendations');
   console.log('PASS privacy-preserving conversion analytics');
 
   const [sitemap, feed, authConfig] = await Promise.all([
