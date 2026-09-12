@@ -76,8 +76,12 @@ test('sitemap applies the same opportunity quality filter as public rankings', (
 test('production security headers and third-party authentication integrity stay enforced', () => {
   const vercel = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
   const headers = new Map(vercel.headers[0].headers.map((header) => [header.key.toLowerCase(), header.value]));
-  assert.match(headers.get('content-security-policy'), /frame-ancestors 'none'/);
-  assert.match(headers.get('content-security-policy'), /connect-src[^;]+supabase\.co/);
+  const csp = headers.get('content-security-policy');
+  const scriptDirective = csp.split(';').map((directive) => directive.trim()).find((directive) => directive.startsWith('script-src '));
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /connect-src[^;]+supabase\.co/);
+  assert.match(csp, /script-src-attr 'none'/);
+  assert.doesNotMatch(scriptDirective, /'unsafe-inline'/);
   for (const file of ['index.html', 'login.html', 'workspace.html', 'account.html']) {
     const html = fs.readFileSync(path.join(root, file), 'utf8');
     assert.match(html, /supabase\.min\.js" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/);

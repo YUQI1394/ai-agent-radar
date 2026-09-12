@@ -126,7 +126,11 @@ async function main() {
   const headers = await fetch(`${origin}/`, { method: 'HEAD' });
   assert.match(headers.headers.get('strict-transport-security') || '', /max-age=/i);
   assert.equal(headers.headers.get('x-frame-options'), 'DENY');
-  assert.match(headers.headers.get('content-security-policy') || '', /default-src 'self'/i);
+  const productionCsp = headers.headers.get('content-security-policy') || '';
+  const productionScriptDirective = productionCsp.split(';').map((directive) => directive.trim()).find((directive) => directive.startsWith('script-src ')) || '';
+  assert.match(productionCsp, /default-src 'self'/i);
+  assert.match(productionCsp, /script-src-attr 'none'/i);
+  assert.doesNotMatch(productionScriptDirective, /'unsafe-inline'/i, 'executable inline scripts are allowed by CSP');
   const workspaceHeaders = await fetch(`${origin}/workspace`, { method: 'HEAD' });
   assert.match(workspaceHeaders.headers.get('x-robots-tag') || pageBodies.get('/workspace') || '', /noindex/i);
   console.log('PASS security headers');
