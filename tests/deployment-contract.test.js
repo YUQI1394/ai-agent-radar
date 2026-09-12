@@ -105,8 +105,11 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(home, /02 \/ UNDERSTAND/);
   assert.match(home, /03 \/ EXECUTE/);
   assert.match(home, /data-radar-node="0"/);
+  assert.match(home, /Qualified unmet needs/);
   assert.match(app, /function renderRadarField/);
-  assert.match(app, /node\.textContent = `\$\{agent\.name\} · \$\{agent\.radarScore\}`/);
+  assert.match(app, /qualified needs/);
+  assert.match(app, /strongest\.issue\.title/);
+  assert.match(app, /agent\.evidenceIssues/);
   assert.match(app, /data-share-url/);
   const share = fs.readFileSync(path.join(root, 'share.js'), 'utf8');
   assert.match(share, /navigator\.share/);

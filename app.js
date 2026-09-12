@@ -124,13 +124,21 @@
 
   function renderRadarField() {
     const nodes = [...document.querySelectorAll('[data-radar-node]')];
-    const signals = [...state.agents].sort((a, b) => b.radarScore - a.radarScore).slice(0, nodes.length);
-    nodes.forEach((node, index) => {
-      const agent = signals[index];
-      if (!agent) return;
-      node.textContent = `${agent.name} · ${agent.radarScore}`;
-      node.title = `${agent.name} · ${primaryCategory(agent)} · Radar ${agent.radarScore}`;
-    });
+    const leader = [...state.agents].sort((a, b) => b.radarScore - a.radarScore)[0];
+    const issues = state.agents.flatMap((agent) => (agent.evidenceIssues || []).map((issue) => ({ agent, issue })))
+      .sort((a, b) => Number(b.issue.reactions || 0) - Number(a.issue.reactions || 0) || Number(b.issue.comments || 0) - Number(a.issue.comments || 0));
+    const strongest = issues[0];
+    const labels = [
+      leader ? `${leader.name} · ${leader.radarScore}` : 'project signal pending',
+      strongest ? `${String(strongest.issue.title || 'Demand signal').slice(0, 34)}${String(strongest.issue.title || '').length > 34 ? '…' : ''}` : 'demand signal pending',
+      `${issues.length} qualified needs · ${CATEGORIES.length - 1} fields`
+    ];
+    const titles = [
+      leader ? `${leader.name} · ${primaryCategory(leader)} · Radar ${leader.radarScore}` : labels[0],
+      strongest ? `${strongest.issue.title} · ${strongest.agent.name} · ${Number(strongest.issue.comments || 0)} comments` : labels[1],
+      `${issues.length} traceable GitHub demand signals across ${CATEGORIES.length - 1} professional fields`
+    ];
+    nodes.forEach((node, index) => { node.textContent = labels[index]; node.title = titles[index]; });
   }
 
   function renderCountsAndSummary() {
@@ -142,7 +150,7 @@
     const leading = CATEGORIES.slice(1).sort((a, b) => counts[b] - counts[a])[0];
     const top = [...state.agents].sort((a, b) => b.radarScore - a.radarScore)[0];
     elements.statTotal.textContent = state.agents.length.toLocaleString();
-    elements.statNew.textContent = state.agents.filter((agent) => ageInHours(agent) <= 168).length.toLocaleString();
+    elements.statNew.textContent = state.agents.reduce((sum, agent) => sum + (agent.evidenceIssues || []).length, 0).toLocaleString();
     elements.statCategory.textContent = counts[leading] ? leading : 'Mixed';
     elements.statTop.textContent = top?.name || '—';
   }
