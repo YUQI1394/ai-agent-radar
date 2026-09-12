@@ -16,11 +16,14 @@
   }
   const auth = await window.RadarAuth.ready;
   const opportunityId = location.pathname.split('/').filter(Boolean).pop();
+  const historicalSignal = document.body.dataset.signalStatus === 'historical';
   if (!auth.user) {
     const gate = document.createElement('section');
     gate.className = 'auth-gate';
     gate.id = 'validation-start';
-    gate.innerHTML = `<span class="eyebrow">FREE REGISTRATION</span><h2>Ready to validate this signal?</h2><p>Create a free account to mark steps complete, save private notes and carry this sprint into your execution queue.</p><a class="button button-primary" href="/login?next=${encodeURIComponent(`${location.pathname}#validation-start`)}">Create free account or sign in</a>`;
+    gate.innerHTML = historicalSignal
+      ? '<span class="eyebrow">HISTORICAL SIGNAL</span><h2>Start from current evidence</h2><p>This brief is preserved for reference, but it has left the current curated feed. Choose a live signal before beginning a new sprint.</p><a class="button button-primary" href="/opportunities">Browse current opportunities</a>'
+      : `<span class="eyebrow">FREE 7-DAY VALIDATION SPRINT</span><h2>Leave with evidence—not another saved link</h2><p>Your free workspace turns this exact GitHub need into a concrete next action and a Build, Narrow or Stop decision.</p><ul class="auth-benefits"><li><strong>Today:</strong> a problem hypothesis and first action</li><li><strong>This week:</strong> interview prompts, evidence counts and reminders</li><li><strong>At the end:</strong> a decision based on behavior, not opinions</li></ul><a class="button button-primary" href="/login?next=${encodeURIComponent(`${location.pathname}#validation-start`)}">Start this sprint free</a><small>No payment · private notes · cloud sync</small>`;
     grid.before(gate);
     return;
   }

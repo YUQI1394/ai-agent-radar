@@ -28,11 +28,23 @@ module.exports = async function handler(req, res) {
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
     const [latest, archive] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive')]);
+    const currentAgentIds = new Set((latest?.agents || []).map((agent) => String(agent.id || agent.slug || agent.name)));
     const agentsById = new Map();
     [...(archive?.agents || []), ...(latest?.agents || [])].forEach((agent) => agentsById.set(String(agent.id || agent.slug || agent.name), agent));
     const match = findOpportunity([...agentsById.values()], id);
     if (!match) return sendNotFound(res, { headline: 'This opportunity signal has gone quiet.', message: 'The source Issue may have closed or left the current curated feed. Explore current evidence before starting a new validation.' });
     const { agent, issue } = match;
+    const historicalSignal = !currentAgentIds.has(String(agent.id || agent.slug || agent.name));
+    if (historicalSignal) {
+      res.setHeader('X-Robots-Tag', 'noindex, follow');
+      const send = res.send.bind(res);
+      res.send = (body) => send(typeof body === 'string' ? body
+        .replace('<meta name="robots" content="index, follow">', '<meta name="robots" content="noindex, follow">')
+        .replace('<body>', '<body data-signal-status="historical">')
+        .replace('<section class="opportunity-detail-hero">', '<section class="opportunity-disclaimer"><strong>Historical signal · no longer in the current curated feed</strong><p>This page is preserved so old links and saved research still work. Verify the original GitHub Issue before taking action, or choose a current signal from Opportunity Radar.</p><a href="/opportunities">Browse current opportunities →</a></section><section class="opportunity-detail-hero">')
+        .replace('<span class="eyebrow">GUIDED VALIDATION BRIEF</span>', '<span class="eyebrow">HISTORICAL VALIDATION BRIEF</span>')
+        .replace('<a class="button button-primary" href="#validation-start">Start free validation sprint</a><span>4 guided steps · private notes · cloud sync</span>', '<a class="button button-primary" href="/opportunities">Browse current opportunities</a><span>Archived brief · verify the original Issue</span>') : body);
+    }
     const projectSlug = encodeURIComponent(agent.slug || agent.id);
     const canonical = `${SITE_URL}/opportunity/${id}`;
     const radar = Number(agent.score?.total || scoreBreakdown(agent).total);

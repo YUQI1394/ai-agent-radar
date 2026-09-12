@@ -145,6 +145,8 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(validation, /gate\.id = 'validation-start'/);
   assert.match(validation, /workspace\.id = 'validation-start'/);
   assert.match(validation, /location\.pathname}#validation-start/);
+  assert.match(validation, /FREE 7-DAY VALIDATION SPRINT/);
+  assert.match(validation, /Build, Narrow or Stop/);
   assert.match(detail, /data-next-action=/);
   assert.match(detail, /Share this brief/);
   assert.match(detail, /\/share\.js/);
@@ -162,6 +164,24 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(workspace, /interviews ·/);
   assert.match(workspace, /commitments/);
   assert.match(listing, /evidenceEngagement/);
+});
+
+test('archived opportunity signals are preserved but not indexed or promoted as current', () => {
+  const detail = fs.readFileSync(path.join(root, 'api', 'opportunity.js'), 'utf8');
+  assert.match(detail, /currentAgentIds/);
+  assert.match(detail, /historicalSignal/);
+  assert.match(detail, /Historical signal · no longer in the current curated feed/);
+  assert.match(detail, /X-Robots-Tag', 'noindex, follow'/);
+  assert.match(detail, /Browse current opportunities/);
+});
+
+test('registration explains the concrete free outcome before asking users to sign in', () => {
+  const login = fs.readFileSync(path.join(root, 'login.js'), 'utf8');
+  const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
+  assert.match(login, /FREE 7-DAY VALIDATION WORKSPACE/);
+  assert.match(login, /Build, Narrow or Stop decision/);
+  assert.match(login, /A concrete first action/);
+  assert.match(workspace, /Stop weak ideas before they consume weeks of work/);
 });
 
 test('workspace sync protects newer offline edits from stale cloud copies', () => {

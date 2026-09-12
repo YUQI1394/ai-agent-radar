@@ -6,7 +6,7 @@
     document.querySelector('.workspace-summary').hidden = true;
     document.querySelector('.workspace-toolbar').hidden = true;
     document.querySelector('#workspace-empty').hidden = true;
-    document.querySelector('#workspace-list').innerHTML = `<section class="auth-gate"><span class="eyebrow">FREE REGISTRATION</span><h2>Sign in to use your workspace</h2><p>Create a free account to save validation progress securely across signed-in devices, with an offline copy in this browser.</p><a class="button button-primary" href="/login?next=%2Fworkspace">Create free account or sign in</a></section>`;
+    document.querySelector('#workspace-list').innerHTML = `<section class="auth-gate"><span class="eyebrow">FREE 7-DAY VALIDATION WORKSPACE</span><h2>Turn one GitHub need into a decision</h2><p>Choose one current signal, complete a focused validation sprint, and decide whether to Build, Narrow or Stop.</p><ul class="auth-benefits"><li><strong>One next action</strong><span>Scheduled automatically so research becomes execution.</span></li><li><strong>Real evidence</strong><span>Track interviews, commitments and exact user language.</span></li><li><strong>A decision gate</strong><span>Stop weak ideas before they consume weeks of work.</span></li></ul><a class="button button-primary" href="/login?next=%2Fworkspace">Open my free workspace</a><small>No payment · private notes · cross-device sync</small></section>`;
     return;
   }
   const prefix = auth.storagePrefix('validation');
