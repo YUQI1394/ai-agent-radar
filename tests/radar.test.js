@@ -140,6 +140,14 @@ test('curated selection preserves professional-domain representation', () => {
   assert.deepEqual(selected.map((item) => item.score.total), selected.map((item) => item.score.total).sort((a, b) => b - a));
 });
 
+test('curated selection defaults to three projects per available professional domain', () => {
+  const coding = Array.from({ length: 36 }, (_, index) => agent({ id: index + 1, category: 'Coding', score: { total: 100 - index }, stars: 1000 - index }));
+  const security = Array.from({ length: 3 }, (_, index) => agent({ id: 201 + index, category: 'Security', score: { total: 30 - index }, stars: 30 - index }));
+  const selected = selectCuratedAgents([...coding, ...security], 36);
+  assert.equal(selected.filter((item) => item.category === 'Security').length, 3);
+  assert.equal(selected.length, 36);
+});
+
 test('week keys consistently end on Sunday in UTC', () => {
   assert.equal(weekKey('2026-09-01T23:59:00-07:00'), '2026-09-06');
   assert.equal(weekKey('2026-09-06T23:59:00Z'), '2026-09-06');

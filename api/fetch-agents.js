@@ -19,18 +19,25 @@ const SEARCHES = () => [
   { query: `"security agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: '"pentest agent" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 15 },
   { query: '"AI penetration testing" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 15 },
+  { query: `"SOC analyst agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"financial agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: '"investment agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
+  { query: `"accounting agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"marketing agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"marketing agents" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
   { query: '"social media agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: '"sales agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
+  { query: `"SEO agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: '"content marketing agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: `"creative agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"creative agents" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
   { query: `"design workflow" agent in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
   { query: '"agentic video production" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
+  { query: `"UI UX agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"personal AI assistant" agent in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
-  { query: `"research agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 }
+  { query: `"meeting agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"research agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"literature review agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 }
 ];
 const DEMAND_PATTERN = /feature|request|support|proposal|enhancement|workflow|integration|export|import|api|ux|documentation|docs|performance|slow|error|fail|bug|problem|missing|cannot|can't|unable|crash|session|memory|security/i;
 const CURATED_LIMIT = 36;
@@ -47,6 +54,21 @@ async function searchRepositories(search, token) {
   const params = new URLSearchParams({ q: search.query, sort: search.sort, order: 'desc', per_page: String(search.perPage) });
   const body = await githubJson(`${GITHUB_API}/search/repositories?${params}`, token, 'GitHub repository search');
   return Array.isArray(body.items) ? body.items : [];
+}
+
+async function allSettledLimited(items, worker, concurrency = 6) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  async function run() {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      try { results[index] = { status: 'fulfilled', value: await worker(items[index], index) }; }
+      catch (reason) { results[index] = { status: 'rejected', reason }; }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, run));
+  return results;
 }
 
 async function fetchRepositoryIssues(repository, token) {
@@ -185,7 +207,7 @@ module.exports = async function handler(req, res) {
   try {
     const apiToken = String(req.headers['x-github-token'] || '');
     const searches = SEARCHES();
-    const searchResults = await Promise.allSettled(searches.map((search) => searchRepositories(search, apiToken)));
+    const searchResults = await allSettledLimited(searches, (search) => searchRepositories(search, apiToken));
     const batches = searchResults.filter((result) => result.status === 'fulfilled').map((result) => result.value);
     const searchFailures = searchResults.length - batches.length;
     if (!batches.length) throw new Error('All GitHub repository searches failed; existing feed preserved');

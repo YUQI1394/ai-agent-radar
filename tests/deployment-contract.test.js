@@ -394,3 +394,14 @@ test('GitHub discovery includes narrow creative and design workflow searches', (
   assert.match(ingestion, /"personal AI assistant" agent in:name,description,readme/);
   assert.match(ingestion, /"AI penetration testing" in:name,description,readme/);
 });
+
+test('GitHub discovery broadens thin professional domains without burst concurrency', () => {
+  const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
+  for (const query of ['SOC analyst agent', 'accounting agent', 'SEO agent', 'content marketing agent', 'UI UX agent', 'meeting agent', 'literature review agent']) {
+    assert.match(ingestion, new RegExp(query), `missing focused discovery query: ${query}`);
+  }
+  assert.match(ingestion, /allSettledLimited\(searches/);
+  assert.match(ingestion, /concurrency = 6/);
+  const radar = fs.readFileSync(path.join(root, 'lib', 'radar.js'), 'utf8');
+  assert.match(radar, /minimumPerDomain = 3/);
+});
