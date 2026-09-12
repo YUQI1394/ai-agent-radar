@@ -18,6 +18,20 @@ const pages = [
   ['/category/infrastructure', 'Agent Infrastructure AI Agents']
 ];
 
+async function fetchTransient(url, options = {}, attempts = 3) {
+  let response;
+  let failure;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      response = await fetch(url, options);
+      if (response.status !== 429 && response.status < 500) return response;
+    } catch (error) { failure = error; }
+    if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+  }
+  if (response) return response;
+  throw failure;
+}
+
 async function main() {
   const pageBodies = new Map();
   for (const [path, marker] of pages) {
@@ -90,8 +104,8 @@ async function main() {
   assert.doesNotMatch(JSON.stringify(auth), /service_role|secret/i, 'auth config may expose privileged credentials');
   const supabaseHeaders = { apikey: auth.publishableKey, Authorization: `Bearer ${auth.publishableKey}` };
   const [authSettingsResponse, anonymousWorkspaceResponse] = await Promise.all([
-    fetch(`${auth.url}/auth/v1/settings`, { headers: supabaseHeaders }),
-    fetch(`${auth.url}/rest/v1/user_workspace?select=record_key&limit=1`, { headers: supabaseHeaders })
+    fetchTransient(`${auth.url}/auth/v1/settings`, { headers: supabaseHeaders }),
+    fetchTransient(`${auth.url}/rest/v1/user_workspace?select=record_key&limit=1`, { headers: supabaseHeaders })
   ]);
   assert.equal(authSettingsResponse.status, 200, 'Supabase authentication service is unavailable');
   const authSettings = await authSettingsResponse.json();

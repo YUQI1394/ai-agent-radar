@@ -389,6 +389,10 @@ test('production smoke monitoring covers the public conversion journey', () => {
   assert.match(smoke, /auth\/v1\/settings/);
   assert.match(smoke, /disable_signup/);
   assert.match(smoke, /anonymous visitors can reach the private workspace table/);
+  assert.match(smoke, /async function fetchTransient/);
+  assert.match(smoke, /attempt <= attempts/);
+  assert.match(smoke, /response\.status !== 429 && response\.status < 500/);
+  assert.match(smoke, /fetchTransient\(`\$\{auth\.url\}\/auth\/v1\/settings/);
   assert.match(smoke, /privacy-preserving conversion analytics/);
   assert.match(smoke, /_vercel\/insights\/script\.js/);
   assert.match(smoke, /content-security-policy/);
