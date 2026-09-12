@@ -53,7 +53,19 @@ async function main() {
   assert.match(detailHtml, /Reporter context:/i, 'opportunity detail lacks reporter evidence');
   assert.match(detailHtml, /Start free validation sprint/i, 'opportunity detail lacks execution path');
   assert.match(detailHtml, /Share this brief/i, 'opportunity detail lacks sharing');
+  assert.match(detailHtml, /\/analytics\.js/, 'opportunity journey lacks anonymous page analytics');
   console.log(`PASS ${opportunityHref} journey`);
+
+  const [analyticsLoader, insightsScript, authScript] = await Promise.all([
+    fetch(`${origin}/analytics.js`), fetch(`${origin}/_vercel/insights/script.js`), fetch(`${origin}/auth.js`)
+  ]);
+  assert.equal(analyticsLoader.status, 200, '/analytics.js is unavailable');
+  assert.match(await analyticsLoader.text(), /\/_vercel\/insights\/script\.js/, 'analytics loader does not use Vercel Insights');
+  assert.equal(insightsScript.status, 200, 'Vercel Web Analytics is not enabled');
+  assert.match(insightsScript.headers.get('content-type') || '', /javascript/i, 'Vercel analytics route is not JavaScript');
+  assert.equal(authScript.status, 200, '/auth.js is unavailable');
+  assert.match(await authScript.text(), /\/analytics\.js/, 'registration journey does not load anonymous analytics');
+  console.log('PASS privacy-preserving conversion analytics');
 
   const [sitemap, feed, authConfig] = await Promise.all([
     fetch(`${origin}/sitemap.xml`), fetch(`${origin}/feed.xml`), fetch(`${origin}/auth-config.json`, { cache: 'no-store' })
