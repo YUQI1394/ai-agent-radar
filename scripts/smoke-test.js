@@ -10,7 +10,12 @@ const pages = [
   ['/status', 'Status'],
   ['/category/research', 'Research AI Agents'],
   ['/category/security', 'Security AI Agents'],
-  ['/category/finance', 'Finance AI Agents']
+  ['/category/finance', 'Finance AI Agents'],
+  ['/category/coding', 'Coding AI Agents'],
+  ['/category/marketing', 'Marketing AI Agents'],
+  ['/category/design', 'Design AI Agents'],
+  ['/category/productivity', 'Productivity AI Agents'],
+  ['/category/infrastructure', 'Agent Infrastructure AI Agents']
 ];
 
 async function main() {
@@ -21,6 +26,12 @@ async function main() {
     const html = await response.text();
     pageBodies.set(path, html);
     assert.match(html, new RegExp(marker, 'i'), `${path} is missing ${marker}`);
+    if (path.startsWith('/category/')) {
+      const demandCount = Number(html.match(/LIVE GITHUB DEMAND[\s\S]{0,300}<h2>(\d+) qualified signals/i)?.[1] || 0);
+      assert.ok(demandCount >= 2, `${path} has fewer than two qualified demand signals`);
+      assert.match(html, /#demand/, `${path} lacks structured demand data`);
+      assert.match(html, /Start guided sprint/i, `${path} lacks an execution path`);
+    }
     console.log(`PASS ${path}`);
   }
 

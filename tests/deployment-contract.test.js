@@ -287,6 +287,11 @@ test('production smoke monitoring covers the public conversion journey', () => {
   assert.match(smoke, /healthAttempt <= 12/);
   assert.match(smoke, /branded 404 recovery/);
   assert.match(smoke, /dynamic 404 recovery/);
+  for (const slug of ['research', 'security', 'finance', 'coding', 'marketing', 'design', 'productivity', 'infrastructure']) {
+    assert.match(smoke, new RegExp(`/category/${slug}`));
+  }
+  assert.match(smoke, /LIVE GITHUB DEMAND/);
+  assert.match(smoke, /fewer than two qualified demand signals/);
 });
 
 test('pattern intelligence uses qualified evidence and leads to an executable test', () => {
