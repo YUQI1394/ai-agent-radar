@@ -211,6 +211,21 @@ test('an empty registered workspace recommends live opportunities by professiona
   assert.match(workspace, /Build, Narrow or Stop/);
 });
 
+test('registered users can monitor saved project movement from the workspace', () => {
+  const html = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
+  const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
+  const login = fs.readFileSync(path.join(root, 'login.js'), 'utf8');
+  const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  assert.match(html, /SAVED PROJECT WATCHLIST/);
+  assert.match(html, /href="\/#saved"/);
+  assert.match(workspace, /cloud\.get\('saved', 'agents'\)/);
+  assert.match(workspace, /stars since last scan/);
+  assert.match(workspace, /qualified need/);
+  assert.match(workspace, /loadSavedWatchlist/);
+  assert.match(login, /A watchlist that moves/);
+  assert.match(app, /location\.hash === '#saved'/);
+});
+
 test('privacy-preserving page analytics covers discovery and conversion routes', () => {
   const analytics = fs.readFileSync(path.join(root, 'analytics.js'), 'utf8');
   const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');

@@ -29,6 +29,15 @@
   exportButton.after(importButton, importInput);
   const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
   const safeFilename = (value = 'validation-brief') => String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70) || 'validation-brief';
+  let agentFeedPromise;
+  function loadAgentFeed() {
+    if (!agentFeedPromise) agentFeedPromise = fetch('/api/get-agents').then(async (response) => {
+      if (!response.ok) throw new Error('The live feed is temporarily unavailable');
+      const payload = await response.json();
+      return Array.isArray(payload.agents) ? payload.agents : [];
+    });
+    return agentFeedPromise;
+  }
   function decisionBrief(item) {
     const labels = { build: 'Build', narrow: 'Narrow', stop: 'Stop' };
     return `# Validation decision brief\n\n## ${item.title}\n\n- Project: ${item.project || 'Not recorded'}\n- Decision: ${labels[item.decision] || 'Undecided'}\n- Progress: ${(item.completed || []).length}/4 steps\n- User interviews: ${Number(item.interviews) || 0}\n- Behavioral commitments: ${Number(item.commitments) || 0}\n- Next action: ${item.nextAction || 'Not set'}\n- Target date: ${item.dueDate || 'Not set'}\n- Last updated: ${item.updatedAt || 'Not recorded'}\n\n## Evidence notes\n\n${String(item.notes || '').trim() || 'No evidence notes recorded yet.'}\n\n---\nGenerated from AI Agent Radar. Verify the original GitHub evidence before acting.\n`;
@@ -46,10 +55,7 @@
     const picker = document.querySelector('#starter-picker');
     if (!picker || records().length) return;
     try {
-      const response = await fetch('/api/get-agents');
-      if (!response.ok) throw new Error('The live feed is temporarily unavailable');
-      const payload = await response.json();
-      const agents = Array.isArray(payload.agents) ? payload.agents : [];
+      const agents = await loadAgentFeed();
       const opportunities = [];
       const seen = new Set();
       agents.forEach((agent) => (Array.isArray(agent.evidenceIssues) ? agent.evidenceIssues : []).forEach((issue) => {
@@ -96,6 +102,39 @@
     } catch (error) {
       picker.innerHTML = `<p class="starter-loading">${escapeHtml(error.message)}. <a href="/opportunities">Browse Opportunity Radar →</a></p>`;
     }
+  }
+  async function loadSavedWatchlist() {
+    const section = document.querySelector('#workspace-watchlist');
+    const grid = document.querySelector('#workspace-watchlist-grid');
+    if (!section || !grid) return;
+    let ids = [];
+    try {
+      const local = JSON.parse(localStorage.getItem(auth.savedKey()) || '[]');
+      if (Array.isArray(local)) ids = local.map(String);
+    } catch (_) {}
+    if (cloud.available) {
+      try {
+        const remote = await cloud.get('saved', 'agents');
+        if (Array.isArray(remote?.ids)) {
+          ids = remote.ids.map(String);
+          localStorage.setItem(auth.savedKey(), JSON.stringify(ids));
+        }
+      } catch (_) { /* Keep the local watchlist. */ }
+    }
+    if (!ids.length) return;
+    try {
+      const wanted = new Set(ids);
+      const saved = (await loadAgentFeed()).filter((agent) => wanted.has(String(agent.id || agent.slug || agent.name))).slice(0, 8);
+      if (!saved.length) return;
+      grid.innerHTML = saved.map((agent) => {
+        const movement = Number(agent.starDelta || agent.voteDelta || 0) > 0
+          ? `+${Number(agent.starDelta || agent.voteDelta)} stars since last scan`
+          : Number(agent.rankChange || 0) !== 0 ? `${Number(agent.rankChange) > 0 ? '↑' : '↓'}${Math.abs(Number(agent.rankChange))} rank change` : 'No material change this scan';
+        const evidenceCount = (agent.evidenceIssues || []).length;
+        return `<a class="watchlist-card" href="/agent/${encodeURIComponent(agent.slug || agent.id)}"><span>${escapeHtml(agent.category || 'AI Agent')}</span><h3>${escapeHtml(agent.name)}</h3><p>Radar ${Number(agent.score?.total || agent.radarScore || 0)} · ${evidenceCount} qualified need${evidenceCount === 1 ? '' : 's'}</p><small>${escapeHtml(movement)}</small></a>`;
+      }).join('');
+      section.hidden = false;
+    } catch (_) { /* Validation work remains usable if the public feed is unavailable. */ }
   }
   async function syncFromCloud() {
     if (!cloud.available) return;
@@ -228,5 +267,5 @@
   });
   await syncFromCloud();
   render();
-  await loadStarterRecommendations();
+  await Promise.allSettled([loadStarterRecommendations(), loadSavedWatchlist()]);
 })();

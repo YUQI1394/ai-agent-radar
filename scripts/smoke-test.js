@@ -26,6 +26,7 @@ async function main() {
     const html = await response.text();
     pageBodies.set(path, html);
     assert.match(html, new RegExp(marker, 'i'), `${path} is missing ${marker}`);
+    if (path === '/workspace') assert.match(html, /SAVED PROJECT WATCHLIST/, 'workspace lacks the saved-project monitoring surface');
     if (path.startsWith('/category/')) {
       const demandCount = Number(html.match(/LIVE GITHUB DEMAND[\s\S]{0,300}<h2>(\d+) qualified signals/i)?.[1] || 0);
       assert.ok(demandCount >= 2, `${path} has fewer than two qualified demand signals`);

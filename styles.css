@@ -398,6 +398,17 @@ button, input { font: inherit; }
 .workspace-summary div { display: flex; flex-direction: column; padding: 20px; border: 1px solid rgba(255,255,255,.08); border-radius: 15px; background: var(--card); }
 .workspace-summary strong { color: var(--cyan); font-size: 1.7rem; }
 .workspace-summary span { color: var(--muted); font-size: .75rem; }
+.workspace-watchlist { margin-bottom: 20px; padding: 21px; border: 1px solid rgba(6,182,212,.22); border-radius: 16px; background: linear-gradient(130deg, rgba(6,182,212,.07), rgba(124,58,237,.055)), var(--card); }
+.workspace-watchlist-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 14px; }
+.workspace-watchlist-heading h2 { margin: 5px 0 0; font-size: 1.2rem; }
+.workspace-watchlist-heading > a { color: var(--cyan); font-size: .76rem; font-weight: 750; }
+.workspace-watchlist-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
+.watchlist-card { display: flex; min-width: 0; flex-direction: column; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: rgba(5,7,14,.55); transition: border-color .2s ease, transform .2s ease; }
+.watchlist-card:hover { border-color: rgba(6,182,212,.45); transform: translateY(-2px); }
+.watchlist-card > span { color: #67e8f9; font-size: .65rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.watchlist-card h3 { margin: 8px 0 7px; overflow: hidden; font-size: .88rem; text-overflow: ellipsis; white-space: nowrap; }
+.watchlist-card p, .watchlist-card small { margin: 0; color: var(--muted); font-size: .7rem; line-height: 1.5; }
+.watchlist-card small { margin-top: 7px; color: #a7f3d0; }
 .workspace-list { display: grid; gap: 14px; }
 .workspace-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 18px; padding: 16px 19px; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; background: var(--card); }
 .workspace-toolbar div { display: flex; flex-direction: column; }
@@ -575,6 +586,8 @@ button, input { font: inherit; }
   .evidence-source { align-items: flex-start; flex-direction: column; }
   .workspace-heading { align-items: flex-start; flex-direction: column; }
   .workspace-summary { grid-template-columns: 1fr; }
+  .workspace-watchlist-grid { grid-template-columns: 1fr 1fr; }
+  .workspace-watchlist-heading { align-items: flex-start; flex-direction: column; }
   .validation-plan { grid-template-columns: 1fr; }
   .workspace-toolbar { align-items: flex-start; flex-direction: column; }
   .workspace-focus { align-items: flex-start; flex-direction: column; }

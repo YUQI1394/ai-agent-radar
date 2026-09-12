@@ -23,6 +23,10 @@
     statNew: document.getElementById('stat-new'), statCategory: document.getElementById('stat-category'),
     statTop: document.getElementById('stat-top')
   };
+  if (location.hash === '#saved') {
+    state.filter = 'Saved';
+    elements.filters.forEach((button) => button.classList.toggle('active', button.dataset.filter === 'Saved'));
+  }
 
   const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
