@@ -181,7 +181,11 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(login, /FREE 7-DAY VALIDATION WORKSPACE/);
   assert.match(login, /Build, Narrow or Stop decision/);
   assert.match(login, /A concrete first action/);
+  assert.match(login, /A decision brief you can use/);
   assert.match(workspace, /Stop weak ideas before they consume weeks of work/);
+  assert.match(workspace, /Export decision brief/);
+  assert.match(workspace, /decisionBrief\(item\)/);
+  assert.match(workspace, /text\/markdown/);
 });
 
 test('workspace sync protects newer offline edits from stale cloud copies', () => {

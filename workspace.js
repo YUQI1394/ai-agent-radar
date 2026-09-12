@@ -28,6 +28,11 @@
   importInput.hidden = true;
   exportButton.after(importButton, importInput);
   const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+  const safeFilename = (value = 'validation-brief') => String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70) || 'validation-brief';
+  function decisionBrief(item) {
+    const labels = { build: 'Build', narrow: 'Narrow', stop: 'Stop' };
+    return `# Validation decision brief\n\n## ${item.title}\n\n- Project: ${item.project || 'Not recorded'}\n- Decision: ${labels[item.decision] || 'Undecided'}\n- Progress: ${(item.completed || []).length}/4 steps\n- User interviews: ${Number(item.interviews) || 0}\n- Behavioral commitments: ${Number(item.commitments) || 0}\n- Next action: ${item.nextAction || 'Not set'}\n- Target date: ${item.dueDate || 'Not set'}\n- Last updated: ${item.updatedAt || 'Not recorded'}\n\n## Evidence notes\n\n${String(item.notes || '').trim() || 'No evidence notes recorded yet.'}\n\n---\nGenerated from AI Agent Radar. Verify the original GitHub evidence before acting.\n`;
+  }
   function records() {
     const items = [];
     for (let index = 0; index < localStorage.length; index += 1) {
@@ -101,8 +106,19 @@
       const action = String(item.nextAction || '').trim();
       const interviews = Math.min(20, Math.max(0, Number(item.interviews) || 0));
       const commitments = Math.min(20, Math.max(0, Number(item.commitments) || 0));
-      return `<article class="workspace-card"><div class="workspace-card-top"><span>${escapeHtml(item.project || 'Opportunity validation')}</span><strong>${count}/4 steps · ${escapeHtml(decision)}</strong></div><h2><a href="/opportunity/${encodeURIComponent(item.id)}">${escapeHtml(item.title)}</a></h2><div class="workspace-bar"><span style="width:${Math.min(100, count / 4 * 100)}%"></span></div><p class="workspace-evidence"><strong>${interviews}</strong> interviews · <strong>${commitments}</strong> commitments</p>${action ? `<p class="workspace-next"><strong>Next:</strong> ${escapeHtml(action)}${item.dueDate ? ` · ${escapeHtml(item.dueDate)}` : ''}</p>` : ''}<p>${note ? escapeHtml(note.slice(0, 180)) : 'No research notes yet.'}${note.length > 180 ? '…' : ''}</p><div class="workspace-card-actions"><a href="/opportunity/${encodeURIComponent(item.id)}">Continue validation →</a><button type="button" data-remove="${escapeHtml(item.key)}">Remove</button></div></article>`;
+      return `<article class="workspace-card"><div class="workspace-card-top"><span>${escapeHtml(item.project || 'Opportunity validation')}</span><strong>${count}/4 steps · ${escapeHtml(decision)}</strong></div><h2><a href="/opportunity/${encodeURIComponent(item.id)}">${escapeHtml(item.title)}</a></h2><div class="workspace-bar"><span style="width:${Math.min(100, count / 4 * 100)}%"></span></div><p class="workspace-evidence"><strong>${interviews}</strong> interviews · <strong>${commitments}</strong> commitments</p>${action ? `<p class="workspace-next"><strong>Next:</strong> ${escapeHtml(action)}${item.dueDate ? ` · ${escapeHtml(item.dueDate)}` : ''}</p>` : ''}<p>${note ? escapeHtml(note.slice(0, 180)) : 'No research notes yet.'}${note.length > 180 ? '…' : ''}</p><div class="workspace-card-actions"><a href="/opportunity/${encodeURIComponent(item.id)}">Continue validation →</a><button type="button" data-brief="${escapeHtml(item.key)}">Export decision brief</button><button type="button" data-remove="${escapeHtml(item.key)}">Remove</button></div></article>`;
     }).join('');
+    list.querySelectorAll('[data-brief]').forEach((button) => button.addEventListener('click', () => {
+      const item = records().find((record) => record.key === button.dataset.brief);
+      if (!item) return;
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(new Blob([decisionBrief(item)], { type: 'text/markdown;charset=utf-8' }));
+      link.download = `${safeFilename(item.title)}-decision-brief.md`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 0);
+      const message = document.querySelector('#workspace-due');
+      message.textContent = 'Decision brief exported';
+    }));
     list.querySelectorAll('[data-remove]').forEach((button) => button.addEventListener('click', async () => {
       if (!window.confirm('Remove this validation from this browser? Export a backup first if you may need it later.')) return;
       localStorage.removeItem(button.dataset.remove);

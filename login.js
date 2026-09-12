@@ -4,7 +4,7 @@
   card.querySelector('h1').innerHTML = 'Turn one signal into a <span>decision</span>';
   const introduction = card.querySelector('h1 + p');
   introduction.textContent = 'Registration unlocks an execution plan—not more reading. Start with one GitHub-backed need and work toward a Build, Narrow or Stop decision.';
-  introduction.insertAdjacentHTML('afterend', '<ul class="auth-benefits"><li><strong>A concrete first action</strong><span>Automatically scheduled when you start a sprint.</span></li><li><strong>Evidence, not memory</strong><span>Track interviews, behavioral commitments and exact user language.</span></li><li><strong>Your private execution queue</strong><span>Resume on another device, with offline copy and export.</span></li></ul>');
+  introduction.insertAdjacentHTML('afterend', '<ul class="auth-benefits"><li><strong>A concrete first action</strong><span>Automatically scheduled when you start a sprint.</span></li><li><strong>Evidence, not memory</strong><span>Track interviews, behavioral commitments and exact user language.</span></li><li><strong>A decision brief you can use</strong><span>Export a readable Build, Narrow or Stop report—not a data dump.</span></li></ul>');
   document.querySelector('#magic-link-form button').textContent = 'Start free by email';
   const loading = document.querySelector('#auth-loading');
   const actions = document.querySelector('#auth-actions');
