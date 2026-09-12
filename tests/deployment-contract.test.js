@@ -335,6 +335,9 @@ test('production smoke monitoring covers the public conversion journey', () => {
   assert.match(smoke, /sitemap HEAD coverage/);
   assert.match(smoke, /method: 'HEAD'/);
   assert.match(smoke, /auth\.configured/);
+  assert.match(smoke, /auth\/v1\/settings/);
+  assert.match(smoke, /disable_signup/);
+  assert.match(smoke, /anonymous visitors can reach the private workspace table/);
   assert.match(smoke, /privacy-preserving conversion analytics/);
   assert.match(smoke, /_vercel\/insights\/script\.js/);
   assert.match(smoke, /content-security-policy/);

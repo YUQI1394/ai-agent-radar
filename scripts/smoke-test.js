@@ -80,6 +80,16 @@ async function main() {
   assert.equal(auth.configured, true, 'free registration is not configured');
   assert.match(auth.publishableKey || '', /^sb_publishable_/, 'auth config does not expose a publishable key');
   assert.doesNotMatch(JSON.stringify(auth), /service_role|secret/i, 'auth config may expose privileged credentials');
+  const supabaseHeaders = { apikey: auth.publishableKey, Authorization: `Bearer ${auth.publishableKey}` };
+  const [authSettingsResponse, anonymousWorkspaceResponse] = await Promise.all([
+    fetch(`${auth.url}/auth/v1/settings`, { headers: supabaseHeaders }),
+    fetch(`${auth.url}/rest/v1/user_workspace?select=record_key&limit=1`, { headers: supabaseHeaders })
+  ]);
+  assert.equal(authSettingsResponse.status, 200, 'Supabase authentication service is unavailable');
+  const authSettings = await authSettingsResponse.json();
+  assert.equal(authSettings.disable_signup, false, 'new account registration is disabled');
+  for (const provider of auth.providers) assert.equal(authSettings.external?.[provider], true, `${provider} sign-in is not enabled in Supabase`);
+  assert.equal(anonymousWorkspaceResponse.status, 401, 'anonymous visitors can reach the private workspace table');
   console.log('PASS discovery and registration endpoints');
 
   const sitemapPaths = [...sitemapXml.matchAll(/<loc>https:\/\/[^/]+([^<]*)<\/loc>/g)]
