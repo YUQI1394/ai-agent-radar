@@ -18,6 +18,7 @@
     }
     document.querySelectorAll('[data-provider]').forEach((button) => { button.hidden = !auth.providers.includes(button.dataset.provider); });
     actions.hidden = false;
+    if (auth.callbackError) show(`Sign-in wasn't completed: ${auth.callbackError}. Please try again.`, true);
   });
   document.querySelectorAll('[data-provider]').forEach((button) => button.addEventListener('click', async () => {
     button.disabled = true; show('Opening secure sign-in…');

@@ -20,6 +20,12 @@ test('registration routes and public auth configuration remain deployable', () =
   assert.equal(typeof config.url, 'string');
   assert.equal(typeof config.publishableKey, 'string');
   assert.deepEqual(config.providers, ['email']);
+  const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');
+  const login = fs.readFileSync(path.join(root, 'login.js'), 'utf8');
+  assert.match(auth, /authCallbackError/);
+  assert.match(auth, /error_description/);
+  assert.match(auth, /history\.replaceState/);
+  assert.match(login, /Sign-in wasn't completed/);
 });
 
 test('unknown routes recover into discovery and execution paths', () => {

@@ -7,8 +7,15 @@
       return url.origin === location.origin ? `${url.pathname}${url.search}${url.hash}` : '/';
     } catch { return '/'; }
   };
+  const authCallbackError = () => {
+    const params = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const code = String(params.get('error_code') || params.get('error') || '').trim();
+    const description = String(params.get('error_description') || '').trim();
+    if (!code && !description) return '';
+    return (description || code.replace(/[_-]+/g, ' ')).slice(0, 300);
+  };
   const api = {
-    client: null, user: null, configured: false, providers: ['email'], error: '',
+    client: null, user: null, configured: false, providers: ['email'], error: '', callbackError: '',
     next(value) { return normalizeNext(value); },
     storagePrefix(kind) { return `ai-agent-radar:${kind}:${this.user?.id || 'guest'}:`; },
     savedKey() { return `ai-agent-radar-saved:${this.user?.id || 'guest'}`; },
@@ -86,6 +93,10 @@
       const { data, error } = await api.client.auth.getUser();
       if (error && !/session/i.test(error.message || '')) throw error;
       api.user = data?.user || null;
+      if (!api.user) {
+        api.callbackError = authCallbackError();
+        if (api.callbackError) history.replaceState(null, '', `${location.pathname}${location.search}`);
+      }
       migrateLegacyBrowserData();
       api.client.auth.onAuthStateChange((event, session) => {
         api.user = session?.user || null;
