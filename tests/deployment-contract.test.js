@@ -151,7 +151,13 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(home, /\/login\?next=%2Fworkspace/);
   assert.match(home, /data-radar-node="0"/);
   assert.match(home, /Qualified unmet needs/);
+  assert.match(home, /DEMAND BEFORE TOOLS/);
+  assert.match(home, /id="home-demand-grid"/);
+  assert.match(home, /opportunities\?confidence=repeated/);
   assert.match(app, /function renderRadarField/);
+  assert.match(app, /function renderRepeatedNeeds/);
+  assert.match(app, /issue\.confidence\?\.level === 'repeated'/);
+  assert.match(app, /#validation-start/);
   assert.match(app, /qualified needs/);
   assert.match(app, /strongest\.issue\.title/);
   assert.match(app, /agent\.evidenceIssues/);

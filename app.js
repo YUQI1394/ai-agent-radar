@@ -21,7 +21,8 @@
     trendingWidget: document.getElementById('trending-widget'), trendingList: document.getElementById('trending-list'),
     empty: document.getElementById('empty-state'), statTotal: document.getElementById('stat-total'),
     statNew: document.getElementById('stat-new'), statCategory: document.getElementById('stat-category'),
-    statTop: document.getElementById('stat-top')
+    statTop: document.getElementById('stat-top'), homeDemand: document.getElementById('home-demand'),
+    homeDemandGrid: document.getElementById('home-demand-grid')
   };
   if (location.hash === '#saved') {
     state.filter = 'Saved';
@@ -145,6 +146,23 @@
     nodes.forEach((node, index) => { node.textContent = labels[index]; node.title = titles[index]; });
   }
 
+  function renderRepeatedNeeds() {
+    const seenPatterns = new Set();
+    const repeated = state.agents.flatMap((agent) => (agent.evidenceIssues || []).map((issue) => ({ agent, issue })))
+      .filter(({ issue }) => issue.pattern && issue.confidence?.level === 'repeated')
+      .sort((a, b) => (Number(b.issue.reactions || 0) * 4 + Number(b.issue.comments || 0)) - (Number(a.issue.reactions || 0) * 4 + Number(a.issue.comments || 0)))
+      .filter(({ issue }) => {
+        const pattern = String(issue.pattern).toLowerCase();
+        if (seenPatterns.has(pattern)) return false;
+        seenPatterns.add(pattern);
+        return true;
+      })
+      .slice(0, 3);
+    if (!elements.homeDemand || !elements.homeDemandGrid || !repeated.length) return;
+    elements.homeDemandGrid.innerHTML = repeated.map(({ agent, issue }) => `<article class="home-demand-card"><div><span>${escapeHtml(issue.pattern)}</span><strong>${escapeHtml(issue.confidence.label)}</strong></div><h3>${escapeHtml(issue.title)}</h3><p>Observed in ${escapeHtml(agent.name)} · ${Number(issue.comments || 0)} comments · ${Number(issue.reactions || 0)} reactions</p><a href="/opportunity/${encodeURIComponent(issue.id)}#validation-start">Open evidence and start sprint →</a></article>`).join('');
+    elements.homeDemand.hidden = false;
+  }
+
   function renderCountsAndSummary() {
     const counts = Object.fromEntries(CATEGORIES.map((category) => [category, state.agents.filter((agent) => categoryMatches(agent, category)).length]));
     elements.counts.forEach((element) => {
@@ -186,7 +204,7 @@
       if (!response.ok) throw new Error(`Request failed (${response.status})`);
       const data = await response.json();
       state.agents = (data.agents || []).map((agent) => ({ ...agent, radarScore: radarScore(agent) }));
-      showUpdatedAt(data.updatedAt); renderRadarField(); renderTrending(); render();
+      showUpdatedAt(data.updatedAt); renderRadarField(); renderRepeatedNeeds(); renderTrending(); render();
     } catch (error) {
       elements.grid.setAttribute('aria-busy', 'false');
       elements.grid.innerHTML = `<div class="error-state"><h2>Could not load agents</h2><p>${escapeHtml(error.message)}. Please try again shortly.</p></div>`;

@@ -57,6 +57,15 @@ async function main() {
     console.log(`PASS ${path}`);
   }
 
+  assert.match(pageBodies.get('/'), /DEMAND BEFORE TOOLS/i, 'homepage lacks repeated-demand intelligence');
+  assert.match(pageBodies.get('/'), /id="home-demand-grid"/i, 'homepage lacks its repeated-demand surface');
+  const homepageApp = await fetch(`${origin}/app.js`);
+  assert.equal(homepageApp.status, 200, '/app.js is unavailable');
+  const homepageAppSource = await homepageApp.text();
+  assert.match(homepageAppSource, /function renderRepeatedNeeds/, 'homepage cannot render repeated needs');
+  assert.match(homepageAppSource, /confidence\?\.level === 'repeated'/, 'homepage demand surface is not confidence-gated');
+  console.log('PASS homepage repeated-demand surface');
+
   const filteredOpportunities = await fetch(`${origin}/opportunities?q=memory`);
   assert.equal(filteredOpportunities.status, 200, `filtered opportunities returned ${filteredOpportunities.status}`);
   assert.match(filteredOpportunities.headers.get('x-robots-tag') || '', /noindex/i, 'filtered opportunities lack an HTTP noindex signal');
