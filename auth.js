@@ -7,11 +7,43 @@
     document.head.append(analytics);
   }
 
+  const PENDING_NEXT_KEY = 'ai-agent-radar:pending-auth-next';
+  const PENDING_NEXT_TTL = 60 * 60 * 1000;
+
   const normalizeNext = (value) => {
     try {
       const url = new URL(value || '/', location.origin);
-      return url.origin === location.origin ? `${url.pathname}${url.search}${url.hash}` : '/';
+      const path = `${url.pathname}${url.search}${url.hash}`.slice(0, 1000);
+      return url.origin === location.origin && !url.pathname.startsWith('/login') ? path : '/workspace';
     } catch { return '/'; }
+  };
+  const rememberPendingNext = (value) => {
+    const pending = { path: normalizeNext(value), createdAt: Date.now() };
+    const serialized = JSON.stringify(pending);
+    try { sessionStorage.setItem(PENDING_NEXT_KEY, serialized); } catch (_) {}
+    try { localStorage.setItem(PENDING_NEXT_KEY, serialized); } catch (_) {}
+    return pending.path;
+  };
+  const readPendingNext = () => {
+    for (const storage of [sessionStorage, localStorage]) {
+      try {
+        const raw = storage.getItem(PENDING_NEXT_KEY) || (storage === sessionStorage ? storage.getItem('ai-agent-radar:auth-next') : '');
+        if (!raw) continue;
+        let pending;
+        try { pending = JSON.parse(raw); } catch (_) { pending = storage === sessionStorage ? { path: raw, createdAt: Date.now() } : null; }
+        if (!pending || !Number.isFinite(Number(pending.createdAt)) || Date.now() - Number(pending.createdAt) > PENDING_NEXT_TTL) {
+          storage.removeItem(PENDING_NEXT_KEY);
+          continue;
+        }
+        return normalizeNext(pending.path);
+      } catch (_) { /* Continue when storage is unavailable. */ }
+    }
+    return '';
+  };
+  const clearPendingNext = () => {
+    for (const storage of [sessionStorage, localStorage]) {
+      try { storage.removeItem(PENDING_NEXT_KEY); storage.removeItem('ai-agent-radar:auth-next'); } catch (_) {}
+    }
   };
   const authCallbackError = () => {
     const params = new URLSearchParams(location.hash.replace(/^#/, ''));
@@ -23,11 +55,14 @@
   const api = {
     client: null, user: null, configured: false, providers: ['email'], error: '', callbackError: '',
     next(value) { return normalizeNext(value); },
+    rememberNext(value) { return rememberPendingNext(value); },
+    pendingNext() { return readPendingNext(); },
+    clearPendingNext() { clearPendingNext(); },
     storagePrefix(kind) { return `ai-agent-radar:${kind}:${this.user?.id || 'guest'}:`; },
     savedKey() { return `ai-agent-radar-saved:${this.user?.id || 'guest'}`; },
     async signIn(provider, next = '/') {
       if (!this.client) throw new Error('Registration is not configured yet.');
-      sessionStorage.setItem('ai-agent-radar:auth-next', normalizeNext(next));
+      this.rememberNext(next);
       const { error } = await this.client.auth.signInWithOAuth({
         provider,
         options: { redirectTo: `${location.origin}/login` }
@@ -36,7 +71,7 @@
     },
     async sendMagicLink(email, next = '/') {
       if (!this.client) throw new Error('Registration is not configured yet.');
-      sessionStorage.setItem('ai-agent-radar:auth-next', normalizeNext(next));
+      this.rememberNext(next);
       const { error } = await this.client.auth.signInWithOtp({
         email,
         options: { emailRedirectTo: `${location.origin}/login` }

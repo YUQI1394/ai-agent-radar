@@ -29,7 +29,7 @@
     const button = event.target.closest('[data-start-opportunity]');
     if (!button) return;
     next = `/opportunity/${button.dataset.startOpportunity}#validation-start`;
-    sessionStorage.setItem('ai-agent-radar:auth-next', next);
+    window.RadarAuth.rememberNext(next);
     recommendation.querySelectorAll('[data-start-opportunity]').forEach((item) => { item.disabled = item !== button; });
     button.textContent = 'Selected · continue below to sign in';
     show(`Your first sprint is ready: ${button.dataset.startTitle}`);
@@ -51,12 +51,12 @@
   const loading = document.querySelector('#auth-loading');
   const actions = document.querySelector('#auth-actions');
   const status = document.querySelector('#auth-status');
-  let next = window.RadarAuth.next(new URLSearchParams(location.search).get('next') || sessionStorage.getItem('ai-agent-radar:auth-next') || '/workspace');
+  let next = window.RadarAuth.next(new URLSearchParams(location.search).get('next') || window.RadarAuth.pendingNext() || '/workspace');
   const show = (message, isError = false) => { status.textContent = message; status.classList.toggle('error', isError); };
   window.RadarAuth.ready.then((auth) => {
     loading.hidden = true;
     if (auth.user) {
-      sessionStorage.removeItem('ai-agent-radar:auth-next');
+      auth.clearPendingNext();
       location.replace(next);
       return;
     }

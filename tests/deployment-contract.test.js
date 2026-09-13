@@ -25,7 +25,15 @@ test('registration routes and public auth configuration remain deployable', () =
   assert.match(auth, /authCallbackError/);
   assert.match(auth, /error_description/);
   assert.match(auth, /history\.replaceState/);
+  assert.match(auth, /PENDING_NEXT_TTL = 60 \* 60 \* 1000/);
+  assert.match(auth, /localStorage\.setItem\(PENDING_NEXT_KEY/);
+  assert.match(auth, /Date\.now\(\) - Number\(pending\.createdAt\) > PENDING_NEXT_TTL/);
+  assert.match(auth, /url\.origin === location\.origin/);
+  assert.match(auth, /clearPendingNext/);
   assert.match(login, /Sign-in wasn't completed/);
+  assert.match(login, /window\.RadarAuth\.pendingNext\(\)/);
+  assert.match(login, /window\.RadarAuth\.rememberNext\(next\)/);
+  assert.match(login, /auth\.clearPendingNext\(\)/);
 });
 
 test('unknown routes recover into discovery and execution paths', () => {
@@ -229,7 +237,7 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(login, /Public evidence stays free/);
   assert.match(login, /Use this need as my first sprint/);
   assert.match(login, /next = `\/opportunity\/\$\{button\.dataset\.startOpportunity\}#validation-start`/);
-  assert.match(login, /sessionStorage\.setItem\('ai-agent-radar:auth-next', next\)/);
+  assert.match(login, /RadarAuth\.rememberNext\(next\)/);
   assert.match(workspace, /Stop weak ideas before they consume weeks of work/);
   assert.match(workspace, /Export decision brief/);
   assert.match(workspace, /decisionBrief\(item\)/);

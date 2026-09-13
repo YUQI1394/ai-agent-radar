@@ -81,7 +81,10 @@ async function main() {
   assert.equal(insightsScript.status, 200, 'Vercel Web Analytics is not enabled');
   assert.match(insightsScript.headers.get('content-type') || '', /javascript/i, 'Vercel analytics route is not JavaScript');
   assert.equal(authScript.status, 200, '/auth.js is unavailable');
-  assert.match(await authScript.text(), /\/analytics\.js/, 'registration journey does not load anonymous analytics');
+  const authSource = await authScript.text();
+  assert.match(authSource, /\/analytics\.js/, 'registration journey does not load anonymous analytics');
+  assert.match(authSource, /PENDING_NEXT_TTL/, 'email sign-in cannot restore a selected sprint across tabs');
+  assert.match(authSource, /localStorage\.setItem\(PENDING_NEXT_KEY/, 'selected auth continuation is not shared across browser tabs');
   assert.equal(loginScript.status, 200, '/login.js is unavailable');
   const loginSource = await loginScript.text();
   assert.match(loginSource, /WHAT YOU LEAVE WITH/, 'registration page lacks a concrete outcome preview');
