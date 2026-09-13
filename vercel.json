@@ -41,7 +41,7 @@
     },
     {
       "source": "/rss",
-      "destination": "/rss.html"
+      "destination": "/api/feed?format=html"
     },
     {
       "source": "/weekly/:date",

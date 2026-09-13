@@ -107,16 +107,18 @@ test('RSS publishes filtered projects and opportunity signals', () => {
 test('RSS has a human-readable reader and keeps the standard XML subscription', () => {
   const vercel = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
   const rewrites = new Map(vercel.rewrites.map((rule) => [rule.source, rule.destination]));
-  const page = fs.readFileSync(path.join(root, 'rss.html'), 'utf8');
+  const page = fs.readFileSync(path.join(root, 'api', 'feed.js'), 'utf8');
   const reader = fs.readFileSync(path.join(root, 'rss-reader.js'), 'utf8');
   const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
-  assert.equal(rewrites.get('/rss'), '/rss.html');
+  assert.equal(rewrites.get('/rss'), '/api/feed?format=html');
   assert.match(page, /RSS SUBSCRIPTION URL/);
-  assert.match(page, /https:\/\/getaiagentradar\.com\/feed\.xml/);
+  assert.match(page, /\$\{SITE_URL\}\/feed\.xml/);
   assert.match(page, /data-rss-filter="opportunity"/);
   assert.match(page, /data-rss-filter="agent"/);
-  assert.match(reader, /new DOMParser\(\)/);
-  assert.match(reader, /querySelectorAll\('channel > item'\)/);
+  assert.match(page, /data-rss-entry/);
+  assert.match(page, /cleanIssueEvidence\(agent\.evidenceIssues/);
+  assert.match(page, /The feed is fully readable without JavaScript/);
+  assert.match(reader, /querySelectorAll\('\[data-rss-entry\]'\)/);
   assert.match(reader, /navigator\.clipboard\.writeText/);
   assert.match(reader, /url\.origin === location\.origin/);
   assert.match(sitemap, /path: '\/rss'/);

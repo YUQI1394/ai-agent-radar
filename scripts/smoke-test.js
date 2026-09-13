@@ -106,7 +106,8 @@ async function main() {
   assert.match(workspaceSource, /domain-radar:/, 'professional demand radar has no durable return baseline');
   assert.equal(rssReaderScript.status, 200, '/rss-reader.js is unavailable');
   const rssReaderSource = await rssReaderScript.text();
-  assert.match(rssReaderSource, /channel > item/, 'visual RSS reader does not parse feed entries');
+  assert.match(pageBodies.get('/rss'), /data-rss-entry="(?:agent|opportunity)"/, 'visual RSS reader has no server-rendered entries');
+  assert.match(rssReaderSource, /data-rss-entry/, 'visual RSS reader cannot filter server-rendered entries');
   assert.match(rssReaderSource, /navigator\.clipboard\.writeText/, 'visual RSS reader cannot copy the subscription URL');
   assert.match(loginSource, /Choose your professional field/, 'registration lacks professional personalization');
   assert.match(loginSource, /LIVE GITHUB-BACKED NEED/, 'registration does not preview a live demand signal');
