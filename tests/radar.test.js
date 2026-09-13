@@ -116,6 +116,8 @@ test('professional domains take priority over infrastructure form', () => {
   assert.equal(category(agent({ name: 'Red Team Agent', topics: ['ai-agents', 'penetration-testing', 'mcp-server'] })), 'Security');
   assert.equal(category(agent({ name: 'Research Agent', topics: ['ai-agents', 'deep-research', 'rag'] })), 'Research');
   assert.equal(category(agent({ name: 'Model Studio CLI', tagline: 'CLI built for AI Agent frameworks with structured tool calls', topics: ['ai-agents', 'multimodal', 'video'] })), 'Agent Infrastructure');
+  assert.equal(category(agent({ name: 'ODS', tagline: 'Turn your PC into an AI server with LLM inference, agents, workflows and RAG', topics: ['ai-agents', 'rag', 'self-hosted'] })), 'Agent Infrastructure');
+  assert.equal(category(agent({ name: 'Finance Server', tagline: 'Self-hosted AI server for a financial agent that analyzes portfolios', topics: ['ai-agents', 'rag', 'finance'] })), 'Finance');
   assert.equal(category(agent({ name: 'AdCraft', tagline: 'Agentic video production workflow from idea to final campaign', topics: ['creative-agent', 'video-production'] })), 'Design');
   assert.equal(category(agent({ name: 'JarvisHub', tagline: 'An open harness for canvas-native multimodal creative agents', topics: [] })), 'Design');
   assert.equal(category(agent({ name: 'OpenPencil', tagline: 'AI-native vector design tool with concurrent Agent Teams and Design-as-Code', topics: ['developer-tools', 'design'] })), 'Design');
