@@ -45,6 +45,14 @@ test('accepts actionable agents and rejects model-only or generator products', (
     description: 'Examples and notebooks for quantitative finance.', topics: ['trading-agent']
   })), false);
   assert.equal(qualifiesAsAgent(agent({
+    name: 'AI Agents for Beginners', tagline: '18 Lessons to Get Started Building AI Agents',
+    description: 'A beginner curriculum with notebooks and lesson materials.', topics: ['ai-agents', 'agentic-framework']
+  })), false);
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Learning Agent', tagline: 'Autonomous agent that plans lessons and evaluates student work',
+    description: 'A runnable education agent with tools and workflow automation.', topics: ['ai-agents', 'education']
+  })), true);
+  assert.equal(qualifiesAsAgent(agent({
     name: 'Awesome AI Startups', tagline: 'A curated list of indie-built AI startups',
     description: 'A curated list of useful tools and companies.', topics: ['ai-agents', 'mcp']
   })), false);
