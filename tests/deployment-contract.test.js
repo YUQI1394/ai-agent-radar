@@ -227,6 +227,9 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(login, /ai-agent-radar:preferred-domain/);
   assert.match(login, /LIVE GITHUB-BACKED NEED/);
   assert.match(login, /Public evidence stays free/);
+  assert.match(login, /Use this need as my first sprint/);
+  assert.match(login, /next = `\/opportunity\/\$\{button\.dataset\.startOpportunity\}#validation-start`/);
+  assert.match(login, /sessionStorage\.setItem\('ai-agent-radar:auth-next', next\)/);
   assert.match(workspace, /Stop weak ideas before they consume weeks of work/);
   assert.match(workspace, /Export decision brief/);
   assert.match(workspace, /decisionBrief\(item\)/);

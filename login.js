@@ -21,10 +21,21 @@
     localStorage.setItem('ai-agent-radar:preferred-domain', domain);
     const item = liveOpportunities.filter((candidate) => candidate.domain === domain).sort((a, b) => strength(b) - strength(a))[0];
     recommendation.innerHTML = item
-      ? `<span>LIVE GITHUB-BACKED NEED · ${escapeHtml(domain.toUpperCase())}</span><strong>${escapeHtml(item.title)}</strong><p>${item.comments} comments · ${item.reactions} reactions · found in ${escapeHtml(item.project)}</p><a href="/opportunity/${encodeURIComponent(item.id)}">Inspect the public evidence →</a>`
+      ? `<span>LIVE GITHUB-BACKED NEED · ${escapeHtml(domain.toUpperCase())}</span><strong>${escapeHtml(item.title)}</strong><p>${item.comments} comments · ${item.reactions} reactions · found in ${escapeHtml(item.project)}</p><div><button class="button button-primary" type="button" data-start-opportunity="${encodeURIComponent(item.id)}" data-start-title="${escapeHtml(item.title)}">Use this need as my first sprint</button><a href="/opportunity/${encodeURIComponent(item.id)}">Inspect the public evidence →</a></div>`
       : `<strong>No current need clears the evidence threshold in ${escapeHtml(domain)}.</strong><p>Choose another field or browse the complete public Radar.</p><a href="/opportunities">Browse all current opportunities →</a>`;
   };
   domainSelect.addEventListener('change', renderRecommendation);
+  recommendation.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-start-opportunity]');
+    if (!button) return;
+    next = `/opportunity/${button.dataset.startOpportunity}#validation-start`;
+    sessionStorage.setItem('ai-agent-radar:auth-next', next);
+    recommendation.querySelectorAll('[data-start-opportunity]').forEach((item) => { item.disabled = item !== button; });
+    button.textContent = 'Selected · continue below to sign in';
+    show(`Your first sprint is ready: ${button.dataset.startTitle}`);
+    actions.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.querySelector('#auth-email')?.focus({ preventScroll: true });
+  });
   fetch('/api/get-agents').then(async (response) => {
     if (!response.ok) throw new Error('Live recommendations are temporarily unavailable');
     const payload = await response.json();
@@ -40,7 +51,7 @@
   const loading = document.querySelector('#auth-loading');
   const actions = document.querySelector('#auth-actions');
   const status = document.querySelector('#auth-status');
-  const next = window.RadarAuth.next(new URLSearchParams(location.search).get('next') || sessionStorage.getItem('ai-agent-radar:auth-next') || '/workspace');
+  let next = window.RadarAuth.next(new URLSearchParams(location.search).get('next') || sessionStorage.getItem('ai-agent-radar:auth-next') || '/workspace');
   const show = (message, isError = false) => { status.textContent = message; status.classList.toggle('error', isError); };
   window.RadarAuth.ready.then((auth) => {
     loading.hidden = true;

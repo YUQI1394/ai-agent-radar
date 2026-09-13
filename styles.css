@@ -516,6 +516,8 @@ button, input { font: inherit; }
 .registration-recommendation strong { line-height: 1.45; }
 .registration-recommendation p, .registration-personalizer small { margin: 0; color: var(--muted); font-size: .72rem; line-height: 1.55; }
 .registration-recommendation a { color: var(--cyan); font-size: .76rem; font-weight: 750; }
+.registration-recommendation > div { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.registration-recommendation .button { padding: 10px 13px; font-size: .74rem; }
 .opportunity-disclaimer a { display: inline-block; margin-top: 10px; color: #fdba74; font-weight: 700; }
 .pattern-summary { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 20px; }
 .pattern-summary div { display: flex; flex-direction: column; padding: 20px; border: 1px solid rgba(255,255,255,.08); border-radius: 15px; background: var(--card); }
