@@ -116,6 +116,11 @@ test('RSS has a human-readable reader and keeps the standard XML subscription', 
   assert.match(page, /data-rss-filter="opportunity"/);
   assert.match(page, /data-rss-filter="agent"/);
   assert.match(page, /data-rss-entry/);
+  assert.match(page, /data-rss-domain/);
+  assert.match(page, /Choose a professional feed/);
+  assert.match(page, /\?domain=\$\{slug\}/);
+  assert.match(page, /X-Robots-Tag.*noindex, follow/);
+  assert.match(page, /<category>\$\{escapeXml\(entry\.domain\)\}<\/category>/);
   assert.match(page, /cleanIssueEvidence\(agent\.evidenceIssues/);
   assert.match(page, /The feed is fully readable without JavaScript/);
   assert.match(reader, /querySelectorAll\('\[data-rss-entry\]'\)/);

@@ -109,6 +109,18 @@ async function main() {
   assert.match(pageBodies.get('/rss'), /data-rss-entry="(?:agent|opportunity)"/, 'visual RSS reader has no server-rendered entries');
   assert.match(rssReaderSource, /data-rss-entry/, 'visual RSS reader cannot filter server-rendered entries');
   assert.match(rssReaderSource, /navigator\.clipboard\.writeText/, 'visual RSS reader cannot copy the subscription URL');
+  const professionalReader = await fetch(`${origin}/rss?domain=security`);
+  assert.equal(professionalReader.status, 200, 'professional RSS reader is unavailable');
+  assert.match(professionalReader.headers.get('x-robots-tag') || '', /noindex/i, 'filtered RSS reader lacks noindex');
+  const professionalReaderHtml = await professionalReader.text();
+  assert.match(professionalReaderHtml, /Security Intelligence/i, 'professional RSS reader lacks its field context');
+  assert.match(professionalReaderHtml, /data-rss-domain="Security"/, 'professional RSS reader has no matching entries');
+  assert.doesNotMatch(professionalReaderHtml, /data-rss-domain="Finance"/, 'professional RSS reader mixes unrelated fields');
+  const professionalFeed = await fetch(`${origin}/feed.xml?domain=security`);
+  assert.equal(professionalFeed.status, 200, 'professional RSS XML is unavailable');
+  const professionalFeedXml = await professionalFeed.text();
+  assert.match(professionalFeedXml, /<category>Security<\/category>/, 'professional RSS XML lacks its field metadata');
+  assert.doesNotMatch(professionalFeedXml, /<category>Finance<\/category>/, 'professional RSS XML mixes unrelated fields');
   assert.match(loginSource, /Choose your professional field/, 'registration lacks professional personalization');
   assert.match(loginSource, /LIVE GITHUB-BACKED NEED/, 'registration does not preview a live demand signal');
   assert.match(loginSource, /ai-agent-radar:preferred-domain/, 'registration choice is not carried into the workspace');
