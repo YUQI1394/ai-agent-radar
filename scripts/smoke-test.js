@@ -83,9 +83,13 @@ async function main() {
   assert.equal(authScript.status, 200, '/auth.js is unavailable');
   assert.match(await authScript.text(), /\/analytics\.js/, 'registration journey does not load anonymous analytics');
   assert.equal(loginScript.status, 200, '/login.js is unavailable');
-  assert.match(await loginScript.text(), /WHAT YOU LEAVE WITH/, 'registration page lacks a concrete outcome preview');
+  const loginSource = await loginScript.text();
+  assert.match(loginSource, /WHAT YOU LEAVE WITH/, 'registration page lacks a concrete outcome preview');
   assert.equal(workspaceScript.status, 200, '/workspace.js is unavailable');
   assert.match(await workspaceScript.text(), /Recommended from live evidence/, 'new workspaces lack live starter recommendations');
+  assert.match(loginSource, /Choose your professional field/, 'registration lacks professional personalization');
+  assert.match(loginSource, /LIVE GITHUB-BACKED NEED/, 'registration does not preview a live demand signal');
+  assert.match(loginSource, /ai-agent-radar:preferred-domain/, 'registration choice is not carried into the workspace');
   console.log('PASS privacy-preserving conversion analytics');
 
   const [sitemap, feed, authConfig, agentFeed] = await Promise.all([

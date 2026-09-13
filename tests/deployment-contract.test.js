@@ -222,6 +222,11 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(login, /WHAT YOU LEAVE WITH/);
   assert.match(login, /Example outcome/);
   assert.match(login, /BUILD A NARROW PILOT/);
+  assert.match(login, /Choose your professional field/);
+  assert.match(login, /\/api\/get-agents/);
+  assert.match(login, /ai-agent-radar:preferred-domain/);
+  assert.match(login, /LIVE GITHUB-BACKED NEED/);
+  assert.match(login, /Public evidence stays free/);
   assert.match(workspace, /Stop weak ideas before they consume weeks of work/);
   assert.match(workspace, /Export decision brief/);
   assert.match(workspace, /decisionBrief\(item\)/);

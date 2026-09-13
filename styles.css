@@ -506,6 +506,16 @@ button, input { font: inherit; }
 .outcome-preview-body dt { color: var(--muted); font-size: .72rem; }
 .outcome-preview-body dd { margin: 0; color: var(--text); font-size: .74rem; }
 .outcome-preview-body .outcome-build { color: #86efac; font-weight: 800; }
+.registration-personalizer { display: grid; gap: 12px; margin: 22px 0; padding: 16px; text-align: left; border: 1px solid rgba(249,115,22,.24); border-radius: 15px; background: linear-gradient(135deg,rgba(249,115,22,.065),rgba(6,182,212,.04)); }
+.registration-personalizer > div { display: grid; gap: 4px; }
+.registration-personalizer > div span, .registration-recommendation > span { color: #fdba74; font-size: .66rem; font-weight: 850; letter-spacing: .1em; }
+.registration-personalizer label { color: var(--text); font-weight: 800; }
+.registration-personalizer select { width: 100%; padding: 11px 13px; color: var(--text); border: 1px solid rgba(255,255,255,.12); border-radius: 10px; outline: 0; background: #0c111c; color-scheme: dark; }
+.registration-personalizer select:focus { border-color: #fdba74; box-shadow: 0 0 0 3px rgba(249,115,22,.08); }
+.registration-recommendation { display: grid; gap: 7px; padding: 14px; border-radius: 11px; background: rgba(0,0,0,.2); }
+.registration-recommendation strong { line-height: 1.45; }
+.registration-recommendation p, .registration-personalizer small { margin: 0; color: var(--muted); font-size: .72rem; line-height: 1.55; }
+.registration-recommendation a { color: var(--cyan); font-size: .76rem; font-weight: 750; }
 .opportunity-disclaimer a { display: inline-block; margin-top: 10px; color: #fdba74; font-weight: 700; }
 .pattern-summary { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 20px; }
 .pattern-summary div { display: flex; flex-direction: column; padding: 20px; border: 1px solid rgba(255,255,255,.08); border-radius: 15px; background: var(--card); }
