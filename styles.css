@@ -352,6 +352,18 @@ button, input { font: inherit; }
 .opportunity-kicker { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .opportunity-kicker strong { color: #fdba74; font-size: .75rem; }
 .opportunity-card h2 { margin: 8px 0; font-size: clamp(1.2rem, 2.5vw, 1.55rem); line-height: 1.3; }
+.confidence-badge { padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; font-size: .62rem; letter-spacing: .04em; white-space: nowrap; }
+.confidence-badge.confidence-repeated { color: #86efac; border-color: rgba(34,197,94,.32); background: rgba(34,197,94,.08); }
+.confidence-badge.confidence-supported { color: #67e8f9; border-color: rgba(6,182,212,.32); background: rgba(6,182,212,.08); }
+.confidence-badge.confidence-early { color: #fdba74; border-color: rgba(251,146,60,.3); background: rgba(251,146,60,.07); }
+.opportunity-confidence-copy { margin: 10px 0; color: var(--muted); font-size: .76rem; line-height: 1.55; }
+.evidence-confidence { margin: 18px 0; padding: 20px; border: 1px solid var(--line); border-radius: 15px; background: var(--card); }
+.evidence-confidence h2 { margin: 7px 0; font-size: 1.08rem; }
+.evidence-confidence p { margin: 0; color: var(--muted); line-height: 1.6; }
+.evidence-confidence small { display: block; margin-top: 8px; color: var(--muted); }
+.evidence-confidence.confidence-repeated { border-color: rgba(34,197,94,.3); }
+.evidence-confidence.confidence-supported { border-color: rgba(6,182,212,.3); }
+.evidence-confidence.confidence-early { border-color: rgba(251,146,60,.3); }
 .opportunity-card h2 a:hover, .opportunity-project a:hover, .opportunity-actions a:hover { color: var(--cyan); }
 .opportunity-project { margin: 0 0 14px; color: var(--muted); font-size: .82rem; }
 .opportunity-project a { color: #c4b5fd; font-weight: 750; }

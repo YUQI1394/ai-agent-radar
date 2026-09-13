@@ -77,6 +77,8 @@ async function main() {
   assert.match(detailHtml, /Share this brief/i, 'opportunity detail lacks sharing');
   assert.match(detailHtml, /VALIDATION LENS/i, 'opportunity detail lacks a professional coaching lens');
   assert.match(detailHtml, /Professional constraint/i, 'opportunity detail lacks a domain-specific guardrail');
+  assert.match(detailHtml, /DEMAND CONFIDENCE/i, 'opportunity detail does not explain demand confidence');
+  assert.match(detailHtml, /(?:REPEATED ACROSS|STRONG ISSUE SUPPORT|SUPPORTED ISSUE|EARLY INTERVIEW LEAD)/i, 'opportunity detail lacks a confidence tier');
   assert.match(detailHtml, /\/analytics\.js/, 'opportunity journey lacks anonymous page analytics');
   console.log(`PASS ${opportunityHref} journey`);
 

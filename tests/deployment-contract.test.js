@@ -202,6 +202,9 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   const validation = fs.readFileSync(path.join(root, 'validation.js'), 'utf8');
   assert.match(listing, /Start guided sprint/);
+  assert.match(listing, /evidenceConfidence/);
+  assert.match(listing, /patternRepositories/);
+  assert.match(listing, /Evidence score/);
   assert.match(listing, /What the reporter described/);
   assert.match(listing, /Search demand evidence/);
   assert.match(listing, /queryTerms\.every/);
@@ -212,6 +215,8 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(listing, /html\.replace\('<meta name="robots" content="index, follow">', '<meta name="robots" content="noindex, follow">'\)/);
   assert.match(ingestion, /excerpt: issueExcerpt\(issue\.body\)/);
   assert.match(detail, /Start free validation sprint/);
+  assert.match(detail, /DEMAND CONFIDENCE/);
+  assert.match(detail, /Project strength and demand confidence are measured separately/);
   assert.match(detail, /Reporter context/);
   assert.match(detail, /href="#validation-start"/);
   assert.match(validation, /gate\.id = 'validation-start'/);

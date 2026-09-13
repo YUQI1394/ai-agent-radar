@@ -1,6 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { category, scoreBreakdown } = require('../lib/radar');
-const { cleanIssueEvidence, evidenceEngagement, evidenceFreshness, evidenceStrength, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
+const { cleanIssueEvidence, evidenceConfidence, evidenceEngagement, evidenceFreshness, evidenceStrength, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
@@ -25,7 +25,8 @@ function opportunityCard(item, index) {
   const labels = `${item.isNew ? '<span class="new-signal">NEW SIGNAL</span>' : ''}${(issue.labels || []).slice(0, 4).map((label) => `<span>${escapeHtml(label)}</span>`).join('')}`;
   const age = openDays(issue.createdAt);
   const excerpt = issue.excerpt ? `<p class="opportunity-excerpt"><strong>What the reporter described:</strong> ${escapeHtml(issue.excerpt)}</p>` : '';
-  return `<article class="opportunity-card"><div class="opportunity-rank">#${index + 1}</div><div class="opportunity-content"><div class="opportunity-kicker"><span class="analysis-label">${escapeHtml(item.pattern)} · ${escapeHtml(agent.category || category(agent))}</span><strong>Evidence ${item.score}/100</strong></div><h2><a href="/opportunity/${encodeURIComponent(issue.id)}">${escapeHtml(issue.title)}</a></h2><p class="opportunity-project">Observed in <a href="/agent/${slug}">${escapeHtml(agent.name)}</a> · ${escapeHtml(agent.language || 'Unknown')} · ${escapeHtml(agent.license || 'License not declared')}</p>${excerpt}<div class="opportunity-metrics"><span>${Number(issue.comments || 0)} comments</span><span>${Number(issue.reactions || 0)} positive reactions</span><span>${age ? `${age} days open` : 'Open duration unknown'}</span><span>Project Radar ${Number(agent.score?.total || scoreBreakdown(agent).total)}</span></div>${labels ? `<div class="opportunity-labels">${labels}</div>` : ''}<div class="opportunity-actions"><a href="/opportunity/${encodeURIComponent(issue.id)}#validation-start">Start guided sprint →</a><a href="${safeUrl(issue.url)}" target="_blank" rel="noopener noreferrer">Original GitHub Issue ↗</a><a href="/agent/${slug}">Project analysis →</a></div></div></article>`;
+  const confidence = evidenceConfidence(issue, item.repositoryCount);
+  return `<article class="opportunity-card"><div class="opportunity-rank">#${index + 1}</div><div class="opportunity-content"><div class="opportunity-kicker"><span class="analysis-label">${escapeHtml(item.pattern)} · ${escapeHtml(agent.category || category(agent))}</span><strong class="confidence-badge confidence-${confidence.level}">${escapeHtml(confidence.label)}</strong></div><h2><a href="/opportunity/${encodeURIComponent(issue.id)}">${escapeHtml(issue.title)}</a></h2><p class="opportunity-project">Observed in <a href="/agent/${slug}">${escapeHtml(agent.name)}</a> · ${escapeHtml(agent.language || 'Unknown')} · ${escapeHtml(agent.license || 'License not declared')}</p>${excerpt}<p class="opportunity-confidence-copy">${escapeHtml(confidence.description)}</p><div class="opportunity-metrics"><span>${Number(issue.comments || 0)} comments</span><span>${Number(issue.reactions || 0)} positive reactions</span><span>${age ? `${age} days open` : 'Open duration unknown'}</span><span>Evidence score ${item.score}/100</span><span>Project Radar ${Number(agent.score?.total || scoreBreakdown(agent).total)}</span></div>${labels ? `<div class="opportunity-labels">${labels}</div>` : ''}<div class="opportunity-actions"><a href="/opportunity/${encodeURIComponent(issue.id)}#validation-start">Start guided sprint →</a><a href="${safeUrl(issue.url)}" target="_blank" rel="noopener noreferrer">Original GitHub Issue ↗</a><a href="/agent/${slug}">Project analysis →</a></div></div></article>`;
 }
 
 module.exports = async function handler(req, res) {
@@ -50,6 +51,12 @@ module.exports = async function handler(req, res) {
       opportunities.push({ issue, agent, theme: opportunityTheme(issue).name, pattern: opportunityPattern(issue).name, score: evidenceScore(issue, agent), isNew });
     }));
     opportunities.sort((a, b) => b.score - a.score || evidenceStrength(b.issue) - evidenceStrength(a.issue));
+    const patternRepositories = opportunities.reduce((groups, item) => {
+      if (!groups.has(item.pattern)) groups.set(item.pattern, new Set());
+      groups.get(item.pattern).add(String(item.agent.id || item.agent.slug || item.agent.name));
+      return groups;
+    }, new Map());
+    opportunities.forEach((item) => { item.repositoryCount = patternRepositories.get(item.pattern)?.size || 1; });
     const themeCounts = opportunities.reduce((counts, item) => counts.set(item.theme, (counts.get(item.theme) || 0) + 1), new Map());
     const patternCounts = opportunities.reduce((counts, item) => counts.set(item.pattern, (counts.get(item.pattern) || 0) + 1), new Map());
     const domainCounts = opportunities.reduce((counts, item) => {

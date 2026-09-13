@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { THEMES, cleanIssueEvidence, coachingPlan, evidenceEngagement, evidenceFreshness, evidenceStrength, isUsefulDemandSignal, issueExcerpt, issueFingerprint, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
+const { THEMES, cleanIssueEvidence, coachingPlan, evidenceConfidence, evidenceEngagement, evidenceFreshness, evidenceStrength, isUsefulDemandSignal, issueExcerpt, issueFingerprint, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
 
 test('maps issue evidence into actionable demand themes', () => {
   assert.equal(opportunityTheme({ title: 'Add Slack connector', labels: ['feature'] }).slug, 'integrations');
@@ -129,6 +129,17 @@ test('recently active evidence outranks otherwise equal stale threads', () => {
   assert.equal(evidenceFreshness(active, now), 10);
   assert.equal(evidenceFreshness(stale, now), 0);
   assert.ok(evidenceStrength(active, now) > evidenceStrength(stale, now));
+});
+
+test('confidence separates repeated patterns from supported and early single issues', () => {
+  assert.deepEqual(evidenceConfidence({ comments: 2, reactions: 0 }, 3), {
+    level: 'repeated',
+    label: 'REPEATED ACROSS 3 PROJECTS',
+    description: 'Related friction appears in 3 independent repositories. This is stronger than one backlog item, but still requires direct user validation.'
+  });
+  assert.equal(evidenceConfidence({ comments: 12, reactions: 0 }, 1).label, 'STRONG ISSUE SUPPORT');
+  assert.equal(evidenceConfidence({ comments: 5, reactions: 0 }, 1).label, 'SUPPORTED ISSUE');
+  assert.equal(evidenceConfidence({ comments: 2, reactions: 0 }, 1).label, 'EARLY INTERVIEW LEAD');
 });
 
 test('rejects internal work and vague support posts without hiding explicit demand', () => {
