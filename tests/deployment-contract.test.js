@@ -162,6 +162,11 @@ test('comparisons use current projects and compare traceable unmet needs', () =>
   assert.match(compare, /Leading problem patterns/);
   assert.match(compare, /Open guided brief|\/opportunity\//);
   assert.match(compare, /\[slugA, slugB\]\.sort\(\)/);
+  assert.match(compare, /FROM COMPARISON TO ACTION/);
+  assert.match(compare, /#validation-start/);
+  assert.match(compare, /href="\/workspace"/);
+  assert.match(compare, /Free, independent open-source intelligence/);
+  assert.doesNotMatch(compare, /supported by ads/);
 });
 
 test('opportunities lead directly into the free guided execution sprint', () => {
