@@ -200,6 +200,11 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(validation, /Next proof target/);
   assert.match(validation, /Build signal/);
   assert.match(validation, /No behavioral proof yet/);
+  assert.match(validation, /EVIDENCE CHECK/);
+  assert.match(validation, /proof gates/);
+  assert.match(validation, /Copy interview outreach/);
+  assert.match(validation, /decisionEvidence/);
+  assert.match(validation, /Provisional Build saved/);
   assert.match(detail, /professionalDomain/);
   assert.match(detail, /VALIDATION LENS/);
   assert.match(detail, /Professional constraint/);
@@ -207,6 +212,8 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
   assert.match(workspace, /interviews ·/);
   assert.match(workspace, /commitments/);
+  assert.match(workspace, /Decision confidence:/);
+  assert.match(workspace, /Coach recommendation/);
   assert.match(listing, /evidenceEngagement/);
 });
 

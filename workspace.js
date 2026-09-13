@@ -40,7 +40,7 @@
   }
   function decisionBrief(item) {
     const labels = { build: 'Build', narrow: 'Narrow', stop: 'Stop' };
-    return `# Validation decision brief\n\n## ${item.title}\n\n- Project: ${item.project || 'Not recorded'}\n- Professional domain: ${item.domain || 'Not recorded'}\n- Problem pattern: ${item.pattern || 'Not recorded'}\n- Source evidence: ${item.sourceUrl || 'Not recorded'}\n- Decision: ${labels[item.decision] || 'Undecided'}\n- Progress: ${(item.completed || []).length}/4 steps\n- User interviews: ${Number(item.interviews) || 0}\n- Behavioral commitments: ${Number(item.commitments) || 0}\n- Next action: ${item.nextAction || 'Not set'}\n- Target date: ${item.dueDate || 'Not set'}\n- Last updated: ${item.updatedAt || 'Not recorded'}\n\n## Evidence notes\n\n${String(item.notes || '').trim() || 'No evidence notes recorded yet.'}\n\n---\nGenerated from AI Agent Radar. Verify the original GitHub evidence before acting.\n`;
+    return `# Validation decision brief\n\n## ${item.title}\n\n- Project: ${item.project || 'Not recorded'}\n- Professional domain: ${item.domain || 'Not recorded'}\n- Problem pattern: ${item.pattern || 'Not recorded'}\n- Source evidence: ${item.sourceUrl || 'Not recorded'}\n- Decision: ${labels[item.decision] || 'Undecided'}\n- Progress: ${(item.completed || []).length}/4 steps\n- User interviews: ${Number(item.interviews) || 0}\n- Behavioral commitments: ${Number(item.commitments) || 0}\n- Evidence status: ${item.evidenceLevel || 'Not assessed'} (${Number(item.evidenceGates) || 0}/5 proof gates)\n- Decision confidence: ${item.decisionEvidence || 'No decision recorded'}\n- Next action: ${item.nextAction || 'Not set'}\n- Target date: ${item.dueDate || 'Not set'}\n- Last updated: ${item.updatedAt || 'Not recorded'}\n\n## Evidence notes\n\n${String(item.notes || '').trim() || 'No evidence notes recorded yet.'}\n\n## Coach recommendation\n\n${item.recommendation || 'Complete the proof gates before committing to a full build.'}\n\n---\nGenerated from AI Agent Radar. Verify the original GitHub evidence before acting.\n`;
   }
   function records() {
     const items = [];
@@ -233,7 +233,7 @@
     list.innerHTML = orderedItems.map((item) => {
       const count = (item.completed || []).length;
       const note = String(item.notes || '').trim();
-      const decision = item.decision ? item.decision.charAt(0).toUpperCase() + item.decision.slice(1) : 'Undecided';
+      const decision = item.decision ? `${item.decision.charAt(0).toUpperCase() + item.decision.slice(1)}${item.decisionEvidence === 'provisional' ? ' · provisional' : ''}` : 'Undecided';
       const action = String(item.nextAction || '').trim();
       const interviews = Math.min(20, Math.max(0, Number(item.interviews) || 0));
       const commitments = Math.min(20, Math.max(0, Number(item.commitments) || 0));
@@ -291,7 +291,11 @@
           dueDate: /^\d{4}-\d{2}-\d{2}$/.test(String(item.dueDate || '')) ? item.dueDate : '',
           interviews: Math.min(20, Math.max(0, Number(item.interviews) || 0)),
           commitments: Math.min(20, Math.max(0, Number(item.commitments) || 0)),
-          decision: ['build', 'narrow', 'stop'].includes(item.decision) ? item.decision : '', updatedAt: new Date().toISOString(), pendingSync: true
+          decision: ['build', 'narrow', 'stop'].includes(item.decision) ? item.decision : '',
+          evidenceLevel: ['evidence-backed', 'tested-no-commitment', 'early-signal', 'not-ready'].includes(item.evidenceLevel) ? item.evidenceLevel : '',
+          evidenceGates: Math.min(5, Math.max(0, Number(item.evidenceGates) || 0)),
+          decisionEvidence: ['provisional', 'evidence-backed', 'early'].includes(item.decisionEvidence) ? item.decisionEvidence : '',
+          recommendation: String(item.recommendation || '').slice(0, 500), updatedAt: new Date().toISOString(), pendingSync: true
         };
         localStorage.setItem(`${prefix}${id}`, JSON.stringify(record));
         if (cloud.available) writes.push(cloud.set('validation', id, record));

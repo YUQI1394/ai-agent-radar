@@ -42,7 +42,7 @@
   const workspace = document.createElement('section');
   workspace.className = 'validation-workspace';
   workspace.id = 'validation-start';
-  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>${cloud.available ? 'Securely synced to your free account.' : 'Saved locally; cloud sync will retry when available.'}</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Decision<select id="validation-decision"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
+  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>${cloud.available ? 'Securely synced to your free account.' : 'Saved locally; cloud sync will retry when available.'}</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Your decision<select id="validation-decision" aria-describedby="validation-verdict"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><div class="evidence-scorecard"><div><span class="analysis-label">EVIDENCE CHECK</span><strong id="validation-evidence-score">0 / 5 proof gates</strong></div><ul id="validation-evidence-gates"></ul><p id="validation-verdict" aria-live="polite"></p></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-primary" type="button" data-copy-outreach>Copy interview outreach</button><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
   workspace.querySelector('.validation-plan').insertAdjacentHTML('beforeend', `<label for="validation-interviews">User interviews<input id="validation-interviews" type="number" min="0" max="20" inputmode="numeric" aria-describedby="validation-readiness"></label><label for="validation-commitments">Behavioral commitments<input id="validation-commitments" type="number" min="0" max="20" inputmode="numeric" aria-describedby="validation-readiness"></label>`);
   workspace.querySelector('[for="validation-notes"]').insertAdjacentHTML('beforebegin', `<div class="readiness-guidance" id="validation-readiness" aria-live="polite"></div>`);
   grid.before(workspace);
@@ -56,6 +56,9 @@
   const interviews = workspace.querySelector('#validation-interviews');
   const commitments = workspace.querySelector('#validation-commitments');
   const readiness = workspace.querySelector('#validation-readiness');
+  const evidenceScore = workspace.querySelector('#validation-evidence-score');
+  const evidenceGates = workspace.querySelector('#validation-evidence-gates');
+  const verdict = workspace.querySelector('#validation-verdict');
   const startedFromBrief = location.hash === '#validation-start' && !state.nextAction;
   notes.value = state.notes || '';
   nextAction.value = state.nextAction || '';
@@ -71,6 +74,23 @@
   state.sourceUrl = /^https:\/\/github\.com\//i.test(sourceUrl) ? sourceUrl : state.sourceUrl || '';
   state.updatedAt = new Date().toISOString();
   let cloudTimer;
+  function evidenceSnapshot() {
+    const interviewCount = Math.min(20, Math.max(0, Number(interviews.value) || 0));
+    const commitmentCount = Math.min(20, Math.max(0, Number(commitments.value) || 0));
+    const completed = new Set(state.completed || []);
+    const gates = [
+      { met: completed.has(0), label: 'Problem framed without proposing a feature' },
+      { met: interviewCount >= 5, label: 'Five affected users interviewed' },
+      { met: completed.has(2), label: 'Smallest real-world experiment completed' },
+      { met: commitmentCount >= 3, label: 'Three behavioral commitments recorded' },
+      { met: notes.value.trim().length >= 80, label: 'Concrete evidence notes captured' }
+    ];
+    const passed = gates.filter((gate) => gate.met).length;
+    if (passed === gates.length) return { gates, passed, level: 'evidence-backed', recommendation: 'Build signal: define the smallest paid or time-bound pilot, then keep measuring behavior.' };
+    if (interviewCount >= 5 && completed.has(2) && commitmentCount === 0) return { gates, passed, level: 'tested-no-commitment', recommendation: 'Stop or redesign signal: the test produced no behavioral commitment. Do not build the full product yet.' };
+    if (commitmentCount > 0) return { gates, passed, level: 'early-signal', recommendation: `Narrow signal: ${commitmentCount} user${commitmentCount === 1 ? '' : 's'} acted. Test the smallest common job until three users commit.` };
+    return { gates, passed, level: 'not-ready', recommendation: `Keep testing: ${gates.length - passed} proof gate${gates.length - passed === 1 ? '' : 's'} remain before a Build decision is evidence-backed.` };
+  }
   function persist(message = cloud.available ? 'Saved · syncing…' : 'Saved locally') {
     state.notes = notes.value;
     state.nextAction = nextAction.value.trim();
@@ -78,6 +98,11 @@
     state.decision = decision.value;
     state.interviews = Math.min(20, Math.max(0, Number(interviews.value) || 0));
     state.commitments = Math.min(20, Math.max(0, Number(commitments.value) || 0));
+    const proof = evidenceSnapshot();
+    state.evidenceLevel = proof.level;
+    state.evidenceGates = proof.passed;
+    state.recommendation = proof.recommendation;
+    state.decisionEvidence = state.decision ? (state.decision === 'build' && proof.level !== 'evidence-backed' ? 'provisional' : proof.passed >= 3 ? 'evidence-backed' : 'early') : '';
     state.updatedAt = new Date().toISOString();
     state.pendingSync = true;
     try {
@@ -110,6 +135,11 @@
   function updateReadiness() {
     const interviewCount = Math.min(20, Math.max(0, Number(interviews.value) || 0));
     const commitmentCount = Math.min(20, Math.max(0, Number(commitments.value) || 0));
+    const proof = evidenceSnapshot();
+    evidenceScore.textContent = `${proof.passed} / ${proof.gates.length} proof gates`;
+    evidenceGates.innerHTML = proof.gates.map((gate) => `<li class="${gate.met ? 'met' : ''}"><span aria-hidden="true">${gate.met ? '✓' : '○'}</span>${gate.label}</li>`).join('');
+    verdict.className = `evidence-verdict ${proof.level}`;
+    verdict.innerHTML = `<strong>Coach verdict:</strong> ${proof.recommendation}${decision.value === 'build' && proof.level !== 'evidence-backed' ? ' Your Build choice is saved as provisional.' : ''}`;
     if (interviewCount < 5) readiness.innerHTML = `<strong>Next proof target:</strong> Interview ${5 - interviewCount} more potential user${5 - interviewCount === 1 ? '' : 's'} before deciding what to build.`;
     else if (commitmentCount >= 3) readiness.innerHTML = '<strong>Build signal:</strong> You have repeated behavioral proof. Define the smallest paid or time-bound pilot.';
     else if (commitmentCount > 0) readiness.innerHTML = '<strong>Narrow the test:</strong> Some users acted. Ask for two more concrete commitments before building.';
@@ -125,6 +155,7 @@
       state.completed = event.target.checked ? [...new Set([...state.completed, index])] : state.completed.filter((step) => step !== index);
       state.completed.sort();
       updateProgress();
+      updateReadiness();
       persist();
     });
     const queueButton = document.createElement('button');
@@ -154,19 +185,26 @@
     state.startedAt = state.startedAt || new Date().toISOString();
   }
   let notesTimer;
-  notes.addEventListener('input', () => { clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
+  notes.addEventListener('input', () => { updateReadiness(); clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
   nextAction.addEventListener('input', () => { clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
   dueDate.addEventListener('change', () => persist());
-  decision.addEventListener('change', () => persist('Decision saved'));
+  decision.addEventListener('change', () => { updateReadiness(); persist(decision.value === 'build' && evidenceSnapshot().level !== 'evidence-backed' ? 'Provisional Build saved · gather more proof' : 'Decision saved'); });
   [interviews, commitments].forEach((input) => input.addEventListener('input', () => { updateReadiness(); persist('Evidence count saved'); }));
   workspace.querySelector('[data-copy-notes]').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(notes.value); saved.textContent = 'Notes copied'; }
     catch (_) { notes.select(); saved.textContent = 'Select and copy your notes'; }
   });
+  workspace.querySelector('[data-copy-outreach]').addEventListener('click', async () => {
+    const outreach = `Hi — I am researching a recurring problem reported around “${state.title}” in ${state.project || 'an open-source project'}. I am not selling anything. Could I ask for 15 minutes about the last time you faced this, what you tried, and what the workaround cost? I will share the findings back with you.`;
+    try { await navigator.clipboard.writeText(outreach); saved.textContent = 'Interview outreach copied'; }
+    catch (_) { saved.textContent = 'Copy unavailable in this browser'; }
+    setTimeout(() => { saved.textContent = ''; }, 1800);
+  });
   workspace.querySelector('[data-reset-progress]').addEventListener('click', () => {
     state.completed = [];
     steps.forEach((card) => { card.querySelector('input').checked = false; });
     updateProgress();
+    updateReadiness();
     persist('Progress reset');
   });
   updateProgress();
