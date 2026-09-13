@@ -137,6 +137,23 @@ test('project evidence leads into an internal guided brief before GitHub', () =>
   assert.match(agent, /Open guided brief/);
   assert.match(agent, /Original GitHub/);
   assert.match(agent, /focused seven-day validation sprint/);
+  assert.match(agent, /agent\.status === 'archived' \? null : analysis\.peers\[0\]/);
+  assert.match(agent, /renderPage\(agent, currentAgents\)/);
+});
+
+test('comparisons use current projects and compare traceable unmet needs', () => {
+  const compare = fs.readFileSync(path.join(root, 'api', 'compare.js'), 'utf8');
+  assert.match(compare, /kv\.get\('agents:latest'\)/);
+  assert.doesNotMatch(compare, /agents:archive/);
+  assert.match(compare, /findCurrent\(requested\[0\]\)/);
+  assert.match(compare, /\.slice\(0, 2\)/);
+  assert.doesNotMatch(compare, /decodeURIComponent/);
+  assert.match(compare, /String\(first\.slug \|\| first\.id\) === String\(second\.slug \|\| second\.id\)/);
+  assert.match(compare, /cleanIssueEvidence/);
+  assert.match(compare, /Qualified unmet needs/);
+  assert.match(compare, /Leading problem patterns/);
+  assert.match(compare, /Open guided brief|\/opportunity\//);
+  assert.match(compare, /\[slugA, slugB\]\.sort\(\)/);
 });
 
 test('opportunities lead directly into the free guided execution sprint', () => {

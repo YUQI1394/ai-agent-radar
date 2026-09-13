@@ -106,6 +106,14 @@ async function main() {
   const sampleAgentHtml = await sampleAgentResponse.text();
   assert.match(sampleAgentHtml, /Open guided brief/i, 'project evidence does not lead into the validation journey');
   assert.match(sampleAgentHtml, /Original GitHub/i, 'project evidence loses its traceable source link');
+  const comparisonHref = sampleAgentHtml.match(/href="(\/compare\?agents=[^"]+)"/)?.[1].replace(/&amp;/g, '&');
+  assert.ok(comparisonHref, 'current project detail has no comparison path');
+  const comparisonResponse = await fetch(`${origin}${comparisonHref}`);
+  assert.equal(comparisonResponse.status, 200, 'current project comparison is unavailable');
+  const comparisonHtml = await comparisonResponse.text();
+  assert.match(comparisonHtml, /Qualified unmet needs/i, 'comparison omits demand depth');
+  assert.match(comparisonHtml, /Leading problem patterns/i, 'comparison omits demand patterns');
+  assert.match(comparisonHtml, /\/opportunity\/\d+/i, 'comparison has no guided validation path');
   const auth = await authConfig.json();
   assert.equal(auth.configured, true, 'free registration is not configured');
   assert.match(auth.publishableKey || '', /^sb_publishable_/, 'auth config does not expose a publishable key');

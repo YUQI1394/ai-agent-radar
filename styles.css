@@ -300,6 +300,15 @@ button, input { font: inherit; }
 .compare-table th { color: var(--muted); }
 .compare-table thead th { color: var(--text); background: var(--card-soft); }
 .compare-table thead a { color: var(--cyan); }
+.comparison-demand-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin: 22px 0; }
+.comparison-demand-grid article { padding: 22px; border: 1px solid rgba(249,115,22,.22); border-radius: 16px; background: linear-gradient(140deg, rgba(249,115,22,.06), rgba(6,182,212,.035)), var(--card); }
+.comparison-demand-grid h2 { margin: 6px 0 8px; font-size: 1.15rem; }
+.comparison-demand-grid article > strong { color: #fdba74; }
+.comparison-demand-grid p { color: var(--muted); font-size: .78rem; }
+.comparison-demand-grid ol { display: grid; gap: 9px; margin: 15px 0 18px; padding-left: 20px; }
+.comparison-demand-grid li { padding-left: 3px; }
+.comparison-demand-grid li a { display: block; color: var(--text); font-size: .8rem; font-weight: 750; line-height: 1.4; }
+.comparison-demand-grid li span { display: block; margin-top: 3px; color: var(--muted); font-size: .68rem; }
 .opportunity-updated { font-size: .82rem; }
 .coverage-status { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 18px; padding: 18px 21px; border: 1px solid rgba(6,182,212,.24); border-radius: 15px; background: rgba(6,182,212,.055); }
 .coverage-status div { flex: 0 0 auto; }
@@ -622,6 +631,7 @@ button, input { font: inherit; }
   .score-breakdown { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .analysis-grid, .pros-limits { grid-template-columns: 1fr; }
   .comparison-list li { align-items: flex-start; flex-direction: column; }
+  .comparison-demand-grid { grid-template-columns: 1fr; }
   .comparison-list span { text-align: left; }
 }
 
