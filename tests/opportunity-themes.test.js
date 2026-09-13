@@ -103,6 +103,8 @@ test('cleans duplicate and maintenance-only evidence across stored history', () 
     { title: 'Harden the tag-driven workflow for stable and preview releases', labels: ['platform'] },
     { title: 'Prime Agent v0.8: five-stack integration tracker', labels: [] },
     { title: 'Harden clean-room evaluation and evaluate the verifier on the current corpus', labels: ['conformance'] },
+    { title: 'Production soak-test of pull/work-stealing coordination before default-on', labels: ['test'] },
+    { title: 'Architecture Validation: 8 doc-drift findings + 3 non-critical invariant gaps (2026-08-16)', labels: ['automated'] },
     { title: '感谢大佬的教程，学完后分享出来共同学习', labels: ['feedback'] },
     { title: '[FEAT]: Add Slack connector', labels: [] },
     { title: 'feat - add slack connector', labels: [] },
@@ -162,8 +164,12 @@ test('rejects aggregate roadmaps and unsupported low-engagement defects', () => 
   const noise = [
     { title: 'ROADMAP 2025', labels: [], authorAssociation: 'MEMBER', comments: 64, reactions: 40 },
     { title: '[Bug] One metric kind is applied to the whole clause', labels: ['bug'], authorAssociation: 'NONE', comments: 2, reactions: 0 },
-    { title: 'Github Copilot connection timeout', labels: ['bug'], authorAssociation: 'NONE', comments: 2, reactions: 0 }
+    { title: 'Github Copilot connection timeout', labels: ['bug'], authorAssociation: 'NONE', comments: 2, reactions: 0 },
+    { title: 'AI Research fails at Data Collection with 502 for multiple tickers', labels: [], authorAssociation: 'NONE', comments: 2, reactions: 0 },
+    { title: 'Error: Failed to retrieve data with a legacy provider API', labels: [], authorAssociation: 'NONE', comments: 2, reactions: 0 },
+    { title: 'windows独立版使用免费api，发送消息后显示链接失败', labels: [], authorAssociation: 'NONE', comments: 2, reactions: 0 }
   ];
   noise.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), false, issue.title));
   assert.equal(isUsefulDemandSignal({ title: 'Output parser repeatedly violates the requested schema', labels: ['bug'], authorAssociation: 'NONE', comments: 29, reactions: 5 }), true);
+  assert.equal(isUsefulDemandSignal({ title: 'Unable to use locally deployed models', labels: ['bug'], authorAssociation: 'NONE', comments: 5, reactions: 0 }), true);
 });
