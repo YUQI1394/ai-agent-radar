@@ -30,6 +30,13 @@ test('separates broad themes into specific cross-repository problems', () => {
   assert.equal(opportunityPattern({ title: 'Structured strategy representation and provenance' }).name, 'Strategy & provenance');
   assert.equal(opportunityPattern({ title: 'Support multi-user administration' }).name, 'Multi-user & team routing');
   assert.equal(opportunityPattern({ title: '知识库支持文档分类和批量导入' }).name, 'Knowledge organization');
+  assert.equal(opportunityPattern({ title: 'Instagram and Tiktok publishing support' }).name, 'Channel publishing & distribution');
+  assert.equal(opportunityPattern({ title: '最好能支持多用户和后台管理' }).name, 'Multi-user & team routing');
+  assert.equal(opportunityPattern({ title: 'I want to use the agent on Remote SSH' }).name, 'Runtime & deployment environments');
+  assert.equal(opportunityPattern({ title: 'Pydantic field datatype breaks the output parser' }).name, 'Structured output & schema fidelity');
+  assert.equal(opportunityPattern({ title: 'General-purpose autonomous load testing platform' }).name, 'Testing & evaluation workflows');
+  assert.equal(opportunityPattern({ title: '命令返回成串json，重点不突出，翻页麻烦，能不能返回更简洁' }).name, 'Interface & rendering');
+  assert.equal(opportunityPattern({ title: '是否能够看到子 agent 的执行过程？' }).name, 'Debugging & observability');
 });
 
 test('builds specialized coaching plans for opportunity themes', () => {
@@ -147,4 +154,14 @@ test('rejects maintainer-authored backlog and repository-specific defects as mar
   noise.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), false, issue.title));
   assert.equal(isUsefulDemandSignal({ title: 'Feature request: add approval gates for destructive commands', labels: [], authorAssociation: 'NONE', comments: 3, reactions: 0 }), true);
   assert.equal(isUsefulDemandSignal({ title: 'Proposal: support audited agent actions', labels: [], authorAssociation: 'OWNER', comments: 8, reactions: 3 }), true);
+});
+
+test('rejects aggregate roadmaps and unsupported low-engagement defects', () => {
+  const noise = [
+    { title: 'ROADMAP 2025', labels: [], authorAssociation: 'MEMBER', comments: 64, reactions: 40 },
+    { title: '[Bug] One metric kind is applied to the whole clause', labels: ['bug'], authorAssociation: 'NONE', comments: 2, reactions: 0 },
+    { title: 'Github Copilot connection timeout', labels: ['bug'], authorAssociation: 'NONE', comments: 2, reactions: 0 }
+  ];
+  noise.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), false, issue.title));
+  assert.equal(isUsefulDemandSignal({ title: 'Output parser repeatedly violates the requested schema', labels: ['bug'], authorAssociation: 'NONE', comments: 29, reactions: 5 }), true);
 });
