@@ -6,6 +6,7 @@ const pages = [
   ['/opportunities', 'Opportunity'],
   ['/patterns', 'Pattern'],
   ['/workspace', 'Workspace'],
+  ['/rss', 'RSS SUBSCRIPTION URL'],
   ['/methodology', 'Methodology'],
   ['/status', 'Status'],
   ['/category/research', 'Research AI Agents'],
@@ -79,8 +80,8 @@ async function main() {
   assert.match(detailHtml, /\/analytics\.js/, 'opportunity journey lacks anonymous page analytics');
   console.log(`PASS ${opportunityHref} journey`);
 
-  const [analyticsLoader, insightsScript, authScript, loginScript, workspaceScript] = await Promise.all([
-    fetch(`${origin}/analytics.js`), fetch(`${origin}/_vercel/insights/script.js`), fetch(`${origin}/auth.js`), fetch(`${origin}/login.js`), fetch(`${origin}/workspace.js`)
+  const [analyticsLoader, insightsScript, authScript, loginScript, workspaceScript, rssReaderScript] = await Promise.all([
+    fetch(`${origin}/analytics.js`), fetch(`${origin}/_vercel/insights/script.js`), fetch(`${origin}/auth.js`), fetch(`${origin}/login.js`), fetch(`${origin}/workspace.js`), fetch(`${origin}/rss-reader.js`)
   ]);
   assert.equal(analyticsLoader.status, 200, '/analytics.js is unavailable');
   assert.match(await analyticsLoader.text(), /\/_vercel\/insights\/script\.js/, 'analytics loader does not use Vercel Insights');
@@ -103,6 +104,10 @@ async function main() {
   assert.match(workspaceSource, /loadDemandRadar/, 'registered users lack a persistent professional demand radar');
   assert.match(workspaceSource, /NEW SINCE LAST VISIT/, 'professional demand radar does not identify new signals');
   assert.match(workspaceSource, /domain-radar:/, 'professional demand radar has no durable return baseline');
+  assert.equal(rssReaderScript.status, 200, '/rss-reader.js is unavailable');
+  const rssReaderSource = await rssReaderScript.text();
+  assert.match(rssReaderSource, /channel > item/, 'visual RSS reader does not parse feed entries');
+  assert.match(rssReaderSource, /navigator\.clipboard\.writeText/, 'visual RSS reader cannot copy the subscription URL');
   assert.match(loginSource, /Choose your professional field/, 'registration lacks professional personalization');
   assert.match(loginSource, /LIVE GITHUB-BACKED NEED/, 'registration does not preview a live demand signal');
   assert.match(loginSource, /ai-agent-radar:preferred-domain/, 'registration choice is not carried into the workspace');
@@ -110,6 +115,8 @@ async function main() {
   assert.match(loginSource, /#validation-start/, 'selected registration demand does not continue into guided execution');
   const validationSource = await (await fetch(`${origin}/validation.js`)).text();
   assert.match(validationSource, /Add action to calendar/, 'registered validation lacks a portable action reminder');
+  assert.match(validationSource, /STRUCTURED INTERVIEW EVIDENCE/, 'registered validation lacks structured interview evidence');
+  assert.match(validationSource, /structuredEvidence/, 'structured interviews do not inform the evidence gate');
   console.log('PASS privacy-preserving conversion analytics');
 
   const [sitemap, feed, authConfig, agentFeed] = await Promise.all([

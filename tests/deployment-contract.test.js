@@ -104,6 +104,24 @@ test('RSS publishes filtered projects and opportunity signals', () => {
   assert.doesNotMatch(feed, /agent\.createdAt \|\| payload\.updatedAt/);
 });
 
+test('RSS has a human-readable reader and keeps the standard XML subscription', () => {
+  const vercel = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
+  const rewrites = new Map(vercel.rewrites.map((rule) => [rule.source, rule.destination]));
+  const page = fs.readFileSync(path.join(root, 'rss.html'), 'utf8');
+  const reader = fs.readFileSync(path.join(root, 'rss-reader.js'), 'utf8');
+  const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
+  assert.equal(rewrites.get('/rss'), '/rss.html');
+  assert.match(page, /RSS SUBSCRIPTION URL/);
+  assert.match(page, /https:\/\/getaiagentradar\.com\/feed\.xml/);
+  assert.match(page, /data-rss-filter="opportunity"/);
+  assert.match(page, /data-rss-filter="agent"/);
+  assert.match(reader, /new DOMParser\(\)/);
+  assert.match(reader, /querySelectorAll\('channel > item'\)/);
+  assert.match(reader, /navigator\.clipboard\.writeText/);
+  assert.match(reader, /url\.origin === location\.origin/);
+  assert.match(sitemap, /path: '\/rss'/);
+});
+
 test('weekly reports connect repository rankings to traceable demand evidence', () => {
   const weekly = fs.readFileSync(path.join(root, 'api', 'weekly.js'), 'utf8');
   assert.match(weekly, /cleanIssueEvidence/);
@@ -213,6 +231,14 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(validation, /EVIDENCE CHECK/);
   assert.match(validation, /proof gates/);
   assert.match(validation, /Copy interview outreach/);
+  assert.match(validation, /STRUCTURED INTERVIEW EVIDENCE/);
+  assert.match(validation, /Record what happened—not who said it/);
+  assert.match(validation, /data-interview-field="incident"/);
+  assert.match(validation, /data-interview-field="workaround"/);
+  assert.match(validation, /data-interview-field="commitment"/);
+  assert.match(validation, /structuredEvidence/);
+  assert.match(validation, /detailCharacters/);
+  assert.match(validation, /state\.interviewLog\.length >= 10/);
   assert.match(validation, /Add action to calendar/);
   assert.match(validation, /text\/calendar/);
   assert.match(validation, /BEGIN:VEVENT/);
@@ -228,6 +254,9 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(workspace, /commitments/);
   assert.match(workspace, /Decision confidence:/);
   assert.match(workspace, /Coach recommendation/);
+  assert.match(workspace, /Structured interview evidence/);
+  assert.match(workspace, /cleanInterviewLog\(item\.interviewLog\)/);
+  assert.match(workspace, /interviewLog: cleanInterviewLog\(item\.interviewLog\)/);
   assert.match(listing, /evidenceEngagement/);
 });
 
@@ -344,6 +373,8 @@ test('privacy-preserving page analytics covers discovery and conversion routes',
   assert.match(auth, /script\[src="\/analytics\.js"\]/);
   assert.match(privacy, /does not use cookies/);
   assert.match(privacy, /does not receive account email addresses/);
+  assert.match(privacy, /optional structured interview evidence/);
+  assert.match(privacy, /not to enter interviewee names or contact details/);
   for (const file of ['agent.js', 'category.js', 'weekly.js', 'opportunities.js', 'opportunity.js', 'patterns.js', 'compare.js']) {
     const source = fs.readFileSync(path.join(root, 'api', file), 'utf8');
     assert.match(source, /\/analytics\.js/, `${file} must load page analytics`);

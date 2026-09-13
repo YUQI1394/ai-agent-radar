@@ -40,6 +40,10 @@
       "destination": "/api/feed"
     },
     {
+      "source": "/rss",
+      "destination": "/rss.html"
+    },
+    {
       "source": "/weekly/:date",
       "destination": "/api/weekly?date=:date"
     },

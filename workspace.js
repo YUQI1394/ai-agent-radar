@@ -29,6 +29,10 @@
   exportButton.after(importButton, importInput);
   const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
   const safeFilename = (value = 'validation-brief') => String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 70) || 'validation-brief';
+  const cleanInterviewLog = (items) => (Array.isArray(items) ? items : []).slice(0, 10).map((item) => ({
+    role: String(item?.role || '').slice(0, 80), incident: String(item?.incident || '').slice(0, 400), workaround: String(item?.workaround || '').slice(0, 300),
+    commitment: ['none', 'follow-up', 'shared-data', 'pilot', 'paid'].includes(item?.commitment) ? item.commitment : 'none'
+  }));
   let agentFeedPromise;
   function loadAgentFeed() {
     if (!agentFeedPromise) agentFeedPromise = fetch('/api/get-agents').then(async (response) => {
@@ -40,7 +44,9 @@
   }
   function decisionBrief(item) {
     const labels = { build: 'Build', narrow: 'Narrow', stop: 'Stop' };
-    return `# Validation decision brief\n\n## ${item.title}\n\n- Project: ${item.project || 'Not recorded'}\n- Professional domain: ${item.domain || 'Not recorded'}\n- Problem pattern: ${item.pattern || 'Not recorded'}\n- Source evidence: ${item.sourceUrl || 'Not recorded'}\n- Decision: ${labels[item.decision] || 'Undecided'}\n- Progress: ${(item.completed || []).length}/4 steps\n- User interviews: ${Number(item.interviews) || 0}\n- Behavioral commitments: ${Number(item.commitments) || 0}\n- Evidence status: ${item.evidenceLevel || 'Not assessed'} (${Number(item.evidenceGates) || 0}/5 proof gates)\n- Decision confidence: ${item.decisionEvidence || 'No decision recorded'}\n- Next action: ${item.nextAction || 'Not set'}\n- Target date: ${item.dueDate || 'Not set'}\n- Last updated: ${item.updatedAt || 'Not recorded'}\n\n## Evidence notes\n\n${String(item.notes || '').trim() || 'No evidence notes recorded yet.'}\n\n## Coach recommendation\n\n${item.recommendation || 'Complete the proof gates before committing to a full build.'}\n\n---\nGenerated from AI Agent Radar. Verify the original GitHub evidence before acting.\n`;
+    const commitmentLabels = { none: 'No commitment', 'follow-up': 'Booked follow-up', 'shared-data': 'Shared data/access', pilot: 'Joined pilot', paid: 'Paid or pre-committed' };
+    const interviewEvidence = cleanInterviewLog(item.interviewLog).map((entry, index) => `### Interview ${index + 1}\n\n- Role/context: ${entry.role || 'Not recorded'}\n- Last incident: ${entry.incident || 'Not recorded'}\n- Workaround/cost: ${entry.workaround || 'Not recorded'}\n- Behavior: ${commitmentLabels[entry.commitment]}`).join('\n\n');
+    return `# Validation decision brief\n\n## ${item.title}\n\n- Project: ${item.project || 'Not recorded'}\n- Professional domain: ${item.domain || 'Not recorded'}\n- Problem pattern: ${item.pattern || 'Not recorded'}\n- Source evidence: ${item.sourceUrl || 'Not recorded'}\n- Decision: ${labels[item.decision] || 'Undecided'}\n- Progress: ${(item.completed || []).length}/4 steps\n- User interviews: ${Number(item.interviews) || 0}\n- Behavioral commitments: ${Number(item.commitments) || 0}\n- Evidence status: ${item.evidenceLevel || 'Not assessed'} (${Number(item.evidenceGates) || 0}/5 proof gates)\n- Decision confidence: ${item.decisionEvidence || 'No decision recorded'}\n- Next action: ${item.nextAction || 'Not set'}\n- Target date: ${item.dueDate || 'Not set'}\n- Last updated: ${item.updatedAt || 'Not recorded'}\n\n## Evidence notes\n\n${String(item.notes || '').trim() || 'No evidence notes recorded yet.'}\n\n## Structured interview evidence\n\n${interviewEvidence || 'No structured interview records yet.'}\n\n## Coach recommendation\n\n${item.recommendation || 'Complete the proof gates before committing to a full build.'}\n\n---\nGenerated from AI Agent Radar. Verify the original GitHub evidence before acting.\n`;
   }
   function records() {
     const items = [];
@@ -356,6 +362,9 @@
           dueDate: /^\d{4}-\d{2}-\d{2}$/.test(String(item.dueDate || '')) ? item.dueDate : '',
           interviews: Math.min(20, Math.max(0, Number(item.interviews) || 0)),
           commitments: Math.min(20, Math.max(0, Number(item.commitments) || 0)),
+          manualInterviews: Math.min(20, Math.max(0, Number(item.manualInterviews ?? item.interviews) || 0)),
+          manualCommitments: Math.min(20, Math.max(0, Number(item.manualCommitments ?? item.commitments) || 0)),
+          interviewLog: cleanInterviewLog(item.interviewLog),
           decision: ['build', 'narrow', 'stop'].includes(item.decision) ? item.decision : '',
           evidenceLevel: ['evidence-backed', 'tested-no-commitment', 'early-signal', 'not-ready'].includes(item.evidenceLevel) ? item.evidenceLevel : '',
           evidenceGates: Math.min(5, Math.max(0, Number(item.evidenceGates) || 0)),

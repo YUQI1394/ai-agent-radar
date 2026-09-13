@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Read the latest open-source AI agent projects and GitHub demand signals, or subscribe with any RSS app.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://getaiagentradar.com/rss">
+  <link rel="alternate" type="application/rss+xml" title="AI Agent Radar RSS Feed" href="https://getaiagentradar.com/feed.xml">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <title>RSS Reader · AI Agent Radar</title>
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="/">AI Agent Radar</a><nav class="site-nav"><a href="/">Home</a><a href="/opportunities">Opportunities</a><a href="/patterns">Patterns</a><a href="/workspace">Workspace</a><a href="/weekly">Weekly Radar</a><a href="/rss" aria-current="page">RSS</a></nav></header>
+  <main class="page-shell report-shell rss-shell">
+    <section class="report-hero"><span class="eyebrow">READ OR SUBSCRIBE</span><h1>Intelligence <span>Feed</span></h1><p>Read the latest filtered projects and GitHub-backed demand signals here. To receive updates in an RSS app, copy the XML feed address below.</p></section>
+    <section class="rss-subscribe"><div><span class="analysis-label">RSS SUBSCRIPTION URL</span><h2>Follow every refresh</h2><p>A web browser may display the XML feed as code. That is normal—the address is designed to be pasted into an RSS reader.</p></div><div class="rss-copy"><label for="rss-url">Feed address</label><div><input id="rss-url" type="url" value="https://getaiagentradar.com/feed.xml" readonly><button class="button button-primary" id="rss-copy" type="button">Copy feed URL</button></div><span id="rss-copy-status" aria-live="polite"></span></div></section>
+    <nav class="rss-filters" aria-label="Filter feed entries"><button type="button" class="active" data-rss-filter="all">All updates</button><button type="button" data-rss-filter="opportunity">Demand signals</button><button type="button" data-rss-filter="agent">Projects</button><a href="/feed.xml">Open raw XML ↗</a></nav>
+    <div class="rss-result"><strong id="rss-count">—</strong><span id="rss-status">Loading the current feed…</span></div>
+    <section id="rss-list" class="rss-list" aria-live="polite"></section>
+    <noscript><section class="workspace-empty"><h2>JavaScript is required for the visual reader</h2><p>The underlying RSS subscription remains available.</p><a class="button button-primary" href="/feed.xml">Open RSS XML</a></section></noscript>
+  </main>
+  <footer class="site-footer"><p>AI Agent Radar · Free, independent open-source intelligence</p><nav class="footer-links"><a href="/feed.xml">RSS XML</a><span>·</span><a href="/about">About</a><span>·</span><a href="/privacy-policy">Privacy Policy</a><span>·</span><a href="/contact">Contact</a></nav></footer>
+  <script src="/rss-reader.js"></script><script src="/analytics.js"></script>
+</body>
+</html>

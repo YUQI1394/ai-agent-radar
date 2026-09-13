@@ -18,7 +18,7 @@ const escapeHtml = (value = "") =>
       ],
   );
 const footer =
-  '<footer class="site-footer"><p>AI Agent Radar · Free, independent open-source intelligence</p><p>Rankings are never paid placements. We do not sell user data.</p><nav class="footer-links"><a href="/about">About</a><span>·</span><a href="/contact">Contact</a><span>·</span><a href="/privacy-policy">Privacy Policy</a><span>·</span><a href="/terms-of-service">Terms of Service</a><span>·</span><a href="/feed.xml">RSS Feed</a></nav></footer>';
+  '<footer class="site-footer"><p>AI Agent Radar · Free, independent open-source intelligence</p><p>Rankings are never paid placements. We do not sell user data.</p><nav class="footer-links"><a href="/about">About</a><span>·</span><a href="/contact">Contact</a><span>·</span><a href="/privacy-policy">Privacy Policy</a><span>·</span><a href="/terms-of-service">Terms of Service</a><span>·</span><a href="/rss">RSS Reader</a></nav></footer>';
 
 function card(agent, index) {
   const slug = encodeURIComponent(agent.slug || agent.id);
