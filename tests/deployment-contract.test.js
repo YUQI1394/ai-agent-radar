@@ -193,8 +193,11 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(validation, /Make this my next action/);
   assert.match(validation, /startedFromBrief/);
   assert.match(validation, /Sprint started · first action scheduled/);
-  assert.match(validation, /setDate\(target\.getDate\(\) \+ 7\)/);
+  assert.match(validation, /localDateAfter\(1\)/);
   assert.match(validation, /Added to execution queue/);
+  assert.match(validation, /Step complete · next action scheduled/);
+  assert.match(validation, /All steps complete · record your decision/);
+  assert.match(validation, /stepActions\.findIndex/);
   assert.match(validation, /User interviews/);
   assert.match(validation, /Behavioral commitments/);
   assert.match(validation, /Next proof target/);

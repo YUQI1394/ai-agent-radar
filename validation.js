@@ -30,6 +30,7 @@
   const storageKey = `${auth.storagePrefix('validation')}${opportunityId}`;
   const cloud = await window.RadarCloud.ready;
   const steps = [...grid.querySelectorAll('article')];
+  const stepActions = steps.map((card) => String(card.dataset.nextAction || card.querySelector('h2')?.textContent || '').trim().slice(0, 180));
   let state = { completed: [], notes: '' };
   try { state = { ...state, ...JSON.parse(localStorage.getItem(storageKey) || '{}') }; } catch (_) {}
   if (cloud.available) {
@@ -74,6 +75,11 @@
   state.sourceUrl = /^https:\/\/github\.com\//i.test(sourceUrl) ? sourceUrl : state.sourceUrl || '';
   state.updatedAt = new Date().toISOString();
   let cloudTimer;
+  function localDateAfter(days) {
+    const target = new Date();
+    target.setDate(target.getDate() + days);
+    return new Date(target.getTime() - target.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }
   function evidenceSnapshot() {
     const interviewCount = Math.min(20, Math.max(0, Number(interviews.value) || 0));
     const commitmentCount = Math.min(20, Math.max(0, Number(commitments.value) || 0));
@@ -146,17 +152,31 @@
     else readiness.innerHTML = '<strong>No behavioral proof yet:</strong> Ask users to join a pilot, share data, book time or pre-commit—then narrow or stop if nobody acts.';
   }
   steps.forEach((card, index) => {
-    const stepAction = String(card.dataset.nextAction || card.querySelector('h2')?.textContent || '').trim().slice(0, 180);
+    const stepAction = stepActions[index];
     const control = document.createElement('label');
     control.className = 'coach-check';
     control.innerHTML = `<input type="checkbox" ${state.completed.includes(index) ? 'checked' : ''}><span>Mark this step complete</span>`;
     card.append(control);
     control.querySelector('input').addEventListener('change', (event) => {
+      const previousAction = nextAction.value.trim();
       state.completed = event.target.checked ? [...new Set([...state.completed, index])] : state.completed.filter((step) => step !== index);
       state.completed.sort();
+      let message = '';
+      if (event.target.checked && (!previousAction || previousAction === stepAction)) {
+        const nextIndex = stepActions.findIndex((_, stepIndex) => !state.completed.includes(stepIndex));
+        if (nextIndex >= 0) {
+          nextAction.value = stepActions[nextIndex];
+          dueDate.value = localDateAfter(1);
+          message = 'Step complete · next action scheduled';
+        } else {
+          nextAction.value = '';
+          dueDate.value = '';
+          message = 'All steps complete · record your decision';
+        }
+      }
       updateProgress();
       updateReadiness();
-      persist();
+      persist(message || undefined);
     });
     const queueButton = document.createElement('button');
     queueButton.className = 'coach-queue-action';
@@ -164,11 +184,7 @@
     queueButton.textContent = 'Make this my next action →';
     queueButton.addEventListener('click', () => {
       nextAction.value = stepAction;
-      if (!dueDate.value) {
-        const target = new Date();
-        target.setDate(target.getDate() + 7);
-        dueDate.value = target.toISOString().slice(0, 10);
-      }
+      if (!dueDate.value) dueDate.value = localDateAfter(1);
       persist('Added to execution queue');
       workspace.scrollIntoView({ behavior: 'smooth', block: 'start' });
       nextAction.focus({ preventScroll: true });
@@ -176,12 +192,8 @@
     card.append(queueButton);
   });
   if (startedFromBrief && steps[0]) {
-    nextAction.value = String(steps[0].dataset.nextAction || steps[0].querySelector('h2')?.textContent || '').trim().slice(0, 180);
-    if (!dueDate.value) {
-      const target = new Date();
-      target.setDate(target.getDate() + 7);
-      dueDate.value = target.toISOString().slice(0, 10);
-    }
+    nextAction.value = stepActions[0];
+    if (!dueDate.value) dueDate.value = localDateAfter(1);
     state.startedAt = state.startedAt || new Date().toISOString();
   }
   let notesTimer;
