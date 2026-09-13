@@ -234,9 +234,11 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(login, /Build, Narrow or Stop decision/);
   assert.match(login, /A concrete first action/);
   assert.match(login, /A decision brief you can use/);
-  assert.match(login, /WHAT YOU LEAVE WITH/);
-  assert.match(login, /Example outcome/);
-  assert.match(login, /BUILD A NARROW PILOT/);
+  assert.match(login, /YOUR 7-DAY BOARD/);
+  assert.match(login, /Selected live need/);
+  assert.match(login, /0 \/ 5 proof gates/);
+  assert.match(login, /outcomeNeed\.textContent = item/);
+  assert.match(login, /EVIDENCE-BACKED BUILD, NARROW OR STOP/);
   assert.match(login, /Choose your professional field/);
   assert.match(login, /\/api\/get-agents/);
   assert.match(login, /ai-agent-radar:preferred-domain/);

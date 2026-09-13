@@ -524,6 +524,7 @@ button, input { font: inherit; }
 .outcome-preview-heading span, .outcome-preview-body p span { color: var(--cyan); font-size: .66rem; font-weight: 850; letter-spacing: .1em; }
 .outcome-preview-body { padding: 16px; }
 .outcome-preview-body p { display: flex; flex-direction: column; gap: 5px; margin: 0 0 13px; color: var(--text); }
+.outcome-preview-body p small { color: var(--muted); font-size: .69rem; }
 .outcome-preview-body dl { display: grid; gap: 8px; margin: 0; }
 .outcome-preview-body dl div { display: grid; grid-template-columns: 90px 1fr; gap: 10px; }
 .outcome-preview-body dt { color: var(--muted); font-size: .72rem; }

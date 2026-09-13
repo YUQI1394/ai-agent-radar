@@ -87,7 +87,8 @@ async function main() {
   assert.match(authSource, /localStorage\.setItem\(PENDING_NEXT_KEY/, 'selected auth continuation is not shared across browser tabs');
   assert.equal(loginScript.status, 200, '/login.js is unavailable');
   const loginSource = await loginScript.text();
-  assert.match(loginSource, /WHAT YOU LEAVE WITH/, 'registration page lacks a concrete outcome preview');
+  assert.match(loginSource, /YOUR 7-DAY BOARD/, 'registration page lacks a concrete sprint-board preview');
+  assert.match(loginSource, /outcomeNeed\.textContent = item/, 'registration preview does not follow the selected live need');
   assert.equal(workspaceScript.status, 200, '/workspace.js is unavailable');
   const workspaceSource = await workspaceScript.text();
   assert.match(workspaceSource, /Recommended from live evidence/, 'new workspaces lack live starter recommendations');
