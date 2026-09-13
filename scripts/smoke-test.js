@@ -51,6 +51,7 @@ async function main() {
       assert.match(html, /independent projects?/i, `${path} does not disclose demand source diversity`);
       assert.match(html, /#demand/, `${path} lacks structured demand data`);
       assert.match(html, /Start guided sprint/i, `${path} lacks an execution path`);
+      assert.match(html, /Track .* needs free/i, `${path} lacks a contextual personal-radar registration path`);
     }
     console.log(`PASS ${path}`);
   }

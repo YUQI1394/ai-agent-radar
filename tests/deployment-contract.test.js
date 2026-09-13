@@ -122,6 +122,8 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(home, /01 \/ DISCOVER/);
   assert.match(home, /02 \/ UNDERSTAND/);
   assert.match(home, /03 \/ EXECUTE/);
+  assert.match(home, /Create my free demand radar/);
+  assert.match(home, /\/login\?next=%2Fworkspace/);
   assert.match(home, /data-radar-node="0"/);
   assert.match(home, /Qualified unmet needs/);
   assert.match(app, /function renderRadarField/);
@@ -254,6 +256,8 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(login, /Choose your professional field/);
   assert.match(login, /\/api\/get-agents/);
   assert.match(login, /ai-agent-radar:preferred-domain/);
+  assert.match(login, /requestedDomain/);
+  assert.match(login, /new URLSearchParams\(location\.search\)\.get\('domain'\)/);
   assert.match(login, /LIVE GITHUB-BACKED NEED/);
   assert.match(login, /Public evidence stays free/);
   assert.match(login, /Use this need as my first sprint/);
@@ -401,6 +405,8 @@ test('all professional fields have discoverable structured reports', () => {
   assert.match(category, /#demand/);
   assert.match(category, /Start guided sprint/);
   assert.match(category, /opportunities\?domain=/);
+  assert.match(category, /Track \$\{escapeHtml\(domain\.name\)\} needs free/);
+  assert.match(category, /login\?domain=\$\{encodeURIComponent\(domain\.name\)\}&amp;next=%2Fworkspace/);
   assert.match(category, /agents\.length \? 'index, follow' : 'noindex, follow'/);
   const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
   assert.match(sitemap, /agents\.some\(\(agent\) => category\(agent\) === CATEGORY_NAMES\[slug\]\)/);

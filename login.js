@@ -13,6 +13,11 @@
   const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
   const rememberedDomain = localStorage.getItem('ai-agent-radar:preferred-domain');
   if ([...domainSelect.options].some((option) => option.value === rememberedDomain)) domainSelect.value = rememberedDomain;
+  const requestedDomain = new URLSearchParams(location.search).get('domain');
+  if ([...domainSelect.options].some((option) => option.value === requestedDomain)) {
+    domainSelect.value = requestedDomain;
+    localStorage.setItem('ai-agent-radar:preferred-domain', requestedDomain);
+  }
   let liveOpportunities = [];
   const strength = (item) => {
     const ageDays = Math.max(0, (Date.now() - Date.parse(item.updatedAt)) / 86400000);
