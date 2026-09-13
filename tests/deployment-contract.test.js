@@ -197,6 +197,7 @@ test('archived opportunity signals are preserved but not indexed or promoted as 
 test('registration explains the concrete free outcome before asking users to sign in', () => {
   const login = fs.readFileSync(path.join(root, 'login.js'), 'utf8');
   const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
+  const validation = fs.readFileSync(path.join(root, 'validation.js'), 'utf8');
   assert.match(login, /FREE 7-DAY VALIDATION WORKSPACE/);
   assert.match(login, /Build, Narrow or Stop decision/);
   assert.match(login, /A concrete first action/);
@@ -208,6 +209,15 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(workspace, /Export decision brief/);
   assert.match(workspace, /decisionBrief\(item\)/);
   assert.match(workspace, /text\/markdown/);
+  assert.match(workspace, /Professional domain:/);
+  assert.match(workspace, /Problem pattern:/);
+  assert.match(workspace, /Source evidence:/);
+  assert.match(workspace, /workspace-trace/);
+  assert.match(workspace, /GitHub source linked/);
+  assert.match(workspace, /sourceUrl: \/\^https:/);
+  assert.match(validation, /state\.domain/);
+  assert.match(validation, /state\.pattern/);
+  assert.match(validation, /state\.sourceUrl/);
 });
 
 test('an empty registered workspace recommends live opportunities by professional field', () => {

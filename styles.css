@@ -431,6 +431,7 @@ button, input { font: inherit; }
 .workspace-card-top { display: flex; justify-content: space-between; gap: 14px; color: var(--muted); font-size: .75rem; }
 .workspace-card-top strong { color: #fdba74; }
 .workspace-card h2 { margin: 8px 0 13px; font-size: 1.2rem; }
+.workspace-card .workspace-trace { margin: -6px 0 13px; color: #a78bfa; font-size: .7rem; font-weight: 750; }
 .workspace-card h2 a:hover { color: var(--cyan); }
 .workspace-bar { height: 7px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.06); }
 .workspace-bar span { display: block; height: 100%; border-radius: inherit; background: var(--gradient); }

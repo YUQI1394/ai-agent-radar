@@ -40,7 +40,7 @@
   }
   function decisionBrief(item) {
     const labels = { build: 'Build', narrow: 'Narrow', stop: 'Stop' };
-    return `# Validation decision brief\n\n## ${item.title}\n\n- Project: ${item.project || 'Not recorded'}\n- Decision: ${labels[item.decision] || 'Undecided'}\n- Progress: ${(item.completed || []).length}/4 steps\n- User interviews: ${Number(item.interviews) || 0}\n- Behavioral commitments: ${Number(item.commitments) || 0}\n- Next action: ${item.nextAction || 'Not set'}\n- Target date: ${item.dueDate || 'Not set'}\n- Last updated: ${item.updatedAt || 'Not recorded'}\n\n## Evidence notes\n\n${String(item.notes || '').trim() || 'No evidence notes recorded yet.'}\n\n---\nGenerated from AI Agent Radar. Verify the original GitHub evidence before acting.\n`;
+    return `# Validation decision brief\n\n## ${item.title}\n\n- Project: ${item.project || 'Not recorded'}\n- Professional domain: ${item.domain || 'Not recorded'}\n- Problem pattern: ${item.pattern || 'Not recorded'}\n- Source evidence: ${item.sourceUrl || 'Not recorded'}\n- Decision: ${labels[item.decision] || 'Undecided'}\n- Progress: ${(item.completed || []).length}/4 steps\n- User interviews: ${Number(item.interviews) || 0}\n- Behavioral commitments: ${Number(item.commitments) || 0}\n- Next action: ${item.nextAction || 'Not set'}\n- Target date: ${item.dueDate || 'Not set'}\n- Last updated: ${item.updatedAt || 'Not recorded'}\n\n## Evidence notes\n\n${String(item.notes || '').trim() || 'No evidence notes recorded yet.'}\n\n---\nGenerated from AI Agent Radar. Verify the original GitHub evidence before acting.\n`;
   }
   function records() {
     const items = [];
@@ -200,7 +200,7 @@
       const action = String(item.nextAction || '').trim();
       const interviews = Math.min(20, Math.max(0, Number(item.interviews) || 0));
       const commitments = Math.min(20, Math.max(0, Number(item.commitments) || 0));
-      return `<article class="workspace-card"><div class="workspace-card-top"><span>${escapeHtml(item.project || 'Opportunity validation')}</span><strong>${count}/4 steps · ${escapeHtml(decision)}</strong></div><h2><a href="/opportunity/${encodeURIComponent(item.id)}">${escapeHtml(item.title)}</a></h2><div class="workspace-bar"><span style="width:${Math.min(100, count / 4 * 100)}%"></span></div><p class="workspace-evidence"><strong>${interviews}</strong> interviews · <strong>${commitments}</strong> commitments</p>${action ? `<p class="workspace-next"><strong>Next:</strong> ${escapeHtml(action)}${item.dueDate ? ` · ${escapeHtml(item.dueDate)}` : ''}</p>` : ''}<p>${note ? escapeHtml(note.slice(0, 180)) : 'No research notes yet.'}${note.length > 180 ? '…' : ''}</p><div class="workspace-card-actions"><a href="/opportunity/${encodeURIComponent(item.id)}">Continue validation →</a><button type="button" data-brief="${escapeHtml(item.key)}">Export decision brief</button><button type="button" data-remove="${escapeHtml(item.key)}">Remove</button></div></article>`;
+      return `<article class="workspace-card"><div class="workspace-card-top"><span>${item.domain ? `${escapeHtml(item.domain)} · ` : ''}${escapeHtml(item.project || 'Opportunity validation')}</span><strong>${count}/4 steps · ${escapeHtml(decision)}</strong></div><h2><a href="/opportunity/${encodeURIComponent(item.id)}">${escapeHtml(item.title)}</a></h2>${item.pattern || item.sourceUrl ? `<p class="workspace-trace">${item.pattern ? escapeHtml(item.pattern) : 'Qualified demand'}${item.sourceUrl ? ' · GitHub source linked' : ''}</p>` : ''}<div class="workspace-bar"><span style="width:${Math.min(100, count / 4 * 100)}%"></span></div><p class="workspace-evidence"><strong>${interviews}</strong> interviews · <strong>${commitments}</strong> commitments</p>${action ? `<p class="workspace-next"><strong>Next:</strong> ${escapeHtml(action)}${item.dueDate ? ` · ${escapeHtml(item.dueDate)}` : ''}</p>` : ''}<p>${note ? escapeHtml(note.slice(0, 180)) : 'No research notes yet.'}${note.length > 180 ? '…' : ''}</p><div class="workspace-card-actions"><a href="/opportunity/${encodeURIComponent(item.id)}">Continue validation →</a><button type="button" data-brief="${escapeHtml(item.key)}">Export decision brief</button><button type="button" data-remove="${escapeHtml(item.key)}">Remove</button></div></article>`;
     }).join('');
     list.querySelectorAll('[data-brief]').forEach((button) => button.addEventListener('click', () => {
       const item = records().find((record) => record.key === button.dataset.brief);
@@ -247,6 +247,8 @@
         const record = {
           id,
           title: item.title.slice(0, 300), project: String(item.project || '').slice(0, 200),
+          domain: String(item.domain || '').slice(0, 80), pattern: String(item.pattern || '').slice(0, 120),
+          sourceUrl: /^https:\/\/github\.com\//i.test(String(item.sourceUrl || '')) ? String(item.sourceUrl).slice(0, 500) : '',
           completed: Array.isArray(item.completed) ? [...new Set(item.completed.filter((step) => Number.isInteger(step) && step >= 0 && step < 4))] : [],
           notes: String(item.notes || '').slice(0, 50000), nextAction: String(item.nextAction || '').slice(0, 180),
           dueDate: /^\d{4}-\d{2}-\d{2}$/.test(String(item.dueDate || '')) ? item.dueDate : '',

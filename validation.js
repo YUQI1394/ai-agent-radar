@@ -65,6 +65,10 @@
   commitments.value = Math.min(20, Math.max(0, Number(state.commitments) || 0));
   state.title = document.querySelector('.opportunity-detail-hero h1')?.textContent.trim() || 'Opportunity validation';
   state.project = document.querySelector('.opportunity-detail-hero p a')?.textContent.trim() || '';
+  state.domain = document.querySelector('.professional-coach-note .analysis-label')?.textContent.replace(/\s+VALIDATION LENS$/i, '').trim() || state.domain || '';
+  state.pattern = steps[0]?.querySelector('.coach-step')?.textContent.replace(/^01\s*·\s*/i, '').trim() || state.pattern || '';
+  const sourceUrl = document.querySelector('.evidence-source a[href^="https://github.com/"]')?.href || '';
+  state.sourceUrl = /^https:\/\/github\.com\//i.test(sourceUrl) ? sourceUrl : state.sourceUrl || '';
   state.updatedAt = new Date().toISOString();
   let cloudTimer;
   function persist(message = cloud.available ? 'Saved · syncing…' : 'Saved locally') {
