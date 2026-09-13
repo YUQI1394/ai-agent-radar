@@ -506,7 +506,7 @@ test('GitHub discovery includes narrow creative and design workflow searches', (
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);
   assert.match(ingestion, /"creative agents" in:name,description,readme/);
-  assert.match(ingestion, /"marketing agents" in:name,description,readme/);
+  assert.match(ingestion, /"advertising agent" in:name,description,readme/);
   assert.match(ingestion, /"design workflow" agent in:name,description,readme/);
   assert.match(ingestion, /"pentest agent" in:name,description,readme/);
   assert.match(ingestion, /"social media agent" in:name,description,readme/);
@@ -531,5 +531,6 @@ test('GitHub discovery broadens thin professional domains without burst concurre
   assert.match(ingestion, /authorAssociation: String\(issue\.author_association/);
   assert.match(ingestion, /issue\.reactions >= 3/);
   assert.match(selection, /evidenceByCategory/);
+  assert.match(selection, /TARGET_CATEGORY_EVIDENCE = 4/);
   assert.match(selection, /recoveryNames/);
 });

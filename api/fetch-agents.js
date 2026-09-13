@@ -24,7 +24,7 @@ const SEARCHES = () => [
   { query: '"investment agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: `"accounting agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"marketing agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
-  { query: `"marketing agents" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
+  { query: `"advertising agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: '"social media agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: '"sales agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: `"SEO agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },

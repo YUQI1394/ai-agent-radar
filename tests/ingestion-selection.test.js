@@ -42,3 +42,12 @@ test('Issue scanning prioritizes every current project in a domain below the evi
   const selected = selectIssueTargets(candidates, current, [], 7);
   assert.deepEqual(selected.filter((item) => item.category === 'Marketing').map((item) => item.name), marketing.map((item) => item.name));
 });
+
+test('Issue recovery rotates across multiple domains below the target evidence depth', () => {
+  const thin = ['Marketing', 'Security', 'Design', 'Research'].flatMap((category) => [0, 1].map((index) => ({ name: `${category}-${index}`, category })));
+  const healthy = Array.from({ length: 8 }, (_, index) => ({ name: `coding-${index}`, category: 'Coding' }));
+  const candidates = [...thin, ...healthy];
+  const current = candidates.map((item, index) => ({ ...item, evidenceIssues: item.category === 'Coding' ? [{}, {}, {}, {}] : [{}], issueScannedAt: `2026-08-${String(index + 1).padStart(2, '0')}T00:00:00.000Z` }));
+  const selected = selectIssueTargets(candidates, current, [], 7);
+  for (const category of ['Marketing', 'Security', 'Design', 'Research']) assert.ok(selected.some((item) => item.category === category), `${category} must receive a recovery scan`);
+});

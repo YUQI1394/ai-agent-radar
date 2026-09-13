@@ -148,6 +148,19 @@ test('curated selection defaults to three projects per available professional do
   assert.equal(selected.length, 36);
 });
 
+test('professional-domain reservations prefer projects with qualified demand evidence', () => {
+  const coding = Array.from({ length: 36 }, (_, index) => agent({ id: index + 1, category: 'Coding', score: { total: 100 - index }, stars: 1000 - index }));
+  const marketing = [
+    agent({ id: 301, category: 'Marketing', score: { total: 50 }, evidenceIssues: [] }),
+    agent({ id: 302, category: 'Marketing', score: { total: 49 }, evidenceIssues: [] }),
+    agent({ id: 303, category: 'Marketing', score: { total: 48 }, evidenceIssues: [] }),
+    agent({ id: 304, category: 'Marketing', score: { total: 35 }, evidenceIssues: [{ title: 'Requested workflow' }] })
+  ];
+  const selected = selectCuratedAgents([...coding, ...marketing], 36);
+  assert.ok(selected.some((item) => item.id === 304), 'a demand-evidenced professional project should receive a reserved slot');
+  assert.equal(selected.filter((item) => item.category === 'Marketing').length, 3);
+});
+
 test('week keys consistently end on Sunday in UTC', () => {
   assert.equal(weekKey('2026-09-01T23:59:00-07:00'), '2026-09-06');
   assert.equal(weekKey('2026-09-06T23:59:00Z'), '2026-09-06');
