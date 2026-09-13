@@ -57,6 +57,14 @@ test('accepts actionable agents and rejects model-only or generator products', (
     description: 'A curated list of useful tools and companies.', topics: ['ai-agents', 'mcp']
   })), false);
   assert.equal(qualifiesAsAgent(agent({
+    name: 'Tons of Skills', tagline: 'Model-agnostic agent-skills platform with a harness-free canonical layer and package manager',
+    description: 'A marketplace for adapters and portable skill packages.', topics: ['ai-agents', 'skills']
+  })), false);
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Research in Sleep', tagline: 'Markdown-only skills for autonomous ML research',
+    description: 'Works with Claude Code, Codex or any LLM agent.', topics: ['ai-agents', 'research']
+  })), false);
+  assert.equal(qualifiesAsAgent(agent({
     name: 'Quant Platform', tagline: 'Machine-learning investment platform equipped with RD-Agent',
     description: 'Explore ideas and implement quantitative models.', topics: ['finance', 'research']
   })), false);
