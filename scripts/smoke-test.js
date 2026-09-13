@@ -86,7 +86,10 @@ async function main() {
   const loginSource = await loginScript.text();
   assert.match(loginSource, /WHAT YOU LEAVE WITH/, 'registration page lacks a concrete outcome preview');
   assert.equal(workspaceScript.status, 200, '/workspace.js is unavailable');
-  assert.match(await workspaceScript.text(), /Recommended from live evidence/, 'new workspaces lack live starter recommendations');
+  const workspaceSource = await workspaceScript.text();
+  assert.match(workspaceSource, /Recommended from live evidence/, 'new workspaces lack live starter recommendations');
+  assert.match(workspaceSource, /SINCE YOUR LAST VISIT/, 'saved projects lack a return-visit change brief');
+  assert.match(workspaceSource, /watchlist-snapshot/, 'saved project monitoring has no durable baseline');
   assert.match(loginSource, /Choose your professional field/, 'registration lacks professional personalization');
   assert.match(loginSource, /LIVE GITHUB-BACKED NEED/, 'registration does not preview a live demand signal');
   assert.match(loginSource, /ai-agent-radar:preferred-domain/, 'registration choice is not carried into the workspace');

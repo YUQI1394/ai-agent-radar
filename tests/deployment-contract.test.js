@@ -274,6 +274,18 @@ test('registered users can monitor saved project movement from the workspace', (
   assert.match(app, /location\.hash === '#saved'/);
 });
 
+test('saved-project monitoring explains changes since the registered user last visited', () => {
+  const page = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
+  const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
+  assert.match(page, /workspace-return-brief/);
+  assert.match(workspace, /watchlist-snapshot/);
+  assert.match(workspace, /SINCE YOUR LAST VISIT/);
+  assert.match(workspace, /new qualified need/);
+  assert.match(workspace, /GitHub stars since your last check/);
+  assert.match(workspace, /MONITORING STARTED/);
+  assert.match(workspace, /cloud\.set\('saved', 'watchlist-snapshot'/);
+});
+
 test('privacy-preserving page analytics covers discovery and conversion routes', () => {
   const analytics = fs.readFileSync(path.join(root, 'analytics.js'), 'utf8');
   const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');

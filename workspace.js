@@ -106,7 +106,8 @@
   async function loadSavedWatchlist() {
     const section = document.querySelector('#workspace-watchlist');
     const grid = document.querySelector('#workspace-watchlist-grid');
-    if (!section || !grid) return;
+    const brief = document.querySelector('#workspace-return-brief');
+    if (!section || !grid || !brief) return;
     let ids = [];
     try {
       const local = JSON.parse(localStorage.getItem(auth.savedKey()) || '[]');
@@ -124,9 +125,45 @@
     if (!ids.length) return;
     try {
       const wanted = new Set(ids);
-      const saved = (await loadAgentFeed()).filter((agent) => wanted.has(String(agent.id || agent.slug || agent.name))).slice(0, 8);
+      const saved = (await loadAgentFeed()).filter((agent) => wanted.has(String(agent.id || agent.slug || agent.name)));
       if (!saved.length) return;
-      grid.innerHTML = saved.map((agent) => {
+      const snapshotKey = `${auth.storagePrefix('saved')}watchlist-snapshot`;
+      let previous = null;
+      try { previous = JSON.parse(localStorage.getItem(snapshotKey) || 'null'); } catch (_) {}
+      if (cloud.available) {
+        try { previous = await cloud.get('saved', 'watchlist-snapshot') || previous; } catch (_) { /* Use the device snapshot. */ }
+      }
+      const current = {
+        checkedAt: new Date().toISOString(),
+        projects: Object.fromEntries(saved.map((agent) => [String(agent.id || agent.slug || agent.name), {
+          stars: Math.max(0, Number(agent.stars ?? agent.votes) || 0),
+          issues: (agent.evidenceIssues || []).map((issue) => String(issue.id || '')).filter((id) => /^\d+$/.test(id))
+        }]))
+      };
+      const changes = [];
+      if (previous?.projects && typeof previous.projects === 'object') saved.forEach((agent) => {
+        const id = String(agent.id || agent.slug || agent.name);
+        const before = previous.projects[id];
+        if (!before) {
+          changes.push(`<li><strong>${escapeHtml(agent.name)}</strong><span>Newly added to your monitored projects</span></li>`);
+          return;
+        }
+        const issueIds = new Set(Array.isArray(before.issues) ? before.issues.map(String) : []);
+        const newIssues = (agent.evidenceIssues || []).filter((issue) => /^\d+$/.test(String(issue.id || '')) && !issueIds.has(String(issue.id)));
+        if (newIssues.length) changes.push(`<li><strong>${escapeHtml(agent.name)}</strong><span>${newIssues.length} new qualified need${newIssues.length === 1 ? '' : 's'} · <a href="/opportunity/${encodeURIComponent(newIssues[0].id)}">open newest evidence →</a></span></li>`);
+        const starGain = Math.max(0, Number(agent.stars ?? agent.votes) - Math.max(0, Number(before.stars) || 0));
+        if (starGain) changes.push(`<li><strong>${escapeHtml(agent.name)}</strong><span>+${starGain.toLocaleString()} GitHub stars since your last check</span></li>`);
+      });
+      const missingCount = Math.max(0, ids.length - saved.length);
+      if (missingCount && previous?.projects) changes.push(`<li><strong>Coverage change</strong><span>${missingCount} saved project${missingCount === 1 ? '' : 's'} no longer appear in the current curated feed</span></li>`);
+      const lastChecked = previous?.checkedAt && Number.isFinite(Date.parse(previous.checkedAt)) ? new Date(previous.checkedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      brief.innerHTML = previous?.projects
+        ? `<div><span class="analysis-label">SINCE YOUR LAST VISIT${lastChecked ? ` · ${escapeHtml(lastChecked)}` : ''}</span><strong>${changes.length ? `${changes.length} material change${changes.length === 1 ? '' : 's'}` : 'No material changes'}</strong></div>${changes.length ? `<ul>${changes.slice(0, 5).join('')}</ul>` : '<p>Your saved projects have no new qualified needs or star growth yet. The Radar will check again on your next visit.</p>'}`
+        : `<div><span class="analysis-label">MONITORING STARTED</span><strong>${saved.length} saved project${saved.length === 1 ? '' : 's'} now have a return baseline</strong></div><p>On your next visit, this brief will show new qualified needs and GitHub growth since today.</p>`;
+      brief.hidden = false;
+      localStorage.setItem(snapshotKey, JSON.stringify(current));
+      if (cloud.available) cloud.set('saved', 'watchlist-snapshot', current).catch(() => {});
+      grid.innerHTML = saved.slice(0, 8).map((agent) => {
         const movement = Number(agent.starDelta || agent.voteDelta || 0) > 0
           ? `+${Number(agent.starDelta || agent.voteDelta)} stars since last scan`
           : Number(agent.rankChange || 0) !== 0 ? `${Number(agent.rankChange) > 0 ? '↑' : '↓'}${Math.abs(Number(agent.rankChange))} rank change` : 'No material change this scan';
