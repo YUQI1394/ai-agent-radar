@@ -157,6 +157,9 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(app, /function renderRadarField/);
   assert.match(app, /function renderRepeatedNeeds/);
   assert.match(app, /issue\.confidence\?\.level === 'repeated'/);
+  assert.match(app, /CROSS-PROJECT NEED/);
+  assert.match(app, /Representative evidence:/);
+  assert.match(app, /issue\.confidence\.description/);
   assert.match(app, /#validation-start/);
   assert.match(app, /qualified needs/);
   assert.match(app, /strongest\.issue\.title/);

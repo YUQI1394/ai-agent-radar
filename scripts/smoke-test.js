@@ -64,6 +64,8 @@ async function main() {
   const homepageAppSource = await homepageApp.text();
   assert.match(homepageAppSource, /function renderRepeatedNeeds/, 'homepage cannot render repeated needs');
   assert.match(homepageAppSource, /confidence\?\.level === 'repeated'/, 'homepage demand surface is not confidence-gated');
+  assert.match(homepageAppSource, /CROSS-PROJECT NEED/, 'homepage promotes a raw Issue over the shared need');
+  assert.match(homepageAppSource, /Representative evidence:/, 'homepage repeated needs are not traceable to representative evidence');
   console.log('PASS homepage repeated-demand surface');
 
   const filteredOpportunities = await fetch(`${origin}/opportunities?q=memory`);

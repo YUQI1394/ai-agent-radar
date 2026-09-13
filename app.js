@@ -159,7 +159,7 @@
       })
       .slice(0, 3);
     if (!elements.homeDemand || !elements.homeDemandGrid || !repeated.length) return;
-    elements.homeDemandGrid.innerHTML = repeated.map(({ agent, issue }) => `<article class="home-demand-card"><div><span>${escapeHtml(issue.pattern)}</span><strong>${escapeHtml(issue.confidence.label)}</strong></div><h3>${escapeHtml(issue.title)}</h3><p>Observed in ${escapeHtml(agent.name)} · ${Number(issue.comments || 0)} comments · ${Number(issue.reactions || 0)} reactions</p><a href="/opportunity/${encodeURIComponent(issue.id)}#validation-start">Open evidence and start sprint →</a></article>`).join('');
+    elements.homeDemandGrid.innerHTML = repeated.map(({ agent, issue }) => `<article class="home-demand-card"><div><span>CROSS-PROJECT NEED</span><strong>${escapeHtml(issue.confidence.label)}</strong></div><h3>${escapeHtml(issue.pattern)}</h3><p class="home-demand-explanation">${escapeHtml(issue.confidence.description)}</p><p class="home-demand-example">Representative evidence: “${escapeHtml(issue.title)}” · ${escapeHtml(agent.name)} · ${Number(issue.comments || 0)} comments</p><a href="/opportunity/${encodeURIComponent(issue.id)}#validation-start">Inspect evidence and start sprint →</a></article>`).join('');
     elements.homeDemand.hidden = false;
   }
 

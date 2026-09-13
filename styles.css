@@ -107,6 +107,8 @@ button, input { font: inherit; }
 .home-demand-card > div strong { flex: 0 0 auto; color: #ddd6fe; font-size: .56rem; letter-spacing: .04em; }
 .home-demand-card h3 { margin: 13px 0 8px; font-size: .94rem; line-height: 1.42; }
 .home-demand-card p { margin: 0 0 14px; color: var(--muted); font-size: .72rem; line-height: 1.55; }
+.home-demand-card .home-demand-explanation { color: #c8c8d2; }
+.home-demand-card .home-demand-example { padding-top: 11px; border-top: 1px solid rgba(255,255,255,.065); }
 .home-demand-card a { color: var(--cyan); font-size: .74rem; font-weight: 750; }
 
 .controls { display: block; margin-bottom: 14px; }
