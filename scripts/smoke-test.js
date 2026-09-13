@@ -35,7 +35,8 @@ async function fetchTransient(url, options = {}, attempts = 3) {
 async function main() {
   const pageBodies = new Map();
   for (const [path, marker] of pages) {
-    const response = await fetch(`${origin}${path}`, { redirect: 'follow' });
+    const separator = path.includes('?') ? '&' : '?';
+    const response = await fetch(`${origin}${path}${separator}smoke=${Date.now()}`, { redirect: 'follow', headers: { 'Cache-Control': 'no-cache' } });
     assert.equal(response.status, 200, `${path} returned ${response.status}`);
     const html = await response.text();
     pageBodies.set(path, html);

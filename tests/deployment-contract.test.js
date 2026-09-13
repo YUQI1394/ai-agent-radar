@@ -501,6 +501,8 @@ test('production smoke monitoring covers the public conversion journey', () => {
   assert.match(smoke, /_vercel\/insights\/script\.js/);
   assert.match(smoke, /content-security-policy/);
   assert.match(smoke, /healthAttempt <= 12/);
+  assert.match(smoke, /smoke=\$\{Date\.now\(\)\}/);
+  assert.match(smoke, /'Cache-Control': 'no-cache'/);
   assert.match(smoke, /branded 404 recovery/);
   assert.match(smoke, /dynamic 404 recovery/);
   for (const slug of ['research', 'security', 'finance', 'coding', 'marketing', 'design', 'productivity', 'infrastructure']) {
