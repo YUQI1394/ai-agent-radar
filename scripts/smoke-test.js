@@ -99,6 +99,8 @@ async function main() {
   assert.match(loginSource, /ai-agent-radar:preferred-domain/, 'registration choice is not carried into the workspace');
   assert.match(loginSource, /Use this need as my first sprint/, 'registration cannot select a concrete first sprint');
   assert.match(loginSource, /#validation-start/, 'selected registration demand does not continue into guided execution');
+  const validationSource = await (await fetch(`${origin}/validation.js`)).text();
+  assert.match(validationSource, /Add action to calendar/, 'registered validation lacks a portable action reminder');
   console.log('PASS privacy-preserving conversion analytics');
 
   const [sitemap, feed, authConfig, agentFeed] = await Promise.all([

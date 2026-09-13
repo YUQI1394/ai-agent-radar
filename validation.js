@@ -43,7 +43,7 @@
   const workspace = document.createElement('section');
   workspace.className = 'validation-workspace';
   workspace.id = 'validation-start';
-  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>${cloud.available ? 'Securely synced to your free account.' : 'Saved locally; cloud sync will retry when available.'}</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Your decision<select id="validation-decision" aria-describedby="validation-verdict"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><div class="evidence-scorecard"><div><span class="analysis-label">EVIDENCE CHECK</span><strong id="validation-evidence-score">0 / 5 proof gates</strong></div><ul id="validation-evidence-gates"></ul><p id="validation-verdict" aria-live="polite"></p></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-primary" type="button" data-copy-outreach>Copy interview outreach</button><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
+  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>${cloud.available ? 'Securely synced to your free account.' : 'Saved locally; cloud sync will retry when available.'}</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Your decision<select id="validation-decision" aria-describedby="validation-verdict"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><div class="evidence-scorecard"><div><span class="analysis-label">EVIDENCE CHECK</span><strong id="validation-evidence-score">0 / 5 proof gates</strong></div><ul id="validation-evidence-gates"></ul><p id="validation-verdict" aria-live="polite"></p></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-primary" type="button" data-copy-outreach>Copy interview outreach</button><button class="button button-secondary" type="button" data-add-calendar disabled>Add action to calendar</button><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
   workspace.querySelector('.validation-plan').insertAdjacentHTML('beforeend', `<label for="validation-interviews">User interviews<input id="validation-interviews" type="number" min="0" max="20" inputmode="numeric" aria-describedby="validation-readiness"></label><label for="validation-commitments">Behavioral commitments<input id="validation-commitments" type="number" min="0" max="20" inputmode="numeric" aria-describedby="validation-readiness"></label>`);
   workspace.querySelector('[for="validation-notes"]').insertAdjacentHTML('beforebegin', `<div class="readiness-guidance" id="validation-readiness" aria-live="polite"></div>`);
   grid.before(workspace);
@@ -60,6 +60,7 @@
   const evidenceScore = workspace.querySelector('#validation-evidence-score');
   const evidenceGates = workspace.querySelector('#validation-evidence-gates');
   const verdict = workspace.querySelector('#validation-verdict');
+  const calendarButton = workspace.querySelector('[data-add-calendar]');
   const startedFromBrief = location.hash === '#validation-start' && !state.nextAction;
   notes.value = state.notes || '';
   nextAction.value = state.nextAction || '';
@@ -79,6 +80,29 @@
     const target = new Date();
     target.setDate(target.getDate() + days);
     return new Date(target.getTime() - target.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  }
+  function updateCalendarButton() {
+    calendarButton.disabled = !nextAction.value.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(dueDate.value);
+  }
+  function calendarDate(value, offsetDays = 0) {
+    const [year, month, day] = value.split('-').map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day + offsetDays));
+    return date.toISOString().slice(0, 10).replace(/-/g, '');
+  }
+  function calendarText(value) {
+    return String(value || '').replace(/\\/g, '\\\\').replace(/([,;])/g, '\\$1').replace(/\r?\n/g, '\\n');
+  }
+  function downloadCalendarReminder() {
+    if (calendarButton.disabled) return;
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AI Agent Radar//Validation Coach//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT', `UID:radar-${opportunityId}-${dueDate.value}@getaiagentradar.com`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${calendarDate(dueDate.value)}`, `DTEND;VALUE=DATE:${calendarDate(dueDate.value, 1)}`, `SUMMARY:${calendarText(`AI Agent Radar: ${nextAction.value.trim()}`)}`, `DESCRIPTION:${calendarText(`${state.title}\nContinue: ${location.origin}${location.pathname}#validation-start`)}`, 'END:VEVENT', 'END:VCALENDAR', ''];
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' }));
+    link.download = `ai-agent-radar-action-${dueDate.value}.ics`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 0);
+    saved.textContent = 'Calendar reminder downloaded';
+    setTimeout(() => { saved.textContent = ''; }, 1800);
   }
   function evidenceSnapshot() {
     const interviewCount = Math.min(20, Math.max(0, Number(interviews.value) || 0));
@@ -176,6 +200,7 @@
       }
       updateProgress();
       updateReadiness();
+      updateCalendarButton();
       persist(message || undefined);
     });
     const queueButton = document.createElement('button');
@@ -185,6 +210,7 @@
     queueButton.addEventListener('click', () => {
       nextAction.value = stepAction;
       if (!dueDate.value) dueDate.value = localDateAfter(1);
+      updateCalendarButton();
       persist('Added to execution queue');
       workspace.scrollIntoView({ behavior: 'smooth', block: 'start' });
       nextAction.focus({ preventScroll: true });
@@ -198,8 +224,8 @@
   }
   let notesTimer;
   notes.addEventListener('input', () => { updateReadiness(); clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
-  nextAction.addEventListener('input', () => { clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
-  dueDate.addEventListener('change', () => persist());
+  nextAction.addEventListener('input', () => { updateCalendarButton(); clearTimeout(notesTimer); notesTimer = setTimeout(() => persist(), 350); });
+  dueDate.addEventListener('change', () => { updateCalendarButton(); persist(); });
   decision.addEventListener('change', () => { updateReadiness(); persist(decision.value === 'build' && evidenceSnapshot().level !== 'evidence-backed' ? 'Provisional Build saved · gather more proof' : 'Decision saved'); });
   [interviews, commitments].forEach((input) => input.addEventListener('input', () => { updateReadiness(); persist('Evidence count saved'); }));
   workspace.querySelector('[data-copy-notes]').addEventListener('click', async () => {
@@ -212,6 +238,7 @@
     catch (_) { saved.textContent = 'Copy unavailable in this browser'; }
     setTimeout(() => { saved.textContent = ''; }, 1800);
   });
+  calendarButton.addEventListener('click', downloadCalendarReminder);
   workspace.querySelector('[data-reset-progress]').addEventListener('click', () => {
     state.completed = [];
     steps.forEach((card) => { card.querySelector('input').checked = false; });
@@ -221,5 +248,6 @@
   });
   updateProgress();
   updateReadiness();
+  updateCalendarButton();
   persist(startedFromBrief ? 'Sprint started · first action scheduled' : '');
 })();

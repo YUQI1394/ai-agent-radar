@@ -206,6 +206,10 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(validation, /EVIDENCE CHECK/);
   assert.match(validation, /proof gates/);
   assert.match(validation, /Copy interview outreach/);
+  assert.match(validation, /Add action to calendar/);
+  assert.match(validation, /text\/calendar/);
+  assert.match(validation, /BEGIN:VEVENT/);
+  assert.match(validation, /calendarButton\.disabled/);
   assert.match(validation, /decisionEvidence/);
   assert.match(validation, /Provisional Build saved/);
   assert.match(detail, /professionalDomain/);
