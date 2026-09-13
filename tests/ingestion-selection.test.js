@@ -51,3 +51,20 @@ test('Issue recovery rotates across multiple domains below the target evidence d
   const selected = selectIssueTargets(candidates, current, [], 7);
   for (const category of ['Marketing', 'Security', 'Design', 'Research']) assert.ok(selected.some((item) => item.category === category), `${category} must receive a recovery scan`);
 });
+
+test('Issue recovery prefers new evidence sources when one project monopolizes a domain', () => {
+  const candidates = [
+    { name: 'marketing-with-evidence', category: 'Marketing' },
+    { name: 'marketing-uncovered-a', category: 'Marketing' },
+    { name: 'marketing-uncovered-b', category: 'Marketing' },
+    ...Array.from({ length: 6 }, (_, index) => ({ name: `coding-${index}`, category: 'Coding' }))
+  ];
+  const current = candidates.map((item, index) => ({
+    ...item,
+    evidenceIssues: item.name === 'marketing-with-evidence' ? [{}, {}, {}, {}] : item.category === 'Coding' ? [{}, {}, {}, {}] : [],
+    issueScannedAt: item.name === 'marketing-with-evidence' ? '2026-01-01T00:00:00.000Z' : `2026-08-${String(index + 1).padStart(2, '0')}T00:00:00.000Z`
+  }));
+  const selected = selectIssueTargets(candidates, current, [], 4);
+  assert.ok(selected.some((item) => item.name === 'marketing-uncovered-a'));
+  assert.ok(!selected.slice(0, 2).some((item) => item.name === 'marketing-with-evidence'), 'the existing source must not crowd out uncovered projects');
+});

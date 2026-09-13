@@ -44,6 +44,7 @@ async function main() {
     if (path.startsWith('/category/')) {
       const demandCount = Number(html.match(/LIVE GITHUB DEMAND[\s\S]{0,300}<h2>(\d+) qualified signals/i)?.[1] || 0);
       assert.ok(demandCount >= 2, `${path} has fewer than two qualified demand signals`);
+      assert.match(html, /independent projects?/i, `${path} does not disclose demand source diversity`);
       assert.match(html, /#demand/, `${path} lacks structured demand data`);
       assert.match(html, /Start guided sprint/i, `${path} lacks an execution path`);
     }

@@ -556,5 +556,14 @@ test('GitHub discovery broadens thin professional domains without burst concurre
   assert.match(ingestion, /issue\.reactions >= 3/);
   assert.match(selection, /evidenceByCategory/);
   assert.match(selection, /TARGET_CATEGORY_EVIDENCE = 4/);
+  assert.match(selection, /TARGET_CATEGORY_EVIDENCE_PROJECTS = 2/);
+  assert.match(selection, /evidenceProjectsByCategory/);
+  assert.match(selection, /byEvidenceGap/);
   assert.match(selection, /recoveryNames/);
+  const categoryPage = fs.readFileSync(path.join(root, 'api', 'category.js'), 'utf8');
+  assert.match(categoryPage, /independent project/);
+  assert.match(categoryPage, /EARLY SINGLE-PROJECT EVIDENCE/);
+  const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
+  assert.match(health, /minimumDomainEvidenceSources/);
+  assert.match(health, /multiSourceDemandDomains/);
 });

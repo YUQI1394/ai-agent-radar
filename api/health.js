@@ -35,15 +35,22 @@ module.exports = async function handler(req, res) {
       counts[name] = (counts[name] || 0) + evidenceFor(agent).length;
       return counts;
     }, {});
+    const domainEvidenceSources = agents.reduce((counts, agent) => {
+      const name = category(agent);
+      if (evidenceFor(agent).length) counts[name] = (counts[name] || 0) + 1;
+      return counts;
+    }, {});
     const representedDomains = TARGET_DOMAINS.filter((name) => Number(domainCoverage[name] || 0) > 0).length;
     const minimumDomainCount = Math.min(...TARGET_DOMAINS.map((name) => Number(domainCoverage[name] || 0)));
     const representedDemandDomains = TARGET_DOMAINS.filter((name) => Number(domainEvidenceCoverage[name] || 0) > 0).length;
     const minimumDomainEvidence = Math.min(...TARGET_DOMAINS.map((name) => Number(domainEvidenceCoverage[name] || 0)));
+    const minimumDomainEvidenceSources = Math.min(...TARGET_DOMAINS.map((name) => Number(domainEvidenceSources[name] || 0)));
+    const multiSourceDemandDomains = TARGET_DOMAINS.filter((name) => Number(domainEvidenceSources[name] || 0) >= 2).length;
     const largestDomainShare = agents.length ? Math.max(...Object.values(domainCoverage)) / agents.length : 1;
     const checks = { storage: true, feedPresent: agents.length > 0, feedFresh: ageHours !== null && ageHours <= 12, curatedDepth: agents.length >= 20, issueCoverage: issueCoverageRatio >= 0.5, demandEvidence: evidenceSignals >= 30, evidenceContext: contextRatio >= 0.75, professionalBreadth: representedDomains === TARGET_DOMAINS.length && minimumDomainCount >= 2 && largestDomainShare <= 0.6, professionalDemandBreadth: representedDemandDomains === TARGET_DOMAINS.length && minimumDomainEvidence >= 2, refreshComplete: payload?.ingestion ? !payload.ingestion.degraded : true, refreshDeployment: payload?.ingestion?.deploymentCommit === deploymentCommit };
     const healthy = Object.values(checks).every(Boolean);
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(healthy ? 200 : 503).json({ status: healthy ? 'healthy' : 'degraded', checkedAt, deploymentCommit, updatedAt: payload?.updatedAt || null, ageHours, projects: agents.length, issueCoverage: { scanned: scannedRepositories, total: agents.length, percent: Math.round(issueCoverageRatio * 100) }, evidenceSignals, evidenceContext: { available: contextSignals, total: evidenceSignals, percent: Math.round(contextRatio * 100) }, ingestion: payload?.ingestion || null, professionalCoverage: { representedDomains, minimumDomainCount, largestDomainShare: Math.round(largestDomainShare * 100), domains: domainCoverage }, professionalDemandCoverage: { representedDomains: representedDemandDomains, minimumDomainEvidence, domains: domainEvidenceCoverage }, checks });
+    return res.status(healthy ? 200 : 503).json({ status: healthy ? 'healthy' : 'degraded', checkedAt, deploymentCommit, updatedAt: payload?.updatedAt || null, ageHours, projects: agents.length, issueCoverage: { scanned: scannedRepositories, total: agents.length, percent: Math.round(issueCoverageRatio * 100) }, evidenceSignals, evidenceContext: { available: contextSignals, total: evidenceSignals, percent: Math.round(contextRatio * 100) }, ingestion: payload?.ingestion || null, professionalCoverage: { representedDomains, minimumDomainCount, largestDomainShare: Math.round(largestDomainShare * 100), domains: domainCoverage }, professionalDemandCoverage: { representedDomains: representedDemandDomains, minimumDomainEvidence, minimumDomainEvidenceSources, multiSourceDemandDomains, domains: domainEvidenceCoverage, sourceProjects: domainEvidenceSources }, checks });
   } catch (error) {
     console.error('Health check failed:', { name: error?.name, message: error?.message });
     res.setHeader('Cache-Control', 'no-store');
