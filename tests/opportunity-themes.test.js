@@ -142,6 +142,7 @@ test('rejects internal work and vague support posts without hiding explicit dema
     { title: '[Personas] Replace synthetic soak gate with acceptance proof', labels: [] },
     { title: '[Intake] Need a Cloudflare token for one-time operations', labels: [] },
     { title: 'How can I solve this installation error?', labels: [] },
+    { title: 'How to provide Google Vertex AI API key in the .env file', labels: [], comments: 3, reactions: 0 },
     { title: 'no results whatsoever', labels: [] }
   ];
   useful.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), true, issue.title));
@@ -167,9 +168,11 @@ test('rejects aggregate roadmaps and unsupported low-engagement defects', () => 
     { title: 'Github Copilot connection timeout', labels: ['bug'], authorAssociation: 'NONE', comments: 2, reactions: 0 },
     { title: 'AI Research fails at Data Collection with 502 for multiple tickers', labels: [], authorAssociation: 'NONE', comments: 2, reactions: 0 },
     { title: 'Error: Failed to retrieve data with a legacy provider API', labels: [], authorAssociation: 'NONE', comments: 2, reactions: 0 },
-    { title: 'windows独立版使用免费api，发送消息后显示链接失败', labels: [], authorAssociation: 'NONE', comments: 2, reactions: 0 }
+    { title: 'windows独立版使用免费api，发送消息后显示链接失败', labels: [], authorAssociation: 'NONE', comments: 2, reactions: 0 },
+    { title: 'codex cli无法链接', labels: ['bug'], authorAssociation: 'NONE', comments: 4, reactions: 0 }
   ];
   noise.forEach((issue) => assert.equal(isUsefulDemandSignal(issue), false, issue.title));
   assert.equal(isUsefulDemandSignal({ title: 'Output parser repeatedly violates the requested schema', labels: ['bug'], authorAssociation: 'NONE', comments: 29, reactions: 5 }), true);
   assert.equal(isUsefulDemandSignal({ title: 'Unable to use locally deployed models', labels: ['bug'], authorAssociation: 'NONE', comments: 5, reactions: 0 }), true);
+  assert.equal(isUsefulDemandSignal({ title: 'How to rotate an API key without interrupting active agents', labels: ['feature request'], authorAssociation: 'NONE', comments: 6, reactions: 3 }), true);
 });
