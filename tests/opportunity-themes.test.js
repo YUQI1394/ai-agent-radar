@@ -37,6 +37,7 @@ test('separates broad themes into specific cross-repository problems', () => {
   assert.equal(opportunityPattern({ title: 'General-purpose autonomous load testing platform' }).name, 'Testing & evaluation workflows');
   assert.equal(opportunityPattern({ title: '命令返回成串json，重点不突出，翻页麻烦，能不能返回更简洁' }).name, 'Interface & rendering');
   assert.equal(opportunityPattern({ title: '是否能够看到子 agent 的执行过程？' }).name, 'Debugging & observability');
+  assert.equal(opportunityPattern({ title: 'Browser extension for web-based AI agents' }).name, 'Tool & system connectors');
 });
 
 test('builds specialized coaching plans for opportunity themes', () => {

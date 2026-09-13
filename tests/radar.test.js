@@ -72,6 +72,9 @@ test('recognizes professional agents that use domain-specific action verbs', () 
   assert.equal(qualifiesAsAgent(video), true);
   assert.equal(category(video), 'Design');
   assert.equal(qualifiesAsAgent(agent({ name: 'Social Media Agent Template', tagline: 'Agent that schedules social media posts', description: 'A simple single-purpose posting helper.', topics: ['marketing'] })), false);
+  assert.equal(qualifiesAsAgent(agent({ name: 'SEO Skills Plugin', tagline: 'Open-source marketing skills for AI agents.', topics: ['agents', 'mcp', 'marketing'] })), false);
+  assert.equal(qualifiesAsAgent(agent({ name: 'Creative Ad Agent', tagline: 'Multi-agent system that plans, designs and evaluates Meta ad creatives', topics: [] })), true);
+  assert.equal(category(agent({ name: 'Creative Ad Agent', tagline: 'Multi-agent system that plans, designs and evaluates Meta ad creatives', topics: [] })), 'Marketing');
 });
 
 test('scores stay bounded and reward fresh, evidenced projects', () => {
