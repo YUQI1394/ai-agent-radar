@@ -63,6 +63,15 @@ async function main() {
   assert.match(await filteredOpportunities.text(), /<meta name="robots" content="noindex, follow">/i, 'filtered opportunities lack an HTML noindex signal');
   console.log('PASS filtered opportunity indexing controls');
 
+  const repeatedOpportunities = await fetch(`${origin}/opportunities?confidence=repeated`);
+  assert.equal(repeatedOpportunities.status, 200, 'repeated-pattern filter is unavailable');
+  assert.match(repeatedOpportunities.headers.get('x-robots-tag') || '', /noindex/i, 'confidence filter lacks an HTTP noindex signal');
+  const repeatedHtml = await repeatedOpportunities.text();
+  assert.match(repeatedHtml, /Repeated across projects/i, 'confidence filter lacks its selected state');
+  assert.match(repeatedHtml, /confidence-badge confidence-repeated/i, 'confidence filter has no repeated-pattern results');
+  assert.doesNotMatch(repeatedHtml, /confidence-badge confidence-(?:supported|early)/i, 'confidence filter mixes lower confidence levels');
+  console.log('PASS demand confidence filtering');
+
   const opportunityCache = await fetch(`${origin}/opportunities`, { method: 'HEAD' });
   assert.match(opportunityCache.headers.get('cache-control') || '', /public/i, 'opportunity intelligence is not publicly cacheable');
   console.log('PASS public intelligence cache policy');

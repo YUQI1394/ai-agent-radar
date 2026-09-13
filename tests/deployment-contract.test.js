@@ -205,6 +205,9 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(listing, /evidenceConfidence/);
   assert.match(listing, /patternRepositories/);
   assert.match(listing, /Evidence score/);
+  assert.match(listing, /Filter opportunities by demand confidence/);
+  assert.match(listing, /activeConfidence/);
+  assert.match(listing, /Repeated across projects/);
   assert.match(listing, /What the reporter described/);
   assert.match(listing, /Search demand evidence/);
   assert.match(listing, /queryTerms\.every/);
