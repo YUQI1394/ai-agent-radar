@@ -22,17 +22,18 @@
   const strength = (item) => {
     const ageDays = Math.max(0, (Date.now() - Date.parse(item.updatedAt)) / 86400000);
     const freshness = Number.isFinite(ageDays) ? ageDays <= 30 ? 10 : ageDays <= 90 ? 7 : ageDays <= 365 ? 3 : 0 : 0;
-    return Math.min(24, Math.log2(item.comments + 1) * 4.5) + Math.min(24, Math.log2(item.reactions + 1) * 6) + freshness + item.radar / 20;
+    const confidenceBoost = item.confidence?.level === 'repeated' ? 20 : item.confidence?.level === 'supported' ? 8 : 0;
+    return confidenceBoost + Math.min(24, Math.log2(item.comments + 1) * 4.5) + Math.min(24, Math.log2(item.reactions + 1) * 6) + freshness + item.radar / 20;
   };
   const renderRecommendation = () => {
     const domain = domainSelect.value;
     localStorage.setItem('ai-agent-radar:preferred-domain', domain);
     const item = liveOpportunities.filter((candidate) => candidate.domain === domain).sort((a, b) => strength(b) - strength(a))[0];
     recommendation.innerHTML = item
-      ? `<span>LIVE GITHUB-BACKED NEED · ${escapeHtml(domain.toUpperCase())}</span><strong>${escapeHtml(item.title)}</strong><p>${item.comments} comments · ${item.reactions} reactions · found in ${escapeHtml(item.project)}</p><div><button class="button button-primary" type="button" data-start-opportunity="${encodeURIComponent(item.id)}" data-start-title="${escapeHtml(item.title)}">Use this need as my first sprint</button><a href="/opportunity/${encodeURIComponent(item.id)}">Inspect the public evidence →</a></div>`
+      ? `<span>LIVE GITHUB-BACKED NEED · ${escapeHtml(domain.toUpperCase())}</span><div class="registration-confidence"><strong class="confidence-badge confidence-${escapeHtml(item.confidence?.level || 'early')}">${escapeHtml(item.confidence?.label || 'QUALIFIED SIGNAL')}</strong>${item.pattern ? `<small>${escapeHtml(item.pattern)}</small>` : ''}</div><strong>${escapeHtml(item.title)}</strong><p>${item.comments} comments · ${item.reactions} reactions · found in ${escapeHtml(item.project)}</p><div><button class="button button-primary" type="button" data-start-opportunity="${encodeURIComponent(item.id)}" data-start-title="${escapeHtml(item.title)}">Use this need as my first sprint</button><a href="/opportunity/${encodeURIComponent(item.id)}">Inspect the public evidence →</a></div>`
       : `<strong>No current need clears the evidence threshold in ${escapeHtml(domain)}.</strong><p>Choose another field or browse the complete public Radar.</p><a href="/opportunities">Browse all current opportunities →</a>`;
     outcomeNeed.textContent = item ? item.title : 'Choose another field to create a sprint';
-    outcomeSource.textContent = item ? `Source: ${item.project} · ${domain}` : 'Only qualified current evidence becomes a sprint.';
+    outcomeSource.textContent = item ? `Source: ${item.project} · ${domain} · ${item.confidence?.label || 'qualified signal'}` : 'Only qualified current evidence becomes a sprint.';
   };
   domainSelect.addEventListener('change', renderRecommendation);
   recommendation.addEventListener('click', (event) => {
@@ -51,6 +52,7 @@
     const payload = await response.json();
     liveOpportunities = (Array.isArray(payload.agents) ? payload.agents : []).flatMap((agent) => (Array.isArray(agent.evidenceIssues) ? agent.evidenceIssues : []).filter((issue) => /^\d+$/.test(String(issue.id || '')) && issue.title).map((issue) => ({
       id: String(issue.id), title: String(issue.title), domain: String(agent.category || ''), project: String(agent.name || agent.slug || 'Open-source project'),
+      pattern: String(issue.pattern || ''), confidence: issue.confidence && typeof issue.confidence === 'object' ? issue.confidence : null,
       comments: Math.max(0, Number(issue.comments) || 0), reactions: Math.max(0, Number(issue.reactions) || 0), updatedAt: String(issue.updatedAt || issue.createdAt || ''), radar: Math.max(0, Number(agent.score?.total) || 0)
     })));
     renderRecommendation();

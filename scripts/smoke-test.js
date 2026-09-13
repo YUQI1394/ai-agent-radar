@@ -144,6 +144,9 @@ async function main() {
   assert.doesNotMatch(professionalFeedXml, /<category>Finance<\/category>/, 'professional RSS XML mixes unrelated fields');
   assert.match(loginSource, /Choose your professional field/, 'registration lacks professional personalization');
   assert.match(loginSource, /LIVE GITHUB-BACKED NEED/, 'registration does not preview a live demand signal');
+  assert.match(loginSource, /const confidenceBoost/, 'registration recommendations do not prioritize demand confidence');
+  assert.match(loginSource, /registration-confidence/, 'registration preview does not explain recommendation confidence');
+  assert.match(loginSource, /issue\.pattern/, 'registration preview omits the specific demand pattern');
   assert.match(loginSource, /ai-agent-radar:preferred-domain/, 'registration choice is not carried into the workspace');
   assert.match(loginSource, /Use this need as my first sprint/, 'registration cannot select a concrete first sprint');
   assert.match(loginSource, /#validation-start/, 'selected registration demand does not continue into guided execution');

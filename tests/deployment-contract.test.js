@@ -309,6 +309,10 @@ test('registration explains the concrete free outcome before asking users to sig
   assert.match(login, /requestedDomain/);
   assert.match(login, /new URLSearchParams\(location\.search\)\.get\('domain'\)/);
   assert.match(login, /LIVE GITHUB-BACKED NEED/);
+  assert.match(login, /const confidenceBoost/);
+  assert.match(login, /item\.confidence\?\.level === 'repeated'/);
+  assert.match(login, /registration-confidence/);
+  assert.match(login, /issue\.pattern/);
   assert.match(login, /Public evidence stays free/);
   assert.match(login, /Use this need as my first sprint/);
   assert.match(login, /next = `\/opportunity\/\$\{button\.dataset\.startOpportunity\}#validation-start`/);
