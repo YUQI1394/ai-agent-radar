@@ -315,6 +315,21 @@ test('saved-project monitoring explains changes since the registered user last v
   assert.match(workspace, /cloud\.set\('saved', 'watchlist-snapshot'/);
 });
 
+test('registered users receive a persistent professional demand radar', () => {
+  const page = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
+  const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
+  assert.match(page, /MY DEMAND RADAR/);
+  assert.match(page, /workspace-demand-domain/);
+  assert.match(workspace, /loadDemandRadar/);
+  assert.match(workspace, /domain-radar:/);
+  assert.match(workspace, /NEW SINCE LAST VISIT/);
+  assert.match(workspace, /new qualified need/);
+  assert.match(workspace, /cloud\.get\('saved', snapshotId\)/);
+  assert.match(workspace, /cloud\.set\('saved', snapshotId, current\)/);
+  assert.match(workspace, /Start guided sprint/);
+  assert.match(workspace, /ai-agent-radar:preferred-domain/);
+});
+
 test('privacy-preserving page analytics covers discovery and conversion routes', () => {
   const analytics = fs.readFileSync(path.join(root, 'analytics.js'), 'utf8');
   const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');

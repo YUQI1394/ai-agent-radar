@@ -40,7 +40,10 @@ async function main() {
     const html = await response.text();
     pageBodies.set(path, html);
     assert.match(html, new RegExp(marker, 'i'), `${path} is missing ${marker}`);
-    if (path === '/workspace') assert.match(html, /SAVED PROJECT WATCHLIST/, 'workspace lacks the saved-project monitoring surface');
+    if (path === '/workspace') {
+      assert.match(html, /SAVED PROJECT WATCHLIST/, 'workspace lacks the saved-project monitoring surface');
+      assert.match(html, /MY DEMAND RADAR/, 'workspace lacks the personalized professional demand surface');
+    }
     if (path.startsWith('/category/')) {
       const demandCount = Number(html.match(/LIVE GITHUB DEMAND[\s\S]{0,300}<h2>(\d+) qualified signals/i)?.[1] || 0);
       assert.ok(demandCount >= 2, `${path} has fewer than two qualified demand signals`);
@@ -95,6 +98,9 @@ async function main() {
   assert.match(workspaceSource, /Recommended from live evidence/, 'new workspaces lack live starter recommendations');
   assert.match(workspaceSource, /SINCE YOUR LAST VISIT/, 'saved projects lack a return-visit change brief');
   assert.match(workspaceSource, /watchlist-snapshot/, 'saved project monitoring has no durable baseline');
+  assert.match(workspaceSource, /loadDemandRadar/, 'registered users lack a persistent professional demand radar');
+  assert.match(workspaceSource, /NEW SINCE LAST VISIT/, 'professional demand radar does not identify new signals');
+  assert.match(workspaceSource, /domain-radar:/, 'professional demand radar has no durable return baseline');
   assert.match(loginSource, /Choose your professional field/, 'registration lacks professional personalization');
   assert.match(loginSource, /LIVE GITHUB-BACKED NEED/, 'registration does not preview a live demand signal');
   assert.match(loginSource, /ai-agent-radar:preferred-domain/, 'registration choice is not carried into the workspace');

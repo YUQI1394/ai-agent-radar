@@ -103,6 +103,71 @@
       picker.innerHTML = `<p class="starter-loading">${escapeHtml(error.message)}. <a href="/opportunities">Browse Opportunity Radar →</a></p>`;
     }
   }
+  async function loadDemandRadar() {
+    const section = document.querySelector('#workspace-demand-radar');
+    const select = document.querySelector('#workspace-demand-domain');
+    const status = document.querySelector('#workspace-demand-status');
+    const grid = document.querySelector('#workspace-demand-grid');
+    if (!section || !select || !status || !grid) return;
+    try {
+      const agents = await loadAgentFeed();
+      const domainOrder = ['Research', 'Security', 'Finance', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure'];
+      const opportunities = [];
+      const seen = new Set();
+      agents.forEach((agent) => (Array.isArray(agent.evidenceIssues) ? agent.evidenceIssues : []).forEach((issue) => {
+        const id = String(issue.id || '');
+        const domain = String(agent.category || '');
+        if (!/^\d+$/.test(id) || !issue.title || seen.has(id) || !domainOrder.includes(domain)) return;
+        seen.add(id);
+        opportunities.push({
+          id, title: String(issue.title), project: String(agent.name || agent.slug || 'Open-source project'), domain,
+          comments: Math.max(0, Number(issue.comments) || 0), reactions: Math.max(0, Number(issue.reactions) || 0),
+          radar: Math.max(0, Number(agent.score?.total) || 0), updatedAt: String(issue.updatedAt || issue.createdAt || '')
+        });
+      }));
+      const domains = domainOrder.filter((domain) => opportunities.some((item) => item.domain === domain));
+      if (!domains.length) throw new Error('No professional signals currently clear the evidence threshold');
+      select.innerHTML = domains.map((domain) => `<option value="${escapeHtml(domain)}">${escapeHtml(domain)}</option>`).join('');
+      const preferred = localStorage.getItem('ai-agent-radar:preferred-domain');
+      select.value = domains.includes(preferred) ? preferred : domains[0];
+      const strength = (item) => {
+        const ageDays = Math.max(0, (Date.now() - Date.parse(item.updatedAt)) / 86400000);
+        const freshness = Number.isFinite(ageDays) ? ageDays <= 30 ? 10 : ageDays <= 90 ? 7 : ageDays <= 365 ? 3 : 0 : 0;
+        return Math.min(24, Math.log2(item.comments + 1) * 4.5) + Math.min(24, Math.log2(item.reactions + 1) * 6) + freshness + item.radar / 20;
+      };
+      let renderVersion = 0;
+      const renderDomain = async () => {
+        const version = ++renderVersion;
+        const domain = select.value;
+        localStorage.setItem('ai-agent-radar:preferred-domain', domain);
+        const ranked = opportunities.filter((item) => item.domain === domain).sort((a, b) => strength(b) - strength(a) || a.title.localeCompare(b.title));
+        const snapshotId = `domain-radar:${domain}`;
+        const snapshotKey = `${auth.storagePrefix('saved')}${snapshotId}`;
+        let previous = null;
+        try { previous = JSON.parse(localStorage.getItem(snapshotKey) || 'null'); } catch (_) {}
+        if (cloud.available) {
+          try { previous = await cloud.get('saved', snapshotId) || previous; } catch (_) { /* Keep the device baseline. */ }
+        }
+        if (version !== renderVersion || domain !== select.value) return;
+        const previousIds = new Set(Array.isArray(previous?.ids) ? previous.ids.map(String) : []);
+        const newItems = previous ? ranked.filter((item) => !previousIds.has(item.id)) : [];
+        const current = { checkedAt: new Date().toISOString(), ids: ranked.map((item) => item.id) };
+        const lastChecked = previous?.checkedAt && Number.isFinite(Date.parse(previous.checkedAt)) ? new Date(previous.checkedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+        status.textContent = previous
+          ? `${newItems.length} new qualified need${newItems.length === 1 ? '' : 's'}${lastChecked ? ` since ${lastChecked}` : ' since your last visit'}`
+          : `Monitoring starts today · ${ranked.length} current qualified need${ranked.length === 1 ? '' : 's'}`;
+        grid.innerHTML = ranked.slice(0, 4).map((item) => `<article class="workspace-demand-card">${newItems.some((candidate) => candidate.id === item.id) ? '<span class="demand-new">NEW SINCE LAST VISIT</span>' : `<span>${escapeHtml(item.domain)}</span>`}<h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.project)} · ${item.comments} comments · ${item.reactions} reactions</p><a href="/opportunity/${encodeURIComponent(item.id)}#validation-start">Start guided sprint →</a></article>`).join('');
+        localStorage.setItem(snapshotKey, JSON.stringify(current));
+        if (cloud.available) cloud.set('saved', snapshotId, current).catch(() => {});
+        section.hidden = false;
+      };
+      select.addEventListener('change', renderDomain);
+      await renderDomain();
+    } catch (error) {
+      status.textContent = `${error.message}. Your validation queue remains available.`;
+      section.hidden = false;
+    }
+  }
   async function loadSavedWatchlist() {
     const section = document.querySelector('#workspace-watchlist');
     const grid = document.querySelector('#workspace-watchlist-grid');
@@ -310,5 +375,5 @@
   });
   await syncFromCloud();
   render();
-  await Promise.allSettled([loadStarterRecommendations(), loadSavedWatchlist()]);
+  await Promise.allSettled([loadStarterRecommendations(), loadDemandRadar(), loadSavedWatchlist()]);
 })();

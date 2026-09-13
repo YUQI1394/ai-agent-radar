@@ -428,6 +428,20 @@ button, input { font: inherit; }
 .workspace-summary div { display: flex; flex-direction: column; padding: 20px; border: 1px solid rgba(255,255,255,.08); border-radius: 15px; background: var(--card); }
 .workspace-summary strong { color: var(--cyan); font-size: 1.7rem; }
 .workspace-summary span { color: var(--muted); font-size: .75rem; }
+.workspace-demand-radar { margin-bottom: 20px; padding: 22px; border: 1px solid rgba(124,58,237,.28); border-radius: 16px; background: linear-gradient(135deg, rgba(124,58,237,.09), rgba(6,182,212,.05)), var(--card); }
+.workspace-demand-radar[hidden] { display: none; }
+.workspace-demand-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 22px; margin-bottom: 16px; }
+.workspace-demand-heading h2 { margin: 5px 0 4px; font-size: 1.25rem; }
+.workspace-demand-heading p { margin: 0; color: var(--muted); font-size: .76rem; }
+.workspace-demand-heading label { display: grid; flex: 0 0 210px; gap: 6px; color: var(--muted); font-size: .68rem; font-weight: 750; }
+.workspace-demand-heading select { width: 100%; padding: 9px 32px 9px 11px; color: var(--text); border: 1px solid var(--line); border-radius: 9px; background: #090b13; }
+.workspace-demand-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
+.workspace-demand-card { min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: rgba(5,7,14,.58); }
+.workspace-demand-card > span { color: #a78bfa; font-size: .62rem; font-weight: 850; letter-spacing: .07em; }
+.workspace-demand-card > span.demand-new { color: #86efac; }
+.workspace-demand-card h3 { margin: 8px 0; overflow: hidden; font-size: .88rem; line-height: 1.45; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.workspace-demand-card p { margin: 0 0 11px; color: var(--muted); font-size: .68rem; line-height: 1.5; }
+.workspace-demand-card a { color: var(--cyan); font-size: .72rem; font-weight: 800; }
 .workspace-watchlist { margin-bottom: 20px; padding: 21px; border: 1px solid rgba(6,182,212,.22); border-radius: 16px; background: linear-gradient(130deg, rgba(6,182,212,.07), rgba(124,58,237,.055)), var(--card); }
 .workspace-watchlist-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 14px; }
 .workspace-watchlist-heading h2 { margin: 5px 0 0; font-size: 1.2rem; }
@@ -643,6 +657,9 @@ button, input { font: inherit; }
   .workspace-heading { align-items: flex-start; flex-direction: column; }
   .workspace-summary { grid-template-columns: 1fr; }
   .workspace-watchlist-grid { grid-template-columns: 1fr 1fr; }
+  .workspace-demand-grid { grid-template-columns: 1fr; }
+  .workspace-demand-heading { align-items: stretch; flex-direction: column; }
+  .workspace-demand-heading label { flex-basis: auto; }
   .workspace-return-brief { grid-template-columns: 1fr; }
   .workspace-return-brief li { align-items: flex-start; flex-direction: column; gap: 3px; }
   .workspace-return-brief li span { text-align: left; }
