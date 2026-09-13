@@ -469,6 +469,10 @@ button, input { font: inherit; }
 .workspace-demand-card { min-width: 0; padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: rgba(5,7,14,.58); }
 .workspace-demand-card > span { color: #a78bfa; font-size: .62rem; font-weight: 850; letter-spacing: .07em; }
 .workspace-demand-card > span.demand-new { color: #86efac; }
+.workspace-demand-labels { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.workspace-demand-labels > span:first-child { color: #a78bfa; font-size: .62rem; font-weight: 850; letter-spacing: .07em; }
+.workspace-demand-labels > span.demand-new { color: #86efac; }
+.workspace-demand-labels .confidence-badge { overflow: hidden; max-width: 68%; text-overflow: ellipsis; }
 .workspace-demand-card h3 { margin: 8px 0; overflow: hidden; font-size: .88rem; line-height: 1.45; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .workspace-demand-card p { margin: 0 0 11px; color: var(--muted); font-size: .68rem; line-height: 1.5; }
 .workspace-demand-card a { color: var(--cyan); font-size: .72rem; font-weight: 800; }

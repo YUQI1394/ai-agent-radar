@@ -366,10 +366,16 @@ test('saved-project monitoring explains changes since the registered user last v
 test('registered users receive a persistent professional demand radar', () => {
   const page = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
   const workspace = fs.readFileSync(path.join(root, 'workspace.js'), 'utf8');
+  const feed = fs.readFileSync(path.join(root, 'api', 'get-agents.js'), 'utf8');
   assert.match(page, /MY DEMAND RADAR/);
   assert.match(page, /workspace-demand-domain/);
   assert.match(workspace, /loadDemandRadar/);
   assert.match(workspace, /domain-radar:/);
+  assert.match(workspace, /confidenceBoost/);
+  assert.match(workspace, /item\.confidence\?\.label/);
+  assert.match(feed, /evidenceConfidence/);
+  assert.match(feed, /patternRepositories/);
+  assert.match(feed, /confidence: evidenceConfidence/);
   assert.match(workspace, /NEW SINCE LAST VISIT/);
   assert.match(workspace, /new qualified need/);
   assert.match(workspace, /cloud\.get\('saved', snapshotId\)/);

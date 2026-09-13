@@ -72,6 +72,7 @@
           id, title: String(issue.title), project: String(agent.name || agent.slug || 'Open-source project'),
           domain: String(agent.category || 'General AI'), comments: Math.max(0, Number(issue.comments) || 0),
           reactions: Math.max(0, Number(issue.reactions) || 0), radar: Math.max(0, Number(agent.score?.total) || 0),
+          pattern: String(issue.pattern || ''), confidence: issue.confidence && typeof issue.confidence === 'object' ? issue.confidence : null,
           updatedAt: String(issue.updatedAt || issue.createdAt || '')
         });
       }));
@@ -83,7 +84,8 @@
       const strength = (item) => {
         const ageDays = Math.max(0, (Date.now() - Date.parse(item.updatedAt)) / 86400000);
         const freshness = Number.isFinite(ageDays) ? ageDays <= 30 ? 10 : ageDays <= 90 ? 7 : ageDays <= 365 ? 3 : 0 : 0;
-        return Math.min(24, Math.log2(item.comments + 1) * 4.5) + Math.min(24, Math.log2(item.reactions + 1) * 6) + freshness + item.radar / 20;
+        const confidenceBoost = item.confidence?.level === 'repeated' ? 20 : item.confidence?.level === 'supported' ? 8 : 0;
+        return confidenceBoost + Math.min(24, Math.log2(item.comments + 1) * 4.5) + Math.min(24, Math.log2(item.reactions + 1) * 6) + freshness + item.radar / 20;
       };
       const renderRecommendations = (domain) => {
         const ranked = opportunities.filter((item) => domainOrder.includes(item.domain) && (domain === 'All fields' || item.domain === domain))
@@ -99,7 +101,7 @@
           button.classList.toggle('active', active);
           button.setAttribute('aria-pressed', String(active));
         });
-        picker.querySelector('.starter-recommendations').innerHTML = candidates.map((item) => `<article class="starter-card"><div><span>${escapeHtml(item.domain)}</span><small>${item.comments} comments · ${item.reactions} reactions</small></div><h3>${escapeHtml(item.title)}</h3><p>Evidence in ${escapeHtml(item.project)}</p><a class="button button-primary" href="/opportunity/${encodeURIComponent(item.id)}#validation-start">Start this 7-day sprint →</a></article>`).join('');
+        picker.querySelector('.starter-recommendations').innerHTML = candidates.map((item) => `<article class="starter-card"><div><span>${escapeHtml(item.domain)}</span><small>${escapeHtml(item.confidence?.label || 'QUALIFIED SIGNAL')}</small></div><h3>${escapeHtml(item.title)}</h3><p>${item.pattern ? `${escapeHtml(item.pattern)} · ` : ''}Evidence in ${escapeHtml(item.project)}</p><a class="button button-primary" href="/opportunity/${encodeURIComponent(item.id)}#validation-start">Start this 7-day sprint →</a></article>`).join('');
         if (domain !== 'All fields') localStorage.setItem('ai-agent-radar:preferred-domain', domain);
       };
       picker.innerHTML = `<div class="starter-picker-heading"><strong>Recommended from live evidence</strong><span>Choose your field</span></div><div class="starter-domains" role="group" aria-label="Choose a professional field"><button type="button" data-starter-domain="All fields">All</button>${domains.map((domain) => `<button type="button" data-starter-domain="${escapeHtml(domain)}">${escapeHtml(domain === 'Agent Infrastructure' ? 'Infrastructure' : domain)}</button>`).join('')}</div><div class="starter-recommendations"></div>`;
@@ -128,7 +130,9 @@
         opportunities.push({
           id, title: String(issue.title), project: String(agent.name || agent.slug || 'Open-source project'), domain,
           comments: Math.max(0, Number(issue.comments) || 0), reactions: Math.max(0, Number(issue.reactions) || 0),
-          radar: Math.max(0, Number(agent.score?.total) || 0), updatedAt: String(issue.updatedAt || issue.createdAt || '')
+          radar: Math.max(0, Number(agent.score?.total) || 0), pattern: String(issue.pattern || ''),
+          confidence: issue.confidence && typeof issue.confidence === 'object' ? issue.confidence : null,
+          updatedAt: String(issue.updatedAt || issue.createdAt || '')
         });
       }));
       const domains = domainOrder.filter((domain) => opportunities.some((item) => item.domain === domain));
@@ -139,7 +143,8 @@
       const strength = (item) => {
         const ageDays = Math.max(0, (Date.now() - Date.parse(item.updatedAt)) / 86400000);
         const freshness = Number.isFinite(ageDays) ? ageDays <= 30 ? 10 : ageDays <= 90 ? 7 : ageDays <= 365 ? 3 : 0 : 0;
-        return Math.min(24, Math.log2(item.comments + 1) * 4.5) + Math.min(24, Math.log2(item.reactions + 1) * 6) + freshness + item.radar / 20;
+        const confidenceBoost = item.confidence?.level === 'repeated' ? 20 : item.confidence?.level === 'supported' ? 8 : 0;
+        return confidenceBoost + Math.min(24, Math.log2(item.comments + 1) * 4.5) + Math.min(24, Math.log2(item.reactions + 1) * 6) + freshness + item.radar / 20;
       };
       let renderVersion = 0;
       const renderDomain = async () => {
@@ -162,7 +167,7 @@
         status.textContent = previous
           ? `${newItems.length} new qualified need${newItems.length === 1 ? '' : 's'}${lastChecked ? ` since ${lastChecked}` : ' since your last visit'}`
           : `Monitoring starts today · ${ranked.length} current qualified need${ranked.length === 1 ? '' : 's'}`;
-        grid.innerHTML = ranked.slice(0, 4).map((item) => `<article class="workspace-demand-card">${newItems.some((candidate) => candidate.id === item.id) ? '<span class="demand-new">NEW SINCE LAST VISIT</span>' : `<span>${escapeHtml(item.domain)}</span>`}<h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.project)} · ${item.comments} comments · ${item.reactions} reactions</p><a href="/opportunity/${encodeURIComponent(item.id)}#validation-start">Start guided sprint →</a></article>`).join('');
+        grid.innerHTML = ranked.slice(0, 4).map((item) => `<article class="workspace-demand-card"><div class="workspace-demand-labels">${newItems.some((candidate) => candidate.id === item.id) ? '<span class="demand-new">NEW SINCE LAST VISIT</span>' : `<span>${escapeHtml(item.domain)}</span>`}<span class="confidence-badge confidence-${escapeHtml(item.confidence?.level || 'early')}">${escapeHtml(item.confidence?.label || 'QUALIFIED SIGNAL')}</span></div><h3>${escapeHtml(item.title)}</h3><p>${item.pattern ? `${escapeHtml(item.pattern)} · ` : ''}${escapeHtml(item.project)} · ${item.comments} comments · ${item.reactions} reactions</p><a href="/opportunity/${encodeURIComponent(item.id)}#validation-start">Start guided sprint →</a></article>`).join('');
         localStorage.setItem(snapshotKey, JSON.stringify(current));
         if (cloud.available) cloud.set('saved', snapshotId, current).catch(() => {});
         section.hidden = false;

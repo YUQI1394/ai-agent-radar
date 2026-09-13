@@ -115,6 +115,7 @@ async function main() {
   assert.match(workspaceSource, /loadDemandRadar/, 'registered users lack a persistent professional demand radar');
   assert.match(workspaceSource, /NEW SINCE LAST VISIT/, 'professional demand radar does not identify new signals');
   assert.match(workspaceSource, /domain-radar:/, 'professional demand radar has no durable return baseline');
+  assert.match(workspaceSource, /confidenceBoost/, 'professional demand radar does not prioritize confidence');
   assert.equal(rssReaderScript.status, 200, '/rss-reader.js is unavailable');
   const rssReaderSource = await rssReaderScript.text();
   assert.match(pageBodies.get('/rss'), /data-rss-entry="(?:agent|opportunity)"/, 'visual RSS reader has no server-rendered entries');
@@ -155,6 +156,8 @@ async function main() {
   assert.equal(agentFeed.status, 200, 'starter recommendation feed is unavailable');
   const agentFeedPayload = await agentFeed.json();
   assert.ok((agentFeedPayload.agents || []).some((agent) => (agent.evidenceIssues || []).length), 'starter recommendation feed has no current opportunities');
+  const enrichedIssue = (agentFeedPayload.agents || []).flatMap((agent) => agent.evidenceIssues || [])[0];
+  assert.ok(enrichedIssue?.pattern && enrichedIssue?.confidence?.label, 'starter recommendation feed lacks demand confidence context');
   const sampleAgent = (agentFeedPayload.agents || []).find((agent) => (agent.evidenceIssues || []).length);
   const sampleAgentResponse = await fetch(`${origin}/agent/${encodeURIComponent(sampleAgent.slug || sampleAgent.id)}`);
   assert.equal(sampleAgentResponse.status, 200, 'a current project detail page is unavailable');
