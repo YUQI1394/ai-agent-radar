@@ -493,6 +493,8 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   const smoke = fs.readFileSync(path.join(root, 'scripts', 'smoke-test.js'), 'utf8');
   assert.match(health, /issueCoverage: issueCoverageRatio >= 0\.5/);
   assert.match(health, /demandEvidence: evidenceSignals >= 30/);
+  assert.match(health, /demandConfidence: repeatedPatterns >= 3 && repeatedEvidenceSignals >= 6/);
+  assert.match(health, /demandConfidence: \{ repeatedPatterns, repeatedEvidenceSignals \}/);
   assert.match(health, /evidenceContext: contextRatio >= 0\.75/);
   assert.match(health, /representedDomains === TARGET_DOMAINS\.length/);
   assert.match(health, /minimumDomainCount >= 2/);

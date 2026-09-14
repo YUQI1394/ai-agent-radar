@@ -233,6 +233,9 @@ async function main() {
   assert.equal(health.checks?.feedFresh, true, 'feed is stale');
   assert.equal(health.checks?.issueCoverage, true, 'Issue scan coverage is below 50%');
   assert.equal(health.checks?.demandEvidence, true, 'demand evidence feed is empty or too shallow');
+  assert.equal(health.checks?.demandConfidence, true, 'cross-project repeated demand has collapsed');
+  assert.ok(health.demandConfidence?.repeatedPatterns >= 3, 'fewer than three problem patterns repeat across projects');
+  assert.ok(health.demandConfidence?.repeatedEvidenceSignals >= 6, 'repeated demand evidence is too shallow');
   assert.equal(health.checks?.evidenceContext, true, 'reporter context coverage is below 75%');
   assert.equal(health.checks?.professionalBreadth, true, 'professional domain coverage has collapsed');
   assert.equal(health.checks?.professionalDemandBreadth, true, 'professional demand evidence coverage has collapsed');
