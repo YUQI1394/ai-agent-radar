@@ -1,7 +1,7 @@
 const { createClient } = require('@vercel/kv');
 const { scoreBreakdown } = require('../lib/radar');
 const { cleanIssueEvidence } = require('../lib/opportunity-themes');
-const { sendGone, sendNotFound } = require('../lib/http-pages');
+const { isRetiredLegacySlug, sendGone, sendNotFound } = require('../lib/http-pages');
 
 const SITE_URL = 'https://getaiagentradar.com';
 
@@ -165,6 +165,7 @@ module.exports = async function handler(req, res) {
     const archiveAgents = archive?.agents || [];
     const currentAgent = currentAgents.find((item) => String(item.slug) === requested || String(item.id) === requested);
     const archivedAgent = archiveAgents.find((item) => String(item.slug) === requested || String(item.id) === requested);
+    if (!currentAgent && isRetiredLegacySlug(requested)) return sendGone(res);
     if (!currentAgent && archivedAgent && !isGitHubBacked(archivedAgent)) return sendGone(res);
     const agent = currentAgent || archivedAgent;
     if (!agent) return sendNotFound(res, { headline: 'Agent project not found.', message: 'The repository may have moved, been archived or fallen outside the current open-source quality rules.', primaryHref: '/', primaryLabel: 'Browse current projects' });

@@ -53,9 +53,13 @@ test('unknown routes recover into discovery and execution paths', () => {
   assert.match(response.headers['X-Robots-Tag'], /noindex/);
   assert.match(response.body, /GitHub-backed open-source evidence/);
   const agentSource = fs.readFileSync(path.join(root, 'api', 'agent.js'), 'utf8');
-  assert.match(agentSource, /function|const isGitHubBacked/);
+  assert.match(agentSource, /const isGitHubBacked/);
+  assert.match(agentSource, /isRetiredLegacySlug\(requested\)/);
   assert.match(agentSource, /!currentAgent && archivedAgent && !isGitHubBacked\(archivedAgent\)/);
   assert.match(agentSource, /sendGone\(res\)/);
+  const compareSource = fs.readFileSync(path.join(root, 'api', 'compare.js'), 'utf8');
+  assert.match(compareSource, /requested\.some\(isRetiredLegacySlug\)/);
+  assert.equal(require('../lib/http-pages').isRetiredLegacySlug('lottie-creator-2-0'), true);
   for (const file of ['agent.js', 'category.js', 'compare.js', 'opportunity.js', 'weekly.js']) {
     assert.match(fs.readFileSync(path.join(root, 'api', file), 'utf8'), /sendNotFound/);
   }

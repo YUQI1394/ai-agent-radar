@@ -281,6 +281,9 @@ async function main() {
   assert.equal(retiredProductHunt.status, 410, `legacy Product Hunt listing returned ${retiredProductHunt.status}`);
   assert.match(retiredProductHunt.headers.get('x-robots-tag') || '', /noindex/i, 'legacy Product Hunt listing is indexable');
   assert.match(await retiredProductHunt.text(), /LEGACY SOURCE RETIRED/i, 'legacy listing does not explain the GitHub transition');
+  const retiredComparison = await fetch(`${origin}/compare?agents=lottie-creator-2-0%2Cminimax-design`, { redirect: 'manual' });
+  assert.equal(retiredComparison.status, 410, `legacy Product Hunt comparison returned ${retiredComparison.status}`);
+  assert.match(retiredComparison.headers.get('x-robots-tag') || '', /noindex/i, 'legacy Product Hunt comparison is indexable');
   console.log('PASS legacy Product Hunt retirement');
 }
 

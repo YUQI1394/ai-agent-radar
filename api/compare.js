@@ -1,7 +1,7 @@
 const { createClient } = require('@vercel/kv');
 const { category, peers, scoreBreakdown } = require('../lib/radar');
 const { cleanIssueEvidence, evidenceStrength, opportunityPattern } = require('../lib/opportunity-themes');
-const { sendNotFound } = require('../lib/http-pages');
+const { isRetiredLegacySlug, sendGone, sendNotFound } = require('../lib/http-pages');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c]);
@@ -37,6 +37,7 @@ module.exports = async function handler(req, res) {
     const payload = await kv.get('agents:latest');
     const agents = Array.isArray(payload?.agents) ? payload.agents : [];
     const requested = String(req.query.agents || '').split(',').map((value) => String(value).trim()).filter(Boolean).slice(0, 2);
+    if (requested.some(isRetiredLegacySlug)) return sendGone(res, { headline: 'This legacy comparison has been permanently removed.' });
     const findCurrent = (value) => agents.find((agent) => String(agent.slug || agent.id) === String(value || ''));
     const first = requested.length ? findCurrent(requested[0]) : agents[0];
     const second = requested[1] ? findCurrent(requested[1]) : first ? peers(first, agents, 1)[0] || agents.find((agent) => agent !== first) : null;
