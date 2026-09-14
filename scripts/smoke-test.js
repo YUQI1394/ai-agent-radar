@@ -276,6 +276,12 @@ async function main() {
   assert.match(staleOpportunityHtml, /AI Agent Radar/i, 'dynamic 404 is not branded');
   assert.match(staleOpportunityHtml, /Continue in workspace/i, 'dynamic 404 lacks an execution recovery path');
   console.log('PASS dynamic 404 recovery');
+
+  const retiredProductHunt = await fetch(`${origin}/agent/lottie-creator-2-0`, { redirect: 'manual' });
+  assert.equal(retiredProductHunt.status, 410, `legacy Product Hunt listing returned ${retiredProductHunt.status}`);
+  assert.match(retiredProductHunt.headers.get('x-robots-tag') || '', /noindex/i, 'legacy Product Hunt listing is indexable');
+  assert.match(await retiredProductHunt.text(), /LEGACY SOURCE RETIRED/i, 'legacy listing does not explain the GitHub transition');
+  console.log('PASS legacy Product Hunt retirement');
 }
 
 main().catch((error) => {
