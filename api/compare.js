@@ -37,8 +37,8 @@ module.exports = async function handler(req, res) {
     const payload = await kv.get('agents:latest');
     const agents = Array.isArray(payload?.agents) ? payload.agents : [];
     const requested = String(req.query.agents || '').split(',').map((value) => String(value).trim()).filter(Boolean).slice(0, 2);
-    if (requested.some(isRetiredLegacySlug)) return sendGone(res, { headline: 'This legacy comparison has been permanently removed.' });
     const findCurrent = (value) => agents.find((agent) => String(agent.slug || agent.id) === String(value || ''));
+    if (requested.some((value) => isRetiredLegacySlug(value) && !findCurrent(value))) return sendGone(res, { headline: 'This legacy comparison has been permanently removed.' });
     const first = requested.length ? findCurrent(requested[0]) : agents[0];
     const second = requested[1] ? findCurrent(requested[1]) : first ? peers(first, agents, 1)[0] || agents.find((agent) => agent !== first) : null;
     if (!first || !second || String(first.slug || first.id) === String(second.slug || second.id)) return sendNotFound(res, { headline: 'This comparison is no longer available.', message: 'One of these projects may have left the current curated feed. Choose two current projects from the Radar.', primaryHref: '/', primaryLabel: 'Choose current projects' });
