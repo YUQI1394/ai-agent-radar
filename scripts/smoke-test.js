@@ -1,6 +1,9 @@
 const assert = require('node:assert/strict');
 
 const origin = (process.env.RADAR_ORIGIN || 'https://getaiagentradar.com').replace(/\/$/, '');
+const FETCH_TIMEOUT_MS = Math.max(1000, Number(process.env.RADAR_FETCH_TIMEOUT_MS) || 15000);
+const nativeFetch = globalThis.fetch;
+const fetch = (url, options = {}) => nativeFetch(url, { ...options, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
 const pages = [
   ['/', 'AI Agent Radar'],
   ['/opportunities', 'Opportunity'],
@@ -37,7 +40,7 @@ async function main() {
   const pageBodies = new Map();
   for (const [path, marker] of pages) {
     const separator = path.includes('?') ? '&' : '?';
-    const response = await fetch(`${origin}${path}${separator}smoke=${Date.now()}`, { redirect: 'follow', headers: { 'Cache-Control': 'no-cache' } });
+    const response = await fetchTransient(`${origin}${path}${separator}smoke=${Date.now()}`, { redirect: 'follow', headers: { 'Cache-Control': 'no-cache' } });
     assert.equal(response.status, 200, `${path} returned ${response.status}`);
     const html = await response.text();
     pageBodies.set(path, html);
