@@ -1,6 +1,6 @@
 const { createClient } = require('@vercel/kv');
 const { category, weekKey } = require('../lib/radar');
-const { cleanIssueEvidence } = require('../lib/opportunity-themes');
+const { cleanIssueEvidence, opportunityPattern, patternSlug } = require('../lib/opportunity-themes');
 
 const SITE_URL = 'https://getaiagentradar.com';
 const CATEGORY_NAMES = { research: 'Research', security: 'Security', finance: 'Finance', coding: 'Coding', marketing: 'Marketing', design: 'Design', productivity: 'Productivity', infrastructure: 'Agent Infrastructure' };
@@ -49,6 +49,14 @@ module.exports = async function handler(req, res) {
     ...agents.map((agent) => ({ loc: `${SITE_URL}/agent/${encodeURIComponent(agent.slug || agent.id)}`, lastmod: agent.lastSeenAt || agent.pushedAt || agent.updatedAt || updatedAt })),
     ...agents.flatMap((agent) => cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => ({ loc: `${SITE_URL}/opportunity/${encodeURIComponent(issue.id)}`, lastmod: issue.updatedAt || updatedAt })))
   ];
+  const patternLastmod = new Map();
+  agents.forEach((agent) => cleanIssueEvidence(agent.evidenceIssues || []).forEach((issue) => {
+    const slug = patternSlug(opportunityPattern(issue));
+    const issueUpdatedAt = issue.updatedAt || updatedAt;
+    const existing = patternLastmod.get(slug);
+    if (!existing || Date.parse(issueUpdatedAt) > Date.parse(existing)) patternLastmod.set(slug, issueUpdatedAt);
+  }));
+  urls.push(...[...patternLastmod.entries()].map(([slug, lastmod]) => ({ loc: `${SITE_URL}/pattern/${encodeURIComponent(slug)}`, lastmod })));
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((url) => `  <url><loc>${escapeXml(url.loc)}</loc><lastmod>${escapeXml(new Date(url.lastmod).toISOString())}</lastmod></url>`).join('\n')}\n</urlset>`;
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=3600');

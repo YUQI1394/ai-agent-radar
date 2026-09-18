@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { category, enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAgents, weeklyReport } = require('../lib/radar');
 const { githubHeaders, githubJson } = require('../lib/github-client');
 const { selectIssueTargets } = require('../lib/ingestion-selection');
-const { cleanIssueEvidence, evidenceStrength, issueExcerpt } = require('../lib/opportunity-themes');
+const { cleanIssueEvidence, evidenceStrength, issueExcerpt, opportunityPattern, patternSlug } = require('../lib/opportunity-themes');
 
 const GITHUB_API = 'https://api.github.com';
 const recentCutoff = () => new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
@@ -176,12 +176,14 @@ async function notifyIndexNow(agents, report) {
   const representedCategories = [...new Set(agents.map((agent) => categorySlugs.get(agent.category)).filter(Boolean))];
   const opportunityUrls = agents.flatMap((agent) => cleanIssueEvidence(agent.evidenceIssues || [])
     .map((issue) => `${SITE_URL}/opportunity/${encodeURIComponent(issue.id)}`));
+  const patternUrls = [...new Set(agents.flatMap((agent) => cleanIssueEvidence(agent.evidenceIssues || [])
+    .map((issue) => `${SITE_URL}/pattern/${encodeURIComponent(patternSlug(opportunityPattern(issue)))}`)))];
   const urlList = [...new Set([
     `${SITE_URL}/`, `${SITE_URL}/opportunities`, `${SITE_URL}/patterns`, `${SITE_URL}/weekly`,
     `${SITE_URL}/feed.xml`, `${SITE_URL}/weekly/${report.week}`,
     ...representedCategories.map((slug) => `${SITE_URL}/category/${slug}`),
     ...agents.map((agent) => `${SITE_URL}/agent/${encodeURIComponent(agent.slug || agent.id)}`),
-    ...opportunityUrls
+    ...opportunityUrls, ...patternUrls
   ])];
   try {
     const response = await fetch('https://api.indexnow.org/indexnow', {

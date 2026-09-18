@@ -88,6 +88,8 @@ test('workspace migration enforces per-user row-level security', () => {
 test('sitemap applies the same opportunity quality filter as public rankings', () => {
   const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
   assert.match(sitemap, /cleanIssueEvidence\(agent\.evidenceIssues/);
+  assert.match(sitemap, /patternSlug\(opportunityPattern\(issue\)\)/);
+  assert.match(sitemap, /\/pattern\//);
   assert.doesNotMatch(sitemap, /agents:archive/);
   assert.match(sitemap, /Array\.isArray\(payload\?\.agents\)/);
   assert.match(sitemap, /agent\.lastSeenAt \|\| agent\.pushedAt \|\| agent\.updatedAt/);
@@ -496,6 +498,8 @@ test('refreshes submit current projects, demand and professional pages to IndexN
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /representedCategories/);
   assert.match(ingestion, /opportunityUrls/);
+  assert.match(ingestion, /patternUrls/);
+  assert.match(ingestion, /patternSlug\(opportunityPattern\(issue\)\)/);
   assert.match(ingestion, /`\$\{SITE_URL\}\/opportunities`/);
   assert.match(ingestion, /`\$\{SITE_URL\}\/patterns`/);
   assert.match(ingestion, /`\$\{SITE_URL\}\/category\/\$\{slug\}`/);
@@ -606,7 +610,7 @@ test('production smoke monitoring covers the public conversion journey', () => {
 test('pattern intelligence uses qualified evidence and leads to an executable test', () => {
   const patterns = fs.readFileSync(path.join(root, 'api', 'patterns.js'), 'utf8');
   assert.match(patterns, /cleanIssueEvidence\(agent\.evidenceIssues/);
-  assert.match(patterns, /coachingPlan\(lead\.issue\)/);
+  assert.match(patterns, /coachingPlan\(lead\.issue/);
   assert.match(patterns, /RECOMMENDED FIRST TEST/);
   assert.match(patterns, /#validation-start/);
   assert.match(patterns, /opportunities\?pattern=/);
@@ -614,6 +618,14 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   assert.match(patterns, /Specific problems/);
   assert.match(patterns, /evidenceEngagement/);
   assert.match(patterns, /agent\.status === 'archived'/);
+  assert.match(patterns, /patternDetail\(selected\)/);
+  assert.match(patterns, /COACH-STYLE FIRST TEST/);
+  assert.match(patterns, /EVIDENCE, NOT A PROMISE/);
+  assert.match(patterns, /patternSlug\(classification\)/);
+  const vercel = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
+  const rewrites = new Map(vercel.rewrites.map((rule) => [rule.source, rule.destination]));
+  assert.equal(rewrites.get('/pattern/:slug'), '/api/patterns?slug=:slug');
+  assert.equal(require('../lib/opportunity-themes').patternSlug('Human approval & safety'), 'human-approval-and-safety');
   const detail = fs.readFileSync(path.join(root, 'api', 'opportunity.js'), 'utf8');
   assert.match(detail, /coach\.pattern\.name/);
   const opportunities = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');

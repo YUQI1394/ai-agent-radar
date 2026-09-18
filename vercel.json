@@ -76,6 +76,10 @@
       "destination": "/api/patterns"
     },
     {
+      "source": "/pattern/:slug",
+      "destination": "/api/patterns?slug=:slug"
+    },
+    {
       "source": "/methodology",
       "destination": "/methodology.html"
     },

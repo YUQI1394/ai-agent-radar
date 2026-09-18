@@ -208,17 +208,25 @@ async function main() {
   const sitemapPaths = [...sitemapXml.matchAll(/<loc>https:\/\/[^/]+([^<]*)<\/loc>/g)]
     .map((match) => match[1] || '/');
   const headPaths = new Set(['/']);
-  for (const prefix of ['/agent/', '/opportunity/', '/category/', '/weekly', '/patterns', '/opportunities']) {
+  for (const prefix of ['/agent/', '/opportunity/', '/category/', '/weekly', '/patterns', '/pattern/', '/opportunities']) {
     const match = sitemapPaths.find((path) => path === prefix || path.startsWith(prefix));
     if (match) headPaths.add(match);
   }
-  assert.ok(headPaths.size >= 7, 'sitemap is missing one or more public route families');
+  assert.ok(headPaths.size >= 8, 'sitemap is missing one or more public route families');
   const headResults = await Promise.all([...headPaths].map(async (path) => {
     const result = await fetch(`${origin}${path}`, { method: 'HEAD', redirect: 'follow' });
     return [path, result.status];
   }));
   for (const [path, status] of headResults) assert.equal(status, 200, `HEAD ${path} returned ${status}`);
   console.log(`PASS sitemap HEAD coverage (${headResults.length} route families)`);
+  const samplePatternPath = sitemapPaths.find((path) => path.startsWith('/pattern/'));
+  assert.ok(samplePatternPath, 'sitemap has no demand-pattern detail page');
+  const samplePatternResponse = await fetch(`${origin}${samplePatternPath}`);
+  assert.equal(samplePatternResponse.status, 200, 'a demand-pattern detail page is unavailable');
+  const samplePatternHtml = await samplePatternResponse.text();
+  assert.match(samplePatternHtml, /COACH-STYLE FIRST TEST/i, 'pattern detail lacks a practical validation plan');
+  assert.match(samplePatternHtml, /EVIDENCE, NOT A PROMISE/i, 'pattern detail does not explain its evidence boundary');
+  console.log('PASS indexed demand-pattern journey');
 
   let response;
   for (let healthAttempt = 1; healthAttempt <= 12; healthAttempt += 1) {
