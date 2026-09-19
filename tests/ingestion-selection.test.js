@@ -34,6 +34,16 @@ test('Issue scanning rotates across professional categories before filling by ag
   assert.deepEqual(selected.map((item) => item.category), categories.slice(0, 7));
 });
 
+test('Issue scanning reserves one current scan for every thin professional field', () => {
+  const categories = ['Security', 'Finance', 'Research', 'Coding', 'Marketing', 'Design', 'Productivity', 'Agent Infrastructure'];
+  const current = categories.map((category, index) => ({ name: `${category}-current`, category, evidenceIssues: [{}], issueScannedAt: `2026-08-${String(index + 1).padStart(2, '0')}T00:00:00.000Z` }));
+  const discovery = [{ name: 'new-one', category: 'Coding' }, { name: 'new-two', category: 'Coding' }];
+  const selected = selectIssueTargets([...current, ...discovery], current, [], 10);
+  assert.equal(selected.filter((agent) => agent.name.endsWith('-current')).length, 8);
+  assert.deepEqual(new Set(selected.filter((agent) => agent.name.endsWith('-current')).map((agent) => agent.category)), new Set(categories));
+  assert.equal(selected.length, 10);
+});
+
 test('Issue scanning prioritizes every current project in a domain below the evidence floor', () => {
   const marketing = Array.from({ length: 3 }, (_, index) => ({ name: `marketing-${index}`, category: 'Marketing' }));
   const coding = Array.from({ length: 8 }, (_, index) => ({ name: `coding-${index}`, category: 'Coding' }));
