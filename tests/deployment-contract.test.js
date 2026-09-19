@@ -374,6 +374,9 @@ test('an empty registered workspace recommends live opportunities by professiona
   assert.match(workspace, /Start this 7-day sprint/);
   assert.match(workspace, /#validation-start/);
   assert.match(workspace, /ai-agent-radar:preferred-domain/);
+  assert.match(workspace, /cloud\.get\('saved', preferenceRecord\)/);
+  assert.match(workspace, /cloud\.set\('saved', preferenceRecord/);
+  assert.match(workspace, /loadPreferredDomain/);
   assert.match(workspace, /const seenDomains = new Set/);
   assert.match(workspace, /Math\.log2\(item\.comments \+ 1\)/);
   assert.match(workspace, /ageDays <= 30/);
