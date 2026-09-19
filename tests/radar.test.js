@@ -101,6 +101,26 @@ test('recognizes professional agents that use domain-specific action verbs', () 
   assert.equal(category(video), 'Design');
   assert.equal(qualifiesAsAgent(agent({ name: 'Social Media Agent Template', tagline: 'Agent that schedules social media posts', description: 'A simple single-purpose posting helper.', topics: ['marketing'] })), false);
   assert.equal(qualifiesAsAgent(agent({ name: 'SEO Skills Plugin', tagline: 'Open-source marketing skills for AI agents.', topics: ['agents', 'mcp', 'marketing'] })), false);
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Architecture Editor', tagline: 'A local 3D editor',
+    description: 'Practical MCP tools and workflows for humans and AI agents.', topics: ['ai-agents', 'mcp']
+  })), false, 'an editor with MCP tools is not itself an agent platform');
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Office Skills', tagline: 'Modular productivity skills',
+    description: 'Skills for building AI-powered office assistants and productivity workflows.', topics: ['ai-agents', 'mcp', 'productivity']
+  })), false, 'passive skill collections do not perform agent work');
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Agentic Production Studio', tagline: 'An agentic video production system',
+    description: 'A multi-agent system with production skills and workflow automation.', topics: ['ai-agents', 'design']
+  })), true, 'an execution system remains eligible when it bundles skills');
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Agent Teams', tagline: 'Agents are your team. They handle tasks on their own and review each other’s work.',
+    description: 'Multi-model orchestration for an AI company.', topics: ['ai-agents', 'mcp-server']
+  })), true, 'a real agent team is not rejected merely because it supports MCP');
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'SuperAgent Harness', tagline: 'A long-horizon SuperAgent harness that researches, codes and creates.',
+    description: 'Subagents, memory and tools handle tasks that run for hours.', topics: ['ai-agents', 'agentic']
+  })), true, 'a long-horizon execution harness remains eligible when it bundles skills');
   assert.equal(qualifiesAsAgent(agent({ name: 'Creative Ad Agent', tagline: 'Multi-agent system that plans, designs and evaluates Meta ad creatives', topics: [] })), true);
   assert.equal(category(agent({ name: 'Creative Ad Agent', tagline: 'Multi-agent system that plans, designs and evaluates Meta ad creatives', topics: [] })), 'Marketing');
 });
