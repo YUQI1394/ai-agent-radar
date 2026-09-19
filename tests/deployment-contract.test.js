@@ -521,7 +521,7 @@ test('refreshes submit current projects, demand and professional pages to IndexN
 
 test('refresh keeps under-sourced professional domains eligible for GitHub Issue recovery', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
-  assert.match(ingestion, /underSourcedCurrentAgents\(currentAgents\)/);
+  assert.match(ingestion, /underSourcedCurrentAgents\(currentAgents, archiveHistory\)/);
   assert.match(ingestion, /if \(!unique\.has\(agent\.id\)\) unique\.set\(agent\.id, agent\)/);
 });
 

@@ -76,5 +76,16 @@ test('under-sourced professional domains retain all current projects for recover
     { name: 'coding-a', category: 'Coding', evidenceIssues: [{}] },
     { name: 'coding-b', category: 'Coding', evidenceIssues: [{}] }
   ];
-  assert.deepEqual(underSourcedCurrentAgents(current).map((agent) => agent.name), ['marketing-evidence', 'marketing-unscanned']);
+  assert.deepEqual(underSourcedCurrentAgents(current).map((agent) => agent.name), ['marketing-evidence', 'marketing-unscanned', 'coding-a', 'coding-b']);
+});
+
+test('under-sourced domains recover archived projects with qualified evidence', () => {
+  const current = [
+    { name: 'infrastructure-current', category: 'Agent Infrastructure', evidenceIssues: [{}] },
+    { name: 'infrastructure-unscanned', category: 'Agent Infrastructure', evidenceIssues: [] }
+  ];
+  const archive = [{ name: 'infrastructure-proven', category: 'Agent Infrastructure', evidenceIssues: [{}, {}, {}] }];
+  assert.deepEqual(underSourcedCurrentAgents(current, archive).map((agent) => agent.name), [
+    'infrastructure-current', 'infrastructure-unscanned', 'infrastructure-proven'
+  ]);
 });

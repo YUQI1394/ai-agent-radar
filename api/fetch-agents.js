@@ -225,7 +225,7 @@ module.exports = async function handler(req, res) {
     // A current professional domain with only one qualifying evidence source
     // must remain eligible for an Issue scan even if today's repository search
     // did not return that exact project again.
-    underSourcedCurrentAgents(currentAgents).forEach((agent) => {
+    underSourcedCurrentAgents(currentAgents, archiveHistory).forEach((agent) => {
       if (!unique.has(agent.id)) unique.set(agent.id, agent);
     });
     const historyByName = new Map([...archiveHistory, ...currentAgents].map((agent) => [String(agent.name).toLowerCase(), agent]));
