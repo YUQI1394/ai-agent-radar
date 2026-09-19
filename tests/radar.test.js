@@ -76,6 +76,12 @@ test('accepts actionable agents and rejects model-only or generator products', (
     description: 'Static-first website template for publishing a game wiki.',
     topics: ['ai-agents', 'astro', 'website-template']
   })), false);
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Learn Claude Code',
+    tagline: 'A nano Claude Code-like agent harness, built from 0 to 1.',
+    description: 'Teaching repository for learning how an agent harness works.',
+    topics: ['agent', 'agent-development', 'ai-agent', 'educational', 'teaching', 'tutorial']
+  })), false);
 });
 
 test('recognizes professional agent teams described as AI staff or bot teams', () => {
