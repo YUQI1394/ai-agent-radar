@@ -119,6 +119,8 @@ test('RSS publishes filtered projects and opportunity signals', () => {
   assert.match(feed, /\[Opportunity\]/);
   assert.match(feed, /\.slice\(0, 50\)/);
   assert.doesNotMatch(feed, /agent\.createdAt \|\| payload\.updatedAt/);
+  assert.match(feed, /agent\.pushedAt \|\| agent\.updatedAt \|\| agent\.firstSeenAt/);
+  assert.match(feed, /issue\.updatedAt \|\| issue\.firstSeenAt/);
 });
 
 test('RSS has a human-readable reader and keeps the standard XML subscription', () => {

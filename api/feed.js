@@ -50,7 +50,7 @@ module.exports = async function handler(req, res) {
   const agents = Array.isArray(payload.agents) ? payload.agents : [];
   const agentEntries = agents.map((agent) => {
     const slug = encodeURIComponent(agent.slug || agent.id);
-    return { type: 'agent', domain: agent.category || category(agent), displayTitle: agent.name, title: `[Agent] ${agent.name}`, path: `/agent/${slug}`, link: `${SITE_URL}/agent/${slug}`, description: agent.description || agent.tagline, publishedAt: agent.firstSeenAt || agent.updatedAt || payload.updatedAt };
+    return { type: 'agent', domain: agent.category || category(agent), displayTitle: agent.name, title: `[Agent] ${agent.name}`, path: `/agent/${slug}`, link: `${SITE_URL}/agent/${slug}`, description: agent.description || agent.tagline, publishedAt: agent.pushedAt || agent.updatedAt || agent.firstSeenAt || payload.updatedAt };
   });
   const opportunityEntries = agents.flatMap((agent) => cleanIssueEvidence(agent.evidenceIssues || []).map((issue) => ({
     type: 'opportunity',
@@ -60,7 +60,7 @@ module.exports = async function handler(req, res) {
     path: `/opportunity/${encodeURIComponent(issue.id)}`,
     link: `${SITE_URL}/opportunity/${encodeURIComponent(issue.id)}`,
     description: `Demand evidence from ${agent.name}: ${Number(issue.comments || 0)} comments and ${Number(issue.reactions || 0)} positive reactions.`,
-    publishedAt: issue.firstSeenAt || issue.updatedAt || payload.updatedAt
+    publishedAt: issue.updatedAt || issue.firstSeenAt || payload.updatedAt
   })));
   const selectedSlug = String(req.query?.domain || '').trim().toLowerCase();
   if (selectedSlug && !DOMAINS[selectedSlug]) return res.status(400).send('Unknown professional field');
