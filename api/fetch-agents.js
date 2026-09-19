@@ -214,12 +214,12 @@ module.exports = async function handler(req, res) {
     const batches = searchResults.filter((result) => result.status === 'fulfilled').map((result) => result.value);
     const searchFailures = searchResults.length - batches.length;
     if (!batches.length) throw new Error('All GitHub repository searches failed; existing feed preserved');
+    if (searchFailures) throw new Error('GitHub repository search incomplete; existing feed preserved');
     searchResults.filter((result) => result.status === 'rejected').forEach((result) => console.warn('GitHub search degraded:', result.reason?.message));
     const unique = new Map();
     batches.flat().forEach((repo) => unique.set(repo.id, normalize(repo)));
     const previous = await kv.get('agents:latest');
     const storedArchive = await kv.get('agents:archive');
-    if (searchFailures) (previous?.agents || []).forEach((agent) => { if (!unique.has(agent.id)) unique.set(agent.id, agent); });
     const currentAgents = Array.isArray(previous?.agents) ? previous.agents : [];
     const archiveHistory = Array.isArray(storedArchive?.agents) ? storedArchive.agents : [];
     // A current professional domain with only one qualifying evidence source
@@ -238,6 +238,7 @@ module.exports = async function handler(req, res) {
     const issueBatches = issueResults.filter((result) => result.status === 'fulfilled').map((result) => result.value);
     const issueFailures = issueResults.length - issueBatches.length;
     issueResults.filter((result) => result.status === 'rejected').forEach((result) => console.warn('GitHub Issue scan degraded:', result.reason?.message));
+    if (issueFailures) throw new Error('GitHub Issue scan incomplete; existing feed preserved');
     const evidenceByRepository = new Map();
     const issueScanTime = new Date().toISOString();
     issueBatches.forEach(({ repository, issues }) => {
@@ -263,7 +264,7 @@ module.exports = async function handler(req, res) {
     const enrichedCandidates = [...unique.values()].filter(qualifiesAsAgent);
     const agents = selectCuratedAgents(enrichAgents(enrichedCandidates, Array.isArray(previous?.agents) ? previous.agents : [], Date.now()), CURATED_LIMIT);
     const updatedAt = new Date().toISOString();
-    const ingestion = { deploymentCommit, searchesSucceeded: batches.length, searchesFailed: searchFailures, issuesSucceeded: issueBatches.length, issuesFailed: issueFailures, degraded: searchFailures > 0 || issueFailures > 0 };
+    const ingestion = { deploymentCommit, searchesSucceeded: batches.length, searchesFailed: searchFailures, issuesSucceeded: issueBatches.length, issuesFailed: issueFailures, degraded: false };
     const payload = { updatedAt, count: agents.length, source: 'github', ingestion, agents };
     const archivedAgents = mergeArchive(Array.isArray(storedArchive?.agents) ? storedArchive.agents : [], agents, updatedAt).filter(qualifiesAsAgent);
     const report = weeklyReport(agents, updatedAt);
