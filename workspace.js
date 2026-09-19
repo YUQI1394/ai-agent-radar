@@ -11,6 +11,35 @@
   }
   const prefix = auth.storagePrefix('validation');
   const cloud = await window.RadarCloud.ready;
+  const preferenceKey = 'ai-agent-radar:preferred-domain';
+  const preferenceRecord = 'preferences';
+  const professionalDomains = new Set(['Research', 'Security', 'Finance', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure']);
+  let preferredDomainPromise;
+  const validPreferredDomain = (value) => professionalDomains.has(String(value || '')) ? String(value) : '';
+  const rememberPreferredDomain = (domain) => {
+    const preferred = validPreferredDomain(domain);
+    if (!preferred) return;
+    localStorage.setItem(preferenceKey, preferred);
+    if (cloud.available) cloud.set('saved', preferenceRecord, { preferredDomain: preferred, updatedAt: new Date().toISOString() }).catch(() => {});
+  };
+  const loadPreferredDomain = () => {
+    if (preferredDomainPromise) return preferredDomainPromise;
+    preferredDomainPromise = (async () => {
+      const local = validPreferredDomain(localStorage.getItem(preferenceKey));
+      if (local) {
+        if (cloud.available) cloud.set('saved', preferenceRecord, { preferredDomain: local, updatedAt: new Date().toISOString() }).catch(() => {});
+        return local;
+      }
+      if (!cloud.available) return '';
+      try {
+        const remote = await cloud.get('saved', preferenceRecord);
+        const preferred = validPreferredDomain(remote?.preferredDomain);
+        if (preferred) localStorage.setItem(preferenceKey, preferred);
+        return preferred;
+      } catch (_) { return ''; }
+    })();
+    return preferredDomainPromise;
+  };
   const list = document.querySelector('#workspace-list');
   const empty = document.querySelector('#workspace-empty');
   const focus = document.createElement('section');
@@ -77,7 +106,7 @@
         });
       }));
       if (!opportunities.length) throw new Error('No current opportunities are available');
-      const preferred = localStorage.getItem('ai-agent-radar:preferred-domain') || 'All fields';
+      const preferred = await loadPreferredDomain() || 'All fields';
       const domainOrder = ['Research', 'Security', 'Finance', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure'];
       const domains = domainOrder.filter((domain) => opportunities.some((item) => item.domain === domain));
       const initial = domains.includes(preferred) ? preferred : 'All fields';
@@ -102,7 +131,7 @@
           button.setAttribute('aria-pressed', String(active));
         });
         picker.querySelector('.starter-recommendations').innerHTML = candidates.map((item) => `<article class="starter-card"><div><span>${escapeHtml(item.domain)}</span><small>${escapeHtml(item.confidence?.label || 'QUALIFIED SIGNAL')}</small></div><h3>${escapeHtml(item.title)}</h3><p>${item.pattern ? `${escapeHtml(item.pattern)} · ` : ''}Evidence in ${escapeHtml(item.project)}</p><a class="button button-primary" href="/opportunity/${encodeURIComponent(item.id)}#validation-start">Start this 7-day sprint →</a></article>`).join('');
-        if (domain !== 'All fields') localStorage.setItem('ai-agent-radar:preferred-domain', domain);
+        if (domain !== 'All fields') rememberPreferredDomain(domain);
       };
       picker.innerHTML = `<div class="starter-picker-heading"><strong>Recommended from live evidence</strong><span>Choose your field</span></div><div class="starter-domains" role="group" aria-label="Choose a professional field"><button type="button" data-starter-domain="All fields">All</button>${domains.map((domain) => `<button type="button" data-starter-domain="${escapeHtml(domain)}">${escapeHtml(domain === 'Agent Infrastructure' ? 'Infrastructure' : domain)}</button>`).join('')}</div><div class="starter-recommendations"></div>`;
       picker.querySelectorAll('[data-starter-domain]').forEach((button) => button.addEventListener('click', () => renderRecommendations(button.dataset.starterDomain)));
@@ -138,7 +167,7 @@
       const domains = domainOrder.filter((domain) => opportunities.some((item) => item.domain === domain));
       if (!domains.length) throw new Error('No professional signals currently clear the evidence threshold');
       select.innerHTML = domains.map((domain) => `<option value="${escapeHtml(domain)}">${escapeHtml(domain)}</option>`).join('');
-      const preferred = localStorage.getItem('ai-agent-radar:preferred-domain');
+      const preferred = await loadPreferredDomain();
       select.value = domains.includes(preferred) ? preferred : domains[0];
       const strength = (item) => {
         const ageDays = Math.max(0, (Date.now() - Date.parse(item.updatedAt)) / 86400000);
@@ -150,7 +179,7 @@
       const renderDomain = async () => {
         const version = ++renderVersion;
         const domain = select.value;
-        localStorage.setItem('ai-agent-radar:preferred-domain', domain);
+        rememberPreferredDomain(domain);
         const ranked = opportunities.filter((item) => item.domain === domain).sort((a, b) => strength(b) - strength(a) || a.title.localeCompare(b.title));
         const snapshotId = `domain-radar:${domain}`;
         const snapshotKey = `${auth.storagePrefix('saved')}${snapshotId}`;
