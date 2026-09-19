@@ -70,6 +70,12 @@ test('accepts actionable agents and rejects model-only or generator products', (
   })), false);
   assert.equal(qualifiesAsAgent(agent({ license: 'NOASSERTION' })), false);
   assert.equal(qualifiesAsAgent(agent({ license: 'Not declared' })), false);
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'AnvilWiki',
+    tagline: 'Open-source game wiki template with an AI-native content workflow.',
+    description: 'Static-first website template for publishing a game wiki.',
+    topics: ['ai-agents', 'astro', 'website-template']
+  })), false);
 });
 
 test('recognizes professional agent teams described as AI staff or bot teams', () => {
