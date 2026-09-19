@@ -118,6 +118,7 @@ function renderPage(agent, agents) {
   <meta property="og:image" content="${safeUrl(agent.thumbnail || `${SITE_URL}/og-image.png`)}">
   <title>${escapeHtml(agent.name)} · AI Agent Radar</title>
   <link rel="canonical" href="${canonical}">
+  <link rel="alternate" type="application/rss+xml" title="AI Agent Radar RSS Feed" href="${SITE_URL}/feed.xml">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <script type="application/ld+json">${schema}</script>

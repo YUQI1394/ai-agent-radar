@@ -144,6 +144,11 @@ test('RSS has a human-readable reader and keeps the standard XML subscription', 
   assert.match(reader, /navigator\.clipboard\.writeText/);
   assert.match(reader, /url\.origin === location\.origin/);
   assert.match(sitemap, /path: '\/rss'/);
+  for (const file of ['agent.js', 'category.js', 'compare.js', 'opportunities.js', 'opportunity.js', 'patterns.js', 'weekly.js']) {
+    const source = fs.readFileSync(path.join(root, 'api', file), 'utf8');
+    assert.match(source, /rel="alternate" type="application\/rss\+xml"/);
+    assert.match(source, /feed\.xml/);
+  }
 });
 
 test('weekly reports connect repository rankings to traceable demand evidence', () => {
