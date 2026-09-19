@@ -606,8 +606,10 @@ test('production smoke monitoring covers the public conversion journey', () => {
   assert.match(smoke, /opportunityHref/);
   assert.match(smoke, /Reporter context:/);
   assert.match(smoke, /sitemap\.xml/);
-  assert.match(smoke, /sitemap HEAD coverage/);
+  assert.match(smoke, /all sitemap HEAD coverage/);
   assert.match(smoke, /method: 'HEAD'/);
+  assert.match(smoke, /SITEMAP_HEAD_CONCURRENCY = 6/);
+  assert.match(smoke, /SITEMAP_ROUTE_LIMIT = 250/);
   assert.match(smoke, /auth\.configured/);
   assert.match(smoke, /auth\/v1\/settings/);
   assert.match(smoke, /disable_signup/);
