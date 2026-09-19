@@ -506,6 +506,12 @@ test('refreshes submit current projects, demand and professional pages to IndexN
   assert.match(ingestion, /new Set\(\[/);
 });
 
+test('refresh keeps under-sourced professional domains eligible for GitHub Issue recovery', () => {
+  const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
+  assert.match(ingestion, /underSourcedCurrentAgents\(currentAgents\)/);
+  assert.match(ingestion, /if \(!unique\.has\(agent\.id\)\) unique\.set\(agent\.id, agent\)/);
+});
+
 test('scheduled refreshes fail when production demand intelligence is unhealthy', () => {
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');

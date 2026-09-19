@@ -2,7 +2,7 @@ const { kv } = require('@vercel/kv');
 const crypto = require('crypto');
 const { category, enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAgents, weeklyReport } = require('../lib/radar');
 const { githubHeaders, githubJson } = require('../lib/github-client');
-const { selectIssueTargets } = require('../lib/ingestion-selection');
+const { selectIssueTargets, underSourcedCurrentAgents } = require('../lib/ingestion-selection');
 const { cleanIssueEvidence, evidenceStrength, issueExcerpt, opportunityPattern, patternSlug } = require('../lib/opportunity-themes');
 
 const GITHUB_API = 'https://api.github.com';
@@ -222,6 +222,12 @@ module.exports = async function handler(req, res) {
     if (searchFailures) (previous?.agents || []).forEach((agent) => { if (!unique.has(agent.id)) unique.set(agent.id, agent); });
     const currentAgents = Array.isArray(previous?.agents) ? previous.agents : [];
     const archiveHistory = Array.isArray(storedArchive?.agents) ? storedArchive.agents : [];
+    // A current professional domain with only one qualifying evidence source
+    // must remain eligible for an Issue scan even if today's repository search
+    // did not return that exact project again.
+    underSourcedCurrentAgents(currentAgents).forEach((agent) => {
+      if (!unique.has(agent.id)) unique.set(agent.id, agent);
+    });
     const historyByName = new Map([...archiveHistory, ...currentAgents].map((agent) => [String(agent.name).toLowerCase(), agent]));
     const candidates = [...unique.values()].filter(qualifiesAsAgent).map((agent) => ({ ...agent, category: agent.category || category(agent) }));
     const issueTargets = selectIssueTargets(candidates, currentAgents, archiveHistory);

@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { selectIssueTargets } = require('../lib/ingestion-selection');
+const { selectIssueTargets, underSourcedCurrentAgents } = require('../lib/ingestion-selection');
 
 const candidate = (name) => ({ name });
 
@@ -67,4 +67,14 @@ test('Issue recovery prefers new evidence sources when one project monopolizes a
   const selected = selectIssueTargets(candidates, current, [], 4);
   assert.ok(selected.some((item) => item.name === 'marketing-uncovered-a'));
   assert.ok(!selected.slice(0, 2).some((item) => item.name === 'marketing-with-evidence'), 'the existing source must not crowd out uncovered projects');
+});
+
+test('under-sourced professional domains retain all current projects for recovery scans', () => {
+  const current = [
+    { name: 'marketing-evidence', category: 'Marketing', evidenceIssues: [{}] },
+    { name: 'marketing-unscanned', category: 'Marketing', evidenceIssues: [] },
+    { name: 'coding-a', category: 'Coding', evidenceIssues: [{}] },
+    { name: 'coding-b', category: 'Coding', evidenceIssues: [{}] }
+  ];
+  assert.deepEqual(underSourcedCurrentAgents(current).map((agent) => agent.name), ['marketing-evidence', 'marketing-unscanned']);
 });
