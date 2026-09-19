@@ -166,6 +166,8 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(home, /03 \/ EXECUTE/);
   assert.match(home, /Create my free demand radar/);
   assert.match(home, /\/login\?next=%2Fworkspace/);
+  assert.match(home, /Follow the free RSS feed/);
+  assert.match(home, /href="\/rss"/);
   assert.match(home, /data-radar-node="0"/);
   assert.match(home, /Qualified unmet needs/);
   assert.match(home, /DEMAND BEFORE TOOLS/);
