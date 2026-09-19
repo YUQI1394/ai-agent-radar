@@ -24,6 +24,8 @@ const SEARCHES = () => [
   { query: '"investment agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: `"accounting agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"marketing agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"marketing automation agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"lead generation agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"advertising agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: '"social media agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: '"sales agent" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
@@ -35,8 +37,12 @@ const SEARCHES = () => [
   { query: '"agentic video production" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: `"UI UX agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"personal AI assistant" agent in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
+  { query: `"productivity agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"task management agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"calendar agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"meeting agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"research agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  { query: `"research assistant agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"literature review agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 }
 ];
 const DEMAND_PATTERN = /feature|request|support|proposal|enhancement|workflow|integration|export|import|api|ux|documentation|docs|performance|slow|error|fail|bug|problem|missing|cannot|can't|unable|crash|session|memory|security/i;
