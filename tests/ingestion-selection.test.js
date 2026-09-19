@@ -88,4 +88,5 @@ test('under-sourced domains recover archived projects with qualified evidence', 
   assert.deepEqual(underSourcedCurrentAgents(current, archive).map((agent) => agent.name), [
     'infrastructure-current', 'infrastructure-unscanned', 'infrastructure-proven'
   ]);
+  assert.equal(underSourcedCurrentAgents(current, [{ ...archive[0], status: 'archived' }]).find((agent) => agent.name === 'infrastructure-proven').status, 'current');
 });
