@@ -12,7 +12,8 @@
     } catch { return new Set(); }
   }
 
-  const state = { agents: [], search: '', filter: 'All', sort: 'radar', saved: readSavedAgents() };
+  const initialSearch = new URLSearchParams(location.search).get('q') || '';
+  const state = { agents: [], search: initialSearch, filter: 'All', sort: 'radar', saved: readSavedAgents() };
   const elements = {
     grid: document.getElementById('agent-grid'), search: document.getElementById('search-input'),
     filters: [...document.querySelectorAll('.filter-button')], sorts: [...document.querySelectorAll('.sort-button')],
@@ -28,6 +29,8 @@
     state.filter = 'Saved';
     elements.filters.forEach((button) => button.classList.toggle('active', button.dataset.filter === 'Saved'));
   }
+
+  if (initialSearch) elements.search.value = initialSearch;
 
   const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -212,7 +215,15 @@
     }
   }
 
-  elements.search.addEventListener('input', (event) => { state.search = event.target.value; render(); });
+  function syncSearchUrl() {
+    const url = new URL(location.href);
+    const query = state.search.trim();
+    if (query) url.searchParams.set('q', query);
+    else url.searchParams.delete('q');
+    history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  elements.search.addEventListener('input', (event) => { state.search = event.target.value; syncSearchUrl(); render(); });
   elements.filters.forEach((button) => button.addEventListener('click', () => { state.filter = button.dataset.filter; elements.filters.forEach((item) => item.classList.toggle('active', item === button)); render(); }));
   elements.sorts.forEach((button) => button.addEventListener('click', () => { state.sort = button.dataset.sort; elements.sorts.forEach((item) => item.classList.toggle('active', item === button)); render(); }));
   elements.grid.addEventListener('click', async (event) => {

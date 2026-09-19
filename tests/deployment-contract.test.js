@@ -168,6 +168,8 @@ test('homepage presents the full discovery-to-action path with live project evid
   const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
   assert.match(home, /<title>Open-Source AI Agents &amp; GitHub Demand · AI Agent Radar<\/title>/);
   assert.match(home, /rel="canonical" href="https:\/\/getaiagentradar\.com\/"/);
+  assert.match(home, /"@type": "SearchAction"/);
+  assert.match(home, /https:\/\/getaiagentradar\.com\/\?q=\{search_term_string\}/);
   assert.match(home, /01 \/ DISCOVER/);
   assert.match(home, /02 \/ UNDERSTAND/);
   assert.match(home, /03 \/ EXECUTE/);
@@ -181,6 +183,8 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(home, /id="home-demand-grid"/);
   assert.match(home, /opportunities\?confidence=repeated/);
   assert.match(app, /function renderRadarField/);
+  assert.match(app, /new URLSearchParams\(location\.search\)\.get\('q'\)/);
+  assert.match(app, /function syncSearchUrl\(\)/);
   assert.match(app, /function renderRepeatedNeeds/);
   assert.match(app, /issue\.confidence\?\.level === 'repeated'/);
   assert.match(app, /CROSS-PROJECT NEED/);
