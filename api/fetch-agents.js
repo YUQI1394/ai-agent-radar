@@ -32,7 +32,7 @@ const SEARCHES = () => [
   { query: `"design workflow" agent in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
   { query: '"agentic video production" in:name,description,readme stars:>20 archived:false', sort: 'stars', perPage: 15 },
   { query: `"UI UX agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
-  { query: `"personal AI assistant" agent in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'stars', perPage: 15 },
+  { query: `"task management agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"productivity agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"meeting agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"research agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
