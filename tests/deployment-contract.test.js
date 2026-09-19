@@ -669,12 +669,9 @@ test('the open-source archive excludes projects without a verifiable license', (
 test('GitHub discovery includes narrow creative and design workflow searches', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /"creative agent" in:name,description,readme/);
-  assert.match(ingestion, /"creative agents" in:name,description,readme/);
-  assert.match(ingestion, /"advertising agent" in:name,description,readme/);
   assert.match(ingestion, /"design workflow" agent in:name,description,readme/);
   assert.match(ingestion, /"pentest agent" in:name,description,readme/);
   assert.match(ingestion, /"social media agent" in:name,description,readme/);
-  assert.match(ingestion, /"sales agent" in:name,description,readme/);
   assert.match(ingestion, /"investment agent" in:name,description,readme/);
   assert.match(ingestion, /"agentic video production" in:name,description,readme/);
   assert.match(ingestion, /"personal AI assistant" agent in:name,description,readme/);
@@ -683,9 +680,10 @@ test('GitHub discovery includes narrow creative and design workflow searches', (
 
 test('GitHub discovery broadens thin professional domains without burst concurrency', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
-  for (const query of ['SOC analyst agent', 'accounting agent', 'SEO agent', 'content marketing agent', 'marketing automation agent', 'lead generation agent', 'UI UX agent', 'meeting agent', 'productivity agent', 'task management agent', 'calendar agent', 'literature review agent', 'research assistant agent']) {
+  for (const query of ['SOC analyst agent', 'accounting agent', 'SEO agent', 'content marketing agent', 'marketing automation agent', 'UI UX agent', 'meeting agent', 'productivity agent', 'literature review agent', 'research assistant agent']) {
     assert.match(ingestion, new RegExp(query), `missing focused discovery query: ${query}`);
   }
+  assert.equal((ingestion.match(/\bquery:/g) || []).length, 30, 'GitHub Search is rate-limited to 30 requests per window');
   assert.match(ingestion, /allSettledLimited\(searches/);
   assert.match(ingestion, /concurrency = 6/);
   const radar = fs.readFileSync(path.join(root, 'lib', 'radar.js'), 'utf8');
