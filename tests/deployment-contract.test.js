@@ -554,6 +554,8 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(health, /evidenceContext: \{ available: contextSignals/);
   assert.match(workflow, /Verify production data health/);
   assert.match(workflow, /for attempt in \{1\.\.12\}/);
+  assert.match(workflow, /concurrency:\s*\n\s*group: production-feed-refresh/);
+  assert.match(workflow, /cancel-in-progress: false/);
   assert.match(workflow, /\.checks\.issueCoverage/);
   assert.match(workflow, /\.checks\.demandEvidence/);
 });
