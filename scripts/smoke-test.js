@@ -2,6 +2,8 @@ const assert = require('node:assert/strict');
 
 const origin = (process.env.RADAR_ORIGIN || 'https://getaiagentradar.com').replace(/\/$/, '');
 const FETCH_TIMEOUT_MS = Math.max(1000, Number(process.env.RADAR_FETCH_TIMEOUT_MS) || 15000);
+const SITEMAP_HEAD_CONCURRENCY = 6;
+const SITEMAP_ROUTE_LIMIT = 250;
 const nativeFetch = globalThis.fetch;
 const fetch = (url, options = {}) => nativeFetch(url, { ...options, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
 const pages = [
@@ -207,18 +209,24 @@ async function main() {
 
   const sitemapPaths = [...sitemapXml.matchAll(/<loc>https:\/\/[^/]+([^<]*)<\/loc>/g)]
     .map((match) => match[1] || '/');
-  const headPaths = new Set(['/']);
+  assert.ok(sitemapPaths.length > 0 && sitemapPaths.length <= SITEMAP_ROUTE_LIMIT, `sitemap has an unsafe route count: ${sitemapPaths.length}`);
+  const requiredFamilies = new Set(['/']);
   for (const prefix of ['/agent/', '/opportunity/', '/category/', '/weekly', '/patterns', '/pattern/', '/opportunities']) {
     const match = sitemapPaths.find((path) => path === prefix || path.startsWith(prefix));
-    if (match) headPaths.add(match);
+    if (match) requiredFamilies.add(match);
   }
-  assert.ok(headPaths.size >= 8, 'sitemap is missing one or more public route families');
-  const headResults = await Promise.all([...headPaths].map(async (path) => {
-    const result = await fetch(`${origin}${path}`, { method: 'HEAD', redirect: 'follow' });
-    return [path, result.status];
-  }));
+  assert.ok(requiredFamilies.size >= 8, 'sitemap is missing one or more public route families');
+  const headResults = [];
+  for (let start = 0; start < sitemapPaths.length; start += SITEMAP_HEAD_CONCURRENCY) {
+    const batch = sitemapPaths.slice(start, start + SITEMAP_HEAD_CONCURRENCY);
+    const results = await Promise.all(batch.map(async (path) => {
+      const result = await fetchTransient(`${origin}${path}`, { method: 'HEAD', redirect: 'follow' });
+      return [path, result.status];
+    }));
+    headResults.push(...results);
+  }
   for (const [path, status] of headResults) assert.equal(status, 200, `HEAD ${path} returned ${status}`);
-  console.log(`PASS sitemap HEAD coverage (${headResults.length} route families)`);
+  console.log(`PASS all sitemap HEAD coverage (${headResults.length} public pages)`);
   const samplePatternPath = sitemapPaths.find((path) => path.startsWith('/pattern/'));
   assert.ok(samplePatternPath, 'sitemap has no demand-pattern detail page');
   const samplePatternResponse = await fetch(`${origin}${samplePatternPath}`);
