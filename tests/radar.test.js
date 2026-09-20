@@ -100,6 +100,18 @@ test('recognizes professional agents that use domain-specific action verbs', () 
   assert.equal(qualifiesAsAgent(video), true);
   assert.equal(category(video), 'Design');
   assert.equal(qualifiesAsAgent(agent({ name: 'Social Media Agent Template', tagline: 'Agent that schedules social media posts', description: 'A simple single-purpose posting helper.', topics: ['marketing'] })), false);
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Open Meeting',
+    tagline: 'Open-source, self-hosted video conferencing software with a powerful AI Meeting Agent.',
+    description: 'Scalable web conferencing for rooms, calls and recordings.',
+    topics: ['ai-agent', 'video-conferencing']
+  })), false, 'a conventional conferencing product with an optional AI feature is not itself an agent');
+  assert.equal(qualifiesAsAgent(agent({
+    name: 'Autonomous Meeting Agent',
+    tagline: 'Autonomous AI Meeting Agent that plans follow-ups and takes actions across calendars.',
+    description: 'An agent system that independently coordinates meeting work.',
+    topics: ['ai-agent', 'meeting']
+  })), true, 'a genuine autonomous meeting agent stays eligible');
   assert.equal(qualifiesAsAgent(agent({ name: 'SEO Skills Plugin', tagline: 'Open-source marketing skills for AI agents.', topics: ['agents', 'mcp', 'marketing'] })), false);
   assert.equal(qualifiesAsAgent(agent({
     name: 'Architecture Editor', tagline: 'A local 3D editor',
