@@ -697,7 +697,7 @@ test('GitHub discovery includes narrow creative and design workflow searches', (
 
 test('GitHub discovery broadens thin professional domains without burst concurrency', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
-  for (const query of ['SOC analyst agent', 'accounting agent', 'SEO agent', 'content marketing agent', 'marketing automation agent', 'UI UX agent', 'personal AI assistant', 'calendar agent', 'productivity agent', 'task management agent', 'literature review agent', 'research assistant agent']) {
+  for (const query of ['SOC analyst agent', 'accounting agent', 'SEO agent', 'content marketing agent', 'marketing automation agent', 'UI UX agent', 'personal AI assistant', 'inbox agent', 'productivity agent', 'task management agent', 'literature review agent', 'research assistant agent']) {
     assert.match(ingestion, new RegExp(query), `missing focused discovery query: ${query}`);
   }
   assert.equal((ingestion.match(/\bquery:/g) || []).length, 30, 'GitHub Search is rate-limited to 30 requests per window');
