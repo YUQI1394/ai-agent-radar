@@ -561,6 +561,15 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(workflow, /\.checks\.demandEvidence/);
 });
 
+test('public status makes independent demand-source diversity visible', () => {
+  const status = fs.readFileSync(path.join(root, 'status.js'), 'utf8');
+  const page = fs.readFileSync(path.join(root, 'status.html'), 'utf8');
+  assert.match(status, /status-sources/);
+  assert.match(status, /multiSourceDemandDomains/);
+  assert.match(status, /Domains with 2\+ evidence sources/);
+  assert.match(page, /single-project signal remains visible as an interview lead/i);
+});
+
 test('health counts the same cleaned evidence users can actually see', () => {
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
   assert.match(health, /cleanIssueEvidence/);
