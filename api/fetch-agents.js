@@ -14,7 +14,11 @@ const SEARCHES = () => [
   { query: '"agent framework" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 20 },
   { query: `topic:multi-agent-systems stars:20..10000 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 20 },
   { query: `topic:ai-agents security in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
-  { query: `topic:ai-agents finance in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
+  // Finance projects commonly use the `finance` topic but not GitHub's exact
+  // `ai-agents` topic (for example, established financial-agent platforms).
+  // Require agent language as well, so this broadens discovery without
+  // admitting generic finance libraries.
+  { query: `topic:finance agent in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `topic:ai-agents research in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: `"security agent" in:name,description,readme stars:>20 pushed:>${recentCutoff()} archived:false`, sort: 'updated', perPage: 15 },
   { query: '"pentest agent" in:name,description,readme stars:>100 archived:false', sort: 'stars', perPage: 15 },
