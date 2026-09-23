@@ -532,6 +532,7 @@ test('refresh keeps under-sourced professional domains eligible for GitHub Issue
 test('Finance discovery does not depend on GitHub using the exact ai-agents topic', () => {
   const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
   assert.match(ingestion, /topic:finance agent in:name,description,readme stars:>20/);
+  assert.match(ingestion, /topic:finance agent in:name,description,readme stars:>20 pushed:>\$\{recentCutoff\(\)\} archived:false`, sort: 'stars'/);
 });
 
 test('incomplete GitHub refreshes preserve the previous healthy feed', () => {
