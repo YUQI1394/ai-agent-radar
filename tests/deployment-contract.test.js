@@ -540,27 +540,32 @@ test('incomplete GitHub refreshes preserve the previous healthy feed', () => {
   assert.match(ingestion, /GitHub repository search incomplete; existing feed preserved/);
   assert.match(ingestion, /GitHub Issue scan incomplete; existing feed preserved/);
   assert.match(ingestion, /degraded: false/);
+  assert.match(ingestion, /Candidate feed did not meet production quality; retained the last verified feed/);
+  assert.match(ingestion, /const candidateHealth = assessFeed\(payload\)/);
+  assert.match(ingestion, /const priorHealth = assessFeed\(previous\)/);
 });
 
 test('scheduled refreshes fail when production demand intelligence is unhealthy', () => {
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
+  const feedHealth = fs.readFileSync(path.join(root, 'lib', 'feed-health.js'), 'utf8');
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
   const smoke = fs.readFileSync(path.join(root, 'scripts', 'smoke-test.js'), 'utf8');
-  assert.match(health, /issueCoverage: issueCoverageRatio >= 0\.5/);
-  assert.match(health, /demandEvidence: evidenceSignals >= 30/);
-  assert.match(health, /demandConfidence: repeatedPatterns >= 3 && repeatedEvidenceSignals >= 6/);
-  assert.match(health, /demandConfidence: \{ repeatedPatterns, repeatedEvidenceSignals \}/);
-  assert.match(health, /evidenceContext: contextRatio >= 0\.75/);
-  assert.match(health, /representedDomains === TARGET_DOMAINS\.length/);
-  assert.match(health, /minimumDomainCount >= 2/);
-  assert.match(health, /professionalDemandBreadth/);
-  assert.match(health, /minimumDomainEvidence >= 2/);
+  assert.match(health, /assessFeed\(payload\)/);
+  assert.match(feedHealth, /issueCoverage: issueCoverageRatio >= 0\.5/);
+  assert.match(feedHealth, /demandEvidence: evidenceSignals >= 30/);
+  assert.match(feedHealth, /demandConfidence: repeatedPatterns >= 3 && repeatedEvidenceSignals >= 6/);
+  assert.match(feedHealth, /demandConfidence: \{ repeatedPatterns, repeatedEvidenceSignals \}/);
+  assert.match(feedHealth, /evidenceContext: contextRatio >= 0\.75/);
+  assert.match(feedHealth, /representedDomains === TARGET_DOMAINS\.length/);
+  assert.match(feedHealth, /minimumDomainCount >= 2/);
+  assert.match(feedHealth, /professionalDemandBreadth/);
+  assert.match(feedHealth, /minimumDomainEvidence >= 2/);
   assert.match(smoke, /representedDomains, 8/);
   assert.match(smoke, /minimumDomainCount >= 2/);
   assert.match(smoke, /minimumDomainEvidence >= 2/);
   assert.match(smoke, /sitemapAgentCount/);
   assert.match(workflow, /professionalDemandBreadth/);
-  assert.match(health, /evidenceContext: \{ available: contextSignals/);
+  assert.match(feedHealth, /evidenceContext: \{ available: contextSignals/);
   assert.match(workflow, /Verify production data health/);
   assert.match(workflow, /for attempt in \{1\.\.12\}/);
   assert.match(workflow, /\.checks\.issueCoverage/);
@@ -577,10 +582,10 @@ test('public status makes independent demand-source diversity visible', () => {
 });
 
 test('health counts the same cleaned evidence users can actually see', () => {
-  const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
-  assert.match(health, /cleanIssueEvidence/);
-  assert.match(health, /const evidenceFor/);
-  assert.doesNotMatch(health, /sum \+ \(Array\.isArray\(agent\.evidenceIssues\) \? agent\.evidenceIssues\.length/);
+  const feedHealth = fs.readFileSync(path.join(root, 'lib', 'feed-health.js'), 'utf8');
+  assert.match(feedHealth, /cleanIssueEvidence/);
+  assert.match(feedHealth, /const evidenceFor/);
+  assert.doesNotMatch(feedHealth, /sum \+ \(Array\.isArray\(agent\.evidenceIssues\) \? agent\.evidenceIssues\.length/);
 });
 
 test('every public project and opportunity reader reapplies the current evidence rules', () => {
@@ -733,7 +738,7 @@ test('GitHub discovery broadens thin professional domains without burst concurre
   const categoryPage = fs.readFileSync(path.join(root, 'api', 'category.js'), 'utf8');
   assert.match(categoryPage, /independent project/);
   assert.match(categoryPage, /EARLY SINGLE-PROJECT EVIDENCE/);
-  const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
-  assert.match(health, /minimumDomainEvidenceSources/);
-  assert.match(health, /multiSourceDemandDomains/);
+  const feedHealth = fs.readFileSync(path.join(root, 'lib', 'feed-health.js'), 'utf8');
+  assert.match(feedHealth, /minimumDomainEvidenceSources/);
+  assert.match(feedHealth, /multiSourceDemandDomains/);
 });

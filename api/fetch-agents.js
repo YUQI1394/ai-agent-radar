@@ -4,6 +4,7 @@ const { category, enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAge
 const { githubHeaders, githubJson } = require('../lib/github-client');
 const { selectIssueTargets, underSourcedCurrentAgents } = require('../lib/ingestion-selection');
 const { cleanIssueEvidence, evidenceStrength, issueExcerpt, opportunityPattern, patternSlug } = require('../lib/opportunity-themes');
+const { assessFeed } = require('../lib/feed-health');
 
 const GITHUB_API = 'https://api.github.com';
 const recentCutoff = () => new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
@@ -270,6 +271,32 @@ module.exports = async function handler(req, res) {
     const updatedAt = new Date().toISOString();
     const ingestion = { deploymentCommit, searchesSucceeded: batches.length, searchesFailed: searchFailures, issuesSucceeded: issueBatches.length, issuesFailed: issueFailures, degraded: false };
     const payload = { updatedAt, count: agents.length, source: 'github', ingestion, agents };
+    // GitHub search ranking can briefly omit an otherwise qualified specialist
+    // project. Validate the complete candidate before replacing production so
+    // a partial scan never turns a working public site into a degraded one.
+    const candidateHealth = assessFeed(payload);
+    if (!candidateHealth.healthy && currentAgents.length) {
+      const priorHealth = assessFeed(previous);
+      if (priorHealth.healthy) {
+        const preserved = {
+          ...previous,
+          ingestion: {
+            ...(previous.ingestion || {}),
+            deploymentCommit,
+            searchesSucceeded: batches.length,
+            searchesFailed: searchFailures,
+            issuesSucceeded: issueBatches.length,
+            issuesFailed: issueFailures,
+            degraded: false,
+            preserved: true,
+            preservationReason: Object.entries(candidateHealth.checks).filter(([, passed]) => !passed).map(([name]) => name)
+          }
+        };
+        await kv.set('agents:latest', preserved);
+        console.warn('Candidate feed did not meet production quality; retained the last verified feed.', { failedChecks: preserved.ingestion.preservationReason });
+        return res.status(200).json({ ok: true, source: 'github', updatedAt: preserved.updatedAt, count: preserved.count, preserved: true, ingestion: preserved.ingestion });
+      }
+    }
     const archivedAgents = mergeArchive(Array.isArray(storedArchive?.agents) ? storedArchive.agents : [], agents, updatedAt).filter(qualifiesAsAgent);
     const report = weeklyReport(agents, updatedAt);
     const storedReports = await kv.get('weekly:reports');
