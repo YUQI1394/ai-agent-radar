@@ -1,26 +1,22 @@
 # AI Agent Radar
 
-AI Agent Radar is a free discovery site backed by Vercel Serverless Functions and Vercel KV. It searches relevant GitHub topics, filters open-source AI agent projects, ranks them using transparent repository signals, and refreshes the feed every six hours.
+AI Agent Radar is a free, GitHub-first research tool for builders deciding what to build around AI agents. It searches open-source projects and public GitHub discussions, then turns recurring friction into traceable opportunity evidence and a practical validation next step.
+
+**Live site:** [getaiagentradar.com](https://getaiagentradar.com)  
+**Original research:** [AI Agent Demand Report · October 2026](https://getaiagentradar.com/ai-agent-demand-report)
+
+The core product is free. The Radar has no paid rankings, and it treats GitHub discussion as a starting point for interviews—not proof of market size or willingness to pay.
 
 ## Features
 
-- Responsive dark neon UI with a three-column desktop and single-column mobile layout
-- Independent Radar Score plus newest and vote-based sorting
-- Every agent is available for free
-- Instant client-side search and combinable topic filtering
-- Share-on-X links for every agent
-- Skeleton loading states and ad-ready legal pages
-- Server-rendered, indexable agent detail pages
-- Dynamic XML sitemap, robots.txt, structured data, About and Contact pages
-- OIDC-authenticated GitHub ingestion every six hours
-- Faster rotating repository-specific Issue analysis with visible scan coverage
-- First-seen timestamps and a rolling 48-hour new-opportunity view
-- A server-rendered Opportunity Radar that ranks unresolved GitHub Issue evidence
-- Problem-theme filters and a three-step opportunity validation playbook
-- Indexable guided validation briefs for every qualified opportunity
-- Free Supabase authentication with Google, GitHub and email magic links
-- Account-gated, browser-saved validation progress and research notes
-- A private account workspace with offline-first progress and optional per-user Supabase cloud sync
+- Curated open-source AI agent discovery with transparent repository signals
+- Opportunity Radar: qualified public GitHub Issues, with original source links
+- Pattern Radar: cross-repository workflow friction, separated from isolated requests
+- Coach-style validation briefs and a seven-day experiment workflow
+- A private, free workspace for saved signals, notes, decisions and progress
+- RSS, metadata, structured data, sitemap and canonical URLs for transparent discovery
+- An original evidence-led demand report that summarizes recurring public friction
+- OIDC-authenticated GitHub ingestion and production health checks every six hours
 
 ## Authentication setup
 
@@ -29,6 +25,13 @@ Copy the project's public Supabase URL and publishable key into `auth-config.jso
 - Public methodology covering inclusion, scoring, evidence filters and limitations
 - Public freshness and data-health endpoint for production monitoring
 - Cache-friendly public feed API
+
+## Editorial guardrails
+
+- Source material is public GitHub metadata and public Issue discussions.
+- A qualified Issue is evidence of a problem worth investigating, not a buying signal.
+- The site does not accept paid placement or alter rankings for commercial relationships.
+- Each opportunity should be validated with direct user conversations and an observable commitment before product work begins.
 
 ## Project structure
 
