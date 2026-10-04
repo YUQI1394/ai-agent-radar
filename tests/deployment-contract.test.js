@@ -581,6 +581,16 @@ test('public status makes independent demand-source diversity visible', () => {
   assert.match(page, /single-project signal remains visible as an interview lead/i);
 });
 
+test('the original demand report provides a concrete paid-research path without gating the free core', () => {
+  const report = fs.readFileSync(path.join(root, 'ai-agent-demand-report.html'), 'utf8');
+  const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
+  assert.match(report, /ORIGINAL EVIDENCE REPORT/i);
+  assert.match(report, /\$29 pilot brief/i);
+  assert.match(report, /No automated purchase or recurring charge/i);
+  assert.match(report, /pattern\/provider-interoperability/);
+  assert.match(sitemap, /ai-agent-demand-report/);
+});
+
 test('health counts the same cleaned evidence users can actually see', () => {
   const feedHealth = fs.readFileSync(path.join(root, 'lib', 'feed-health.js'), 'utf8');
   assert.match(feedHealth, /cleanIssueEvidence/);

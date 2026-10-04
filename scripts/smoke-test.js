@@ -14,6 +14,7 @@ const pages = [
   ['/rss', 'RSS SUBSCRIPTION URL'],
   ['/methodology', 'Methodology'],
   ['/status', 'Status'],
+  ['/ai-agent-demand-report', 'AI Agent Demand Report'],
   ['/category/research', 'Research AI Agents'],
   ['/category/security', 'Security AI Agents'],
   ['/category/finance', 'Finance AI Agents'],

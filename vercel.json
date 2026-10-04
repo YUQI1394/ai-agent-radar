@@ -24,6 +24,10 @@
       "destination": "/status.html"
     },
     {
+      "source": "/ai-agent-demand-report",
+      "destination": "/ai-agent-demand-report.html"
+    },
+    {
       "source": "/agent/:slug",
       "destination": "/api/agent?slug=:slug"
     },
