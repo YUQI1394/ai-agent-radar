@@ -187,6 +187,19 @@ test('archive retains missing projects and marks current projects', () => {
   assert.equal(merged.find((item) => item.id === 2).status, 'archived');
 });
 
+test('archive stays bounded while always retaining the current feed', () => {
+  const old = Array.from({ length: 12 }, (_, index) => agent({
+    id: index + 10,
+    name: `Archived ${index}`,
+    lastSeenAt: new Date(Date.UTC(2026, 8, index + 1)).toISOString()
+  }));
+  const current = [agent({ id: 1 }), agent({ id: 2, name: 'Current Two' })];
+  const merged = mergeArchive(old, current, '2026-10-13T00:00:00.000Z', 5);
+  assert.equal(merged.length, 5);
+  assert.deepEqual(merged.slice(0, 2).map((item) => item.id), [1, 2]);
+  assert.ok(merged.slice(2).every((item) => item.status === 'archived'));
+});
+
 test('curated selection preserves professional-domain representation', () => {
   const coding = Array.from({ length: 36 }, (_, index) => agent({ id: index + 1, category: 'Coding', score: { total: 100 - index }, stars: 1000 - index }));
   const specialist = [

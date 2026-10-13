@@ -27,14 +27,17 @@ module.exports = async function handler(req, res) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Opportunity storage is not configured');
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
-    const [latest, archive] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive')]);
-    const currentAgentIds = new Set((latest?.agents || []).map((agent) => String(agent.id || agent.slug || agent.name)));
-    const agentsById = new Map();
-    [...(archive?.agents || []), ...(latest?.agents || [])].forEach((agent) => agentsById.set(String(agent.id || agent.slug || agent.name), agent));
-    const match = findOpportunity([...agentsById.values()], id);
+    const latest = await kv.get('agents:latest');
+    const currentAgents = latest?.agents || [];
+    let match = findOpportunity(currentAgents, id);
+    let historicalSignal = false;
+    if (!match) {
+      const archive = await kv.get('agents:archive');
+      match = findOpportunity(archive?.agents || [], id);
+      historicalSignal = Boolean(match);
+    }
     if (!match) return sendNotFound(res, { headline: 'This opportunity signal has gone quiet.', message: 'The source Issue may have closed or left the current curated feed. Explore current evidence before starting a new validation.' });
     const { agent, issue } = match;
-    const historicalSignal = !currentAgentIds.has(String(agent.id || agent.slug || agent.name));
     if (historicalSignal) {
       res.setHeader('X-Robots-Tag', 'noindex, follow');
       const send = res.send.bind(res);

@@ -317,11 +317,27 @@ test('opportunities lead directly into the free guided execution sprint', () => 
 
 test('archived opportunity signals are preserved but not indexed or promoted as current', () => {
   const detail = fs.readFileSync(path.join(root, 'api', 'opportunity.js'), 'utf8');
-  assert.match(detail, /currentAgentIds/);
+  assert.match(detail, /if \(!match\)[\s\S]*kv\.get\('agents:archive'\)/);
   assert.match(detail, /historicalSignal/);
   assert.match(detail, /Historical signal · no longer in the current curated feed/);
   assert.match(detail, /X-Robots-Tag', 'noindex, follow'/);
   assert.match(detail, /Browse current opportunities/);
+});
+
+test('current public intelligence avoids full archive reads', () => {
+  for (const file of ['opportunities.js', 'patterns.js']) {
+    const source = fs.readFileSync(path.join(root, 'api', file), 'utf8');
+    assert.match(source, /kv\.get\('agents:latest'\)/);
+    assert.doesNotMatch(source, /kv\.get\('agents:archive'\)/);
+  }
+  for (const file of ['agent.js', 'opportunity.js']) {
+    const source = fs.readFileSync(path.join(root, 'api', file), 'utf8');
+    assert.match(source, /if \(!currentAgent|if \(!match/);
+    assert.match(source, /kv\.get\('agents:archive'\)/);
+  }
+  const radar = fs.readFileSync(path.join(root, 'lib', 'radar.js'), 'utf8');
+  assert.match(radar, /limit = 180/);
+  assert.match(radar, /slice\(0, Math\.max\(currentAgents\.length, limit\)\)/);
 });
 
 test('registration explains the concrete free outcome before asking users to sign in', () => {
@@ -679,7 +695,6 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   assert.match(patterns, /opportunityPattern/);
   assert.match(patterns, /Specific problems/);
   assert.match(patterns, /evidenceEngagement/);
-  assert.match(patterns, /agent\.status === 'archived'/);
   assert.match(patterns, /patternDetail\(selected\)/);
   assert.match(patterns, /COACH-STYLE FIRST TEST/);
   assert.match(patterns, /EVIDENCE, NOT A PROMISE/);
@@ -691,7 +706,6 @@ test('pattern intelligence uses qualified evidence and leads to an executable te
   const detail = fs.readFileSync(path.join(root, 'api', 'opportunity.js'), 'utf8');
   assert.match(detail, /coach\.pattern\.name/);
   const opportunities = fs.readFileSync(path.join(root, 'api', 'opportunities.js'), 'utf8');
-  assert.match(opportunities, /agent\.status === 'archived'/);
   assert.match(opportunities, /current curated feed/);
   assert.match(opportunities, /activePattern/);
   assert.match(opportunities, /item\.pattern === activePattern/);

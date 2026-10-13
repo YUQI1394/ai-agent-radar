@@ -160,13 +160,18 @@ module.exports = async function handler(req, res) {
 
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
-    const [payload, archive] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive')]);
+    const payload = await kv.get('agents:latest');
     const requested = String(req.query.slug || '');
     const currentAgents = payload?.agents || [];
-    const archiveAgents = archive?.agents || [];
     const currentAgent = currentAgents.find((item) => String(item.slug) === requested || String(item.id) === requested);
-    const archivedAgent = archiveAgents.find((item) => String(item.slug) === requested || String(item.id) === requested);
     if (!currentAgent && isRetiredLegacySlug(requested)) return sendGone(res);
+    // Current project pages are the common path. Only pay the archive read
+    // cost when a requested project is no longer in the current feed.
+    let archivedAgent = null;
+    if (!currentAgent) {
+      const archive = await kv.get('agents:archive');
+      archivedAgent = (archive?.agents || []).find((item) => String(item.slug) === requested || String(item.id) === requested) || null;
+    }
     if (!currentAgent && archivedAgent && !isGitHubBacked(archivedAgent)) return sendGone(res);
     const agent = currentAgent || archivedAgent;
     if (!agent) return sendNotFound(res, { headline: 'Agent project not found.', message: 'The repository may have moved, been archived or fallen outside the current open-source quality rules.', primaryHref: '/', primaryLabel: 'Browse current projects' });

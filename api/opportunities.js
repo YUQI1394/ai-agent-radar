@@ -34,10 +34,12 @@ module.exports = async function handler(req, res) {
   if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Opportunity storage is not configured');
   try {
     const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
-    const [latest, archive] = await Promise.all([kv.get('agents:latest'), kv.get('agents:archive')]);
+    // The public radar only promotes the current curated feed. Reading the
+    // multi-month archive here made every cache miss transfer megabytes of
+    // data without changing the result, exhausting the free KV bandwidth.
+    const latest = await kv.get('agents:latest');
     const agentsById = new Map();
-    [...(archive?.agents || []), ...(latest?.agents || [])].forEach((agent) => {
-      if (agent.status === 'archived') return;
+    (latest?.agents || []).forEach((agent) => {
       agentsById.set(String(agent.id || agent.slug || agent.name), agent);
     });
     const seen = new Set();
