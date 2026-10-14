@@ -559,12 +559,19 @@ test('incomplete GitHub refreshes preserve the previous healthy feed', () => {
   assert.match(ingestion, /Candidate feed did not meet production quality; retained the last verified feed/);
   assert.match(ingestion, /const candidateHealth = assessFeed\(payload\)/);
   assert.match(ingestion, /const priorHealth = assessFeed\(previous\)/);
+  assert.match(ingestion, /const priorHealth = assessFeed\(previous\)/);
+  assert.match(ingestion, /const recoveryLimit = priorHealth\.healthy \? undefined : 48/);
+  assert.match(ingestion, /selectIssueTargets\(candidates, currentAgents, archiveHistory, recoveryLimit\)/);
+  assert.match(ingestion, /searchFailures && priorHealth\.healthy/);
+  assert.match(ingestion, /\[\.\.\.archiveHistory, \.\.\.currentAgents\]\.forEach/);
+  assert.match(ingestion, /allSettledLimited\(issueTargets,[\s\S]*?, 4\)/);
 });
 
 test('scheduled refreshes fail when production demand intelligence is unhealthy', () => {
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
   const feedHealth = fs.readFileSync(path.join(root, 'lib', 'feed-health.js'), 'utf8');
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
+  const validation = fs.readFileSync(path.join(root, 'scripts', 'validate-static-feed.js'), 'utf8');
   const smoke = fs.readFileSync(path.join(root, 'scripts', 'smoke-test.js'), 'utf8');
   assert.match(health, /assessFeed\(payload\)/);
   assert.match(feedHealth, /issueCoverage: issueCoverageRatio >= 0\.5/);
@@ -580,12 +587,12 @@ test('scheduled refreshes fail when production demand intelligence is unhealthy'
   assert.match(smoke, /minimumDomainCount >= 2/);
   assert.match(smoke, /minimumDomainEvidence >= 2/);
   assert.match(smoke, /sitemapAgentCount/);
-  assert.match(workflow, /professionalDemandBreadth/);
+  assert.match(validation, /assessFeed\(payload\)/);
+  assert.match(validation, /if \(!assessment\.healthy\)/);
+  assert.match(workflow, /node scripts\/validate-static-feed\.js/);
   assert.match(feedHealth, /evidenceContext: \{ available: contextSignals/);
-  assert.match(workflow, /Verify production data health/);
-  assert.match(workflow, /for attempt in \{1\.\.12\}/);
-  assert.match(workflow, /\.checks\.issueCoverage/);
-  assert.match(workflow, /\.checks\.demandEvidence/);
+  assert.match(workflow, /Verify generated feed and application/);
+  assert.ok(workflow.indexOf('Generate verified static feed') < workflow.indexOf('Publish changed feed'));
 });
 
 test('public status makes independent demand-source diversity visible', () => {
@@ -624,25 +631,23 @@ test('every public project and opportunity reader reapplies the current evidence
   assert.match(opportunity, /cleanIssueEvidence\(agent\.evidenceIssues \|\| \[\]\)\.find/);
 });
 
-test('push refreshes wait for the matching production deployment', () => {
+test('scheduled refreshes publish a repository-backed feed without Redis', () => {
   const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'refresh-agents.yml'), 'utf8');
   const health = fs.readFileSync(path.join(root, 'api', 'health.js'), 'utf8');
-  const ingestion = fs.readFileSync(path.join(root, 'api', 'fetch-agents.js'), 'utf8');
+  const store = fs.readFileSync(path.join(root, 'lib', 'static-store.js'), 'utf8');
   const smokeWorkflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'production-smoke.yml'), 'utf8');
   assert.match(health, /VERCEL_GIT_COMMIT_SHA/);
   assert.match(health, /deployment-ready/);
-  assert.match(health, /refreshDeployment: payload\?\.ingestion\?\.deploymentCommit === deploymentCommit/);
-  assert.match(ingestion, /x-expected-commit/);
-  assert.match(workflow, /EXPECTED_COMMIT: \$\{\{ github\.sha \}\}/);
-  assert.match(workflow, /X-Expected-Commit/);
-  assert.match(workflow, /\.ingestion\.deploymentCommit == \$commit/);
-  assert.match(workflow, /stale function; retrying/);
-  assert.match(workflow, /checks\.refreshDeployment/);
-  assert.match(workflow, /deploymentCommit/);
-  assert.match(workflow, /health\?deployment=1/);
+  assert.match(health, /storageMode: 'repository-static'/);
+  assert.match(store, /agents\.json/);
+  assert.match(store, /weekly-reports\.json/);
+  assert.match(workflow, /contents: write/);
+  assert.match(workflow, /node scripts\/refresh-static-feed\.js/);
+  assert.match(workflow, /git add data\/agents\.json data\/archive\.json data\/weekly-reports\.json/);
+  assert.doesNotMatch(workflow, /KV_REST_API/);
+  assert.doesNotMatch(workflow, /Upstash/);
   assert.match(smokeWorkflow, /health\?deployment=1/);
-  assert.doesNotMatch(workflow, /push:\s*\n\s+branches: \[main\]\s*\n\s+paths:/);
-  assert.ok(workflow.indexOf('Wait for matching production deployment') < workflow.indexOf('Refresh production feed'));
+  assert.doesNotMatch(workflow, /push:/);
 });
 
 test('production smoke monitoring covers the public conversion journey', () => {

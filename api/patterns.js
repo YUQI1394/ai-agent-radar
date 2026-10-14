@@ -1,4 +1,4 @@
-const { createClient } = require('@vercel/kv');
+const { createClient } = require('../lib/static-store');
 const { cleanIssueEvidence, coachingPlan, evidenceEngagement, evidenceStrength, opportunityPattern, patternSlug } = require('../lib/opportunity-themes');
 const { sendNotFound } = require('../lib/http-pages');
 
@@ -28,9 +28,8 @@ function patternDetail(pattern) {
 
 module.exports = async function handler(req, res) {
   if (!['GET', 'HEAD'].includes(req.method)) return res.status(405).send('Method not allowed');
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Pattern storage is not configured');
   try {
-    const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
+    const kv = createClient();
     // Patterns describe current demand. The archive is intentionally omitted
     // so public crawls do not download the full historical dataset.
     const latest = await kv.get('agents:latest');

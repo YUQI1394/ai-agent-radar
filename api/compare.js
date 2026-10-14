@@ -1,4 +1,4 @@
-const { createClient } = require('@vercel/kv');
+const { createClient } = require('../lib/static-store');
 const { category, peers, scoreBreakdown } = require('../lib/radar');
 const { cleanIssueEvidence, evidenceStrength, opportunityPattern } = require('../lib/opportunity-themes');
 const { isRetiredLegacySlug, sendGone, sendNotFound } = require('../lib/http-pages');
@@ -33,7 +33,7 @@ function validationAction(agent, profile) {
 module.exports = async function handler(req, res) {
   if (!['GET', 'HEAD'].includes(req.method)) return res.status(405).send('Method not allowed');
   try {
-    const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
+    const kv = createClient();
     const payload = await kv.get('agents:latest');
     const agents = Array.isArray(payload?.agents) ? payload.agents : [];
     const requested = String(req.query.agents || '').split(',').map((value) => String(value).trim()).filter(Boolean).slice(0, 2);

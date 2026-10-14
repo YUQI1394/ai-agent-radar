@@ -1,4 +1,4 @@
-const { kv } = require('@vercel/kv');
+const { kv } = require('../lib/static-store');
 const crypto = require('crypto');
 const { category, enrichAgents, mergeArchive, qualifiesAsAgent, selectCuratedAgents, weeklyReport } = require('../lib/radar');
 const { githubHeaders, githubJson } = require('../lib/github-client');
@@ -214,19 +214,31 @@ module.exports = async function handler(req, res) {
 
   try {
     const apiToken = String(req.headers['x-github-token'] || '');
-    const searches = SEARCHES();
-    const searchResults = await allSettledLimited(searches, (search) => searchRepositories(search, apiToken));
-    const batches = searchResults.filter((result) => result.status === 'fulfilled').map((result) => result.value);
-    const searchFailures = searchResults.length - batches.length;
-    if (!batches.length) throw new Error('All GitHub repository searches failed; existing feed preserved');
-    if (searchFailures) throw new Error('GitHub repository search incomplete; existing feed preserved');
-    searchResults.filter((result) => result.status === 'rejected').forEach((result) => console.warn('GitHub search degraded:', result.reason?.message));
-    const unique = new Map();
-    batches.flat().forEach((repo) => unique.set(repo.id, normalize(repo)));
     const previous = await kv.get('agents:latest');
     const storedArchive = await kv.get('agents:archive');
     const currentAgents = Array.isArray(previous?.agents) ? previous.agents : [];
     const archiveHistory = Array.isArray(storedArchive?.agents) ? storedArchive.agents : [];
+    const priorHealth = assessFeed(previous);
+    const recoveryPoolSize = new Set([...archiveHistory, ...currentAgents].map((agent) => String(agent.id || agent.slug || agent.name))).size;
+    const searches = SEARCHES();
+    const searchResults = await allSettledLimited(searches, (search) => searchRepositories(search, apiToken));
+    const batches = searchResults.filter((result) => result.status === 'fulfilled').map((result) => result.value);
+    const searchFailures = searchResults.length - batches.length;
+    searchResults.filter((result) => result.status === 'rejected').forEach((result) => console.warn('GitHub search degraded:', result.reason?.message));
+    // Never replace a healthy feed from an incomplete repository search. For
+    // an unhealthy-but-populated feed, however, continue using its current
+    // projects so a transient Search API limit cannot block evidence recovery.
+    if (!batches.length && (priorHealth.healthy || recoveryPoolSize < 20)) throw new Error('All GitHub repository searches failed; existing feed preserved');
+    if (searchFailures && priorHealth.healthy) throw new Error('GitHub repository search incomplete; existing feed preserved');
+    const unique = new Map();
+    batches.flat().forEach((repo) => unique.set(repo.id, normalize(repo)));
+    if (searchFailures) {
+      // A degraded Search API must never shrink the current catalog. Restore
+      // the bounded static archive before rotating Issue evidence.
+      [...archiveHistory, ...currentAgents].forEach((agent) => {
+        if (!unique.has(agent.id)) unique.set(agent.id, agent);
+      });
+    }
     // A current professional domain with only one qualifying evidence source
     // must remain eligible for an Issue scan even if today's repository search
     // did not return that exact project again.
@@ -235,11 +247,16 @@ module.exports = async function handler(req, res) {
     });
     const historyByName = new Map([...archiveHistory, ...currentAgents].map((agent) => [String(agent.name).toLowerCase(), agent]));
     const candidates = [...unique.values()].filter(qualifiesAsAgent).map((agent) => ({ ...agent, category: agent.category || category(agent) }));
-    const issueTargets = selectIssueTargets(candidates, currentAgents, archiveHistory);
-    const issueResults = await Promise.allSettled(issueTargets.map(async (agent) => ({
+    // A normal six-hour refresh rotates a small request budget. When the last
+    // feed is absent or unhealthy (for example after a storage migration), do
+    // one bounded full-current scan so production cannot remain half-empty for
+    // several refresh cycles.
+    const recoveryLimit = priorHealth.healthy ? undefined : 48;
+    const issueTargets = selectIssueTargets(candidates, currentAgents, archiveHistory, recoveryLimit);
+    const issueResults = await allSettledLimited(issueTargets, async (agent) => ({
       repository: agent.name,
       issues: await fetchRepositoryIssues(agent.name, apiToken)
-    })));
+    }), 4);
     const issueBatches = issueResults.filter((result) => result.status === 'fulfilled').map((result) => result.value);
     const issueFailures = issueResults.length - issueBatches.length;
     issueResults.filter((result) => result.status === 'rejected').forEach((result) => console.warn('GitHub Issue scan degraded:', result.reason?.message));

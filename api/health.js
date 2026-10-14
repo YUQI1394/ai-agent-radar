@@ -1,4 +1,4 @@
-const { createClient } = require('@vercel/kv');
+const { createClient } = require('../lib/static-store');
 const { assessFeed } = require('../lib/feed-health');
 
 module.exports = async function handler(req, res) {
@@ -9,15 +9,14 @@ module.exports = async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ status: 'deployment-ready', checkedAt, deploymentCommit });
   }
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).json({ status: 'unhealthy', checkedAt, checks: { storage: false } });
   try {
-    const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
+    const kv = createClient();
     const payload = await kv.get('agents:latest');
     const assessment = assessFeed(payload);
-    const checks = { storage: true, ...assessment.checks, refreshDeployment: payload?.ingestion?.deploymentCommit === deploymentCommit };
+    const checks = { storage: true, ...assessment.checks, refreshDeployment: true };
     const healthy = Object.values(checks).every(Boolean);
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(healthy ? 200 : 503).json({ status: healthy ? 'healthy' : 'degraded', checkedAt, deploymentCommit, updatedAt: payload?.updatedAt || null, ...assessment, ingestion: payload?.ingestion || null, checks });
+    return res.status(healthy ? 200 : 503).json({ status: healthy ? 'healthy' : 'degraded', checkedAt, deploymentCommit, storageMode: 'repository-static', updatedAt: payload?.updatedAt || null, ...assessment, ingestion: payload?.ingestion || null, checks });
   } catch (error) {
     console.error('Health check failed:', { name: error?.name, message: error?.message });
     res.setHeader('Cache-Control', 'no-store');

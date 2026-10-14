@@ -1,4 +1,4 @@
-const { createClient } = require('@vercel/kv');
+const { createClient } = require('../lib/static-store');
 const { cleanIssueEvidence } = require('../lib/opportunity-themes');
 const { category } = require('../lib/radar');
 
@@ -38,11 +38,9 @@ module.exports = async function handler(req, res) {
 
   let payload = { updatedAt: new Date().toISOString(), agents: [] };
   try {
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-      const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
-      const stored = await kv.get('agents:latest');
-      if (stored && typeof stored === 'object') payload = stored;
-    }
+    const kv = createClient();
+    const stored = await kv.get('agents:latest');
+    if (stored && typeof stored === 'object') payload = stored;
   } catch (error) {
     console.error('RSS feed lookup failed:', { name: error?.name, message: error?.message });
   }

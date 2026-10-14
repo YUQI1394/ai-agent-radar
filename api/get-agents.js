@@ -1,4 +1,4 @@
-const { createClient } = require('@vercel/kv');
+const { createClient } = require('../lib/static-store');
 const { cleanIssueEvidence, evidenceConfidence, opportunityPattern } = require('../lib/opportunity-themes');
 
 module.exports = async function handler(req, res) {
@@ -7,19 +7,8 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-
-  if (!url || !token) {
-    const missing = [];
-    if (!url) missing.push('KV_REST_API_URL');
-    if (!token) missing.push('KV_REST_API_TOKEN');
-    console.error(`KV configuration missing: ${missing.join(', ')}`);
-    return res.status(503).json({ error: 'Agent storage is not configured', missing });
-  }
-
   try {
-    const kv = createClient({ url, token });
+    const kv = createClient();
     const stored = await kv.get('agents:latest');
     const payload = stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {};
     const cleanedAgents = (Array.isArray(payload.agents) ? payload.agents : []).map((agent) => {
@@ -50,7 +39,7 @@ module.exports = async function handler(req, res) {
       agents
     });
   } catch (error) {
-    console.error('KV read failed:', { name: error?.name, message: error?.message });
+    console.error('Static feed read failed:', { name: error?.name, message: error?.message });
     return res.status(500).json({
       error: 'Unable to read the agent feed',
       detail: process.env.VERCEL_ENV === 'development' ? error?.message : undefined

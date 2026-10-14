@@ -62,7 +62,7 @@ Copy the project's public Supabase URL and publishable key into `auth-config.jso
 
 ## Deploy to Vercel
 
-1. The included GitHub Actions workflow supplies its short-lived, read-only token to each authenticated refresh. No persistent GitHub token is required for scheduled production updates.
+1. The included GitHub Actions workflow uses its short-lived repository token to generate `data/*.json` every six hours. No persistent GitHub token or external database is required.
 2. Push this directory to a Git repository and import the repository in Vercel, or run:
 
    ```bash
@@ -72,24 +72,11 @@ Copy the project's public Supabase URL and publishable key into `auth-config.jso
 
    Vercel CLI is intentionally not stored as a project dependency because it is not needed at runtime. `npm run dev` downloads the current CLI only for that local session.
 
-3. Connect storage:
-   - If the project already has a legacy/migrated Vercel KV store, connect that store to the project. Its `KV_REST_API_URL` and `KV_REST_API_TOKEN` variables work directly with `@vercel/kv`.
-   - For a new project, Vercel no longer provisions first-party KV stores. Install **Upstash Redis** from the Vercel Marketplace, then map its REST URL and REST token to environment variables named `KV_REST_API_URL` and `KV_REST_API_TOKEN`. This preserves the requested `@vercel/kv` API used by this project.
-4. In **Settings → Environment Variables**, add:
+3. No Redis, Vercel KV or other public-content database is required. Vercel bundles the verified repository data with every deployment and serves the public pages through its cache/CDN.
+4. In repository settings, keep GitHub Actions enabled with read/write workflow permissions. The workflow itself declares the narrower `contents: write` permission used to commit refreshed data.
+5. Open the production URL. GitHub Actions refreshes the feed automatically at `00:00`, `06:00`, `12:00`, and `18:00` UTC. Each data commit triggers a normal Vercel deployment and production verification.
 
-   - `GITHUB_TOKEN`: optional read-only GitHub API token for local or manually triggered refreshes.
-   - `KV_REST_API_URL` and `KV_REST_API_TOKEN`: only add these manually when your storage integration did not inject variables with these exact names.
-
-5. Redeploy after adding the environment variables.
-6. The GitHub Actions workflow authenticates with a short-lived OIDC token and refreshes the feed automatically. To permit manual authenticated refreshes too, optionally set `CRON_SECRET` in Vercel and send:
-
-   ```bash
-   curl --fail -H "Authorization: Bearer YOUR_CRON_SECRET" https://getaiagentradar.com/api/fetch-agents
-   ```
-
-7. Open the production URL. GitHub Actions refreshes the feed automatically at `00:00`, `06:00`, `12:00`, and `18:00` UTC.
-
-For local development, link the folder to the Vercel project so its development environment is available, then run `npm run dev`. You can also create a `.env.local` containing the optional `GITHUB_TOKEN` and the KV variables; never commit that file.
+For local development, link the folder to the Vercel project and run `npm run dev`. To regenerate the feed locally, expose a temporary read-only `GITHUB_TOKEN` in the shell and run `node scripts/refresh-static-feed.js`; never commit credentials.
 
 ## API responses
 

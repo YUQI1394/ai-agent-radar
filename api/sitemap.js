@@ -1,4 +1,4 @@
-const { createClient } = require('@vercel/kv');
+const { createClient } = require('../lib/static-store');
 const { category, weekKey } = require('../lib/radar');
 const { cleanIssueEvidence, opportunityPattern, patternSlug } = require('../lib/opportunity-themes');
 
@@ -30,15 +30,13 @@ module.exports = async function handler(req, res) {
   let reportDates = [];
   let updatedAt = new Date().toISOString();
   try {
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-      const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
-      const [payload, reports] = await Promise.all([kv.get('agents:latest'), kv.get('weekly:reports')]);
-      agents = Array.isArray(payload?.agents) ? payload.agents : [];
-      updatedAt = payload?.updatedAt || updatedAt;
-      reportDates = reports && typeof reports === 'object' && !Array.isArray(reports) ? Object.keys(reports) : [];
-      const currentWeek = weekKey(updatedAt);
-      if (!reportDates.includes(currentWeek)) reportDates.push(currentWeek);
-    }
+    const kv = createClient();
+    const [payload, reports] = await Promise.all([kv.get('agents:latest'), kv.get('weekly:reports')]);
+    agents = Array.isArray(payload?.agents) ? payload.agents : [];
+    updatedAt = payload?.updatedAt || updatedAt;
+    reportDates = reports && typeof reports === 'object' && !Array.isArray(reports) ? Object.keys(reports) : [];
+    const currentWeek = weekKey(updatedAt);
+    if (!reportDates.includes(currentWeek)) reportDates.push(currentWeek);
   } catch (error) {
     console.error('Sitemap agent lookup failed:', { name: error?.name, message: error?.message });
   }

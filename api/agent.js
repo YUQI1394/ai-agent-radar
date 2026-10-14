@@ -1,4 +1,4 @@
-const { createClient } = require('@vercel/kv');
+const { createClient } = require('../lib/static-store');
 const { scoreBreakdown } = require('../lib/radar');
 const { cleanIssueEvidence } = require('../lib/opportunity-themes');
 const { isRetiredLegacySlug, sendGone, sendNotFound } = require('../lib/http-pages');
@@ -156,10 +156,8 @@ module.exports = async function handler(req, res) {
     res.setHeader('Allow', 'GET');
     return res.status(405).send('Method not allowed');
   }
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Agent storage is not configured');
-
   try {
-    const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
+    const kv = createClient();
     const payload = await kv.get('agents:latest');
     const requested = String(req.query.slug || '');
     const currentAgents = payload?.agents || [];

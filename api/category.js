@@ -1,4 +1,4 @@
-const { createClient } = require('@vercel/kv');
+const { createClient } = require('../lib/static-store');
 const { category, scoreBreakdown } = require('../lib/radar');
 const { cleanIssueEvidence, evidenceStrength, opportunityPattern } = require('../lib/opportunity-themes');
 const { sendNotFound } = require('../lib/http-pages');
@@ -27,9 +27,8 @@ module.exports = async function handler(req, res) {
   const slug = String(req.query.slug || '').toLowerCase();
   const domain = DOMAINS[slug];
   if (!domain) return sendNotFound(res, { headline: 'Professional field not found.', primaryHref: '/', primaryLabel: 'Browse all professional fields' });
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Agent storage is not configured');
   try {
-    const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
+    const kv = createClient();
     const payload = await kv.get('agents:latest');
     const agents = (payload?.agents || []).filter((agent) => category(agent) === domain.name)
       .sort((a, b) => Number(b.score?.total || scoreBreakdown(b).total) - Number(a.score?.total || scoreBreakdown(a).total));

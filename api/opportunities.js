@@ -1,4 +1,4 @@
-const { createClient } = require('@vercel/kv');
+const { createClient } = require('../lib/static-store');
 const { category, scoreBreakdown } = require('../lib/radar');
 const { cleanIssueEvidence, evidenceConfidence, evidenceEngagement, evidenceFreshness, evidenceStrength, opportunityPattern, opportunityTheme } = require('../lib/opportunity-themes');
 
@@ -31,9 +31,8 @@ function opportunityCard(item, index) {
 
 module.exports = async function handler(req, res) {
   if (!['GET', 'HEAD'].includes(req.method)) return res.status(405).send('Method not allowed');
-  if (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) return res.status(503).send('Opportunity storage is not configured');
   try {
-    const kv = createClient({ url: process.env.KV_REST_API_URL, token: process.env.KV_REST_API_TOKEN });
+    const kv = createClient();
     // The public radar only promotes the current curated feed. Reading the
     // multi-month archive here made every cache miss transfer megabytes of
     // data without changing the result, exhausting the free KV bandwidth.
