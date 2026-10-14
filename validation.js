@@ -8,27 +8,18 @@
     link.textContent = 'Patterns';
     nav.querySelector('[href="/weekly"]')?.before(link);
   }
-  if (nav && !nav.querySelector('[href="/workspace"]')) {
-    const link = document.createElement('a');
-    link.href = '/workspace';
-    link.textContent = 'Workspace';
-    nav.querySelector('[href="/weekly"]')?.before(link);
-  }
-  const auth = await window.RadarAuth.ready;
   const opportunityId = location.pathname.split('/').filter(Boolean).pop();
   const historicalSignal = document.body.dataset.signalStatus === 'historical';
-  if (!auth.user) {
+  if (historicalSignal) {
     const gate = document.createElement('section');
     gate.className = 'auth-gate';
     gate.id = 'validation-start';
-    gate.innerHTML = historicalSignal
-      ? '<span class="eyebrow">HISTORICAL SIGNAL</span><h2>Start from current evidence</h2><p>This brief is preserved for reference, but it has left the current curated feed. Choose a live signal before beginning a new sprint.</p><a class="button button-primary" href="/opportunities">Browse current opportunities</a>'
-      : `<span class="eyebrow">FREE 7-DAY VALIDATION SPRINT</span><h2>Leave with evidence—not another saved link</h2><p>Your free workspace turns this exact GitHub need into a concrete next action and a Build, Narrow or Stop decision.</p><ul class="auth-benefits"><li><strong>Today:</strong> a problem hypothesis and first action</li><li><strong>This week:</strong> structured interview records, evidence counts and reminders</li><li><strong>At the end:</strong> a decision based on behavior, not opinions</li></ul><a class="button button-primary" href="/login?next=${encodeURIComponent(`${location.pathname}#validation-start`)}">Start this sprint free</a><small>No payment · private notes · cloud sync</small>`;
+    gate.innerHTML = '<span class="eyebrow">HISTORICAL SIGNAL</span><h2>Start from current evidence</h2><p>This brief is preserved for reference, but it has left the current curated feed. Choose a live signal before beginning a new sprint.</p><a class="button button-primary" href="/opportunities">Browse current opportunities</a>';
     grid.before(gate);
     return;
   }
-  const storageKey = `${auth.storagePrefix('validation')}${opportunityId}`;
-  const cloud = await window.RadarCloud.ready;
+  const storageKey = `ai-agent-radar:validation:${opportunityId}`;
+  const cloud = { available: false };
   const steps = [...grid.querySelectorAll('article')];
   const stepActions = steps.map((card) => String(card.dataset.nextAction || card.querySelector('h2')?.textContent || '').trim().slice(0, 180));
   let state = { completed: [], notes: '' };
@@ -52,7 +43,7 @@
   const workspace = document.createElement('section');
   workspace.className = 'validation-workspace';
   workspace.id = 'validation-start';
-  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">YOUR PRIVATE WORKSPACE</span><h2>Validation progress</h2><p>${cloud.available ? 'Securely synced to your free account.' : 'Saved locally; cloud sync will retry when available.'}</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Your decision<select id="validation-decision" aria-describedby="validation-verdict"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><div class="evidence-scorecard"><div><span class="analysis-label">EVIDENCE CHECK</span><strong id="validation-evidence-score">0 / 5 proof gates</strong></div><ul id="validation-evidence-gates"></ul><p id="validation-verdict" aria-live="polite"></p></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-primary" type="button" data-copy-outreach>Copy interview outreach</button><button class="button button-secondary" type="button" data-add-calendar disabled>Add action to calendar</button><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
+  workspace.innerHTML = `<div class="workspace-heading"><div><span class="analysis-label">NO-ACCOUNT VALIDATION TOOL</span><h2>Validation progress</h2><p>Private by default: saved only in this browser. Export notes anytime.</p></div><strong class="workspace-progress" aria-live="polite">0 / ${steps.length}</strong></div><div class="validation-plan"><label for="validation-next-action">Next concrete action<input id="validation-next-action" type="text" maxlength="180" placeholder="Example: Interview two maintainers about timeout recovery"></label><label for="validation-due">Target date<input id="validation-due" type="date"></label><label for="validation-decision">Your decision<select id="validation-decision" aria-describedby="validation-verdict"><option value="">Undecided</option><option value="build">Build</option><option value="narrow">Narrow</option><option value="stop">Stop</option></select></label></div><div class="evidence-scorecard"><div><span class="analysis-label">EVIDENCE CHECK</span><strong id="validation-evidence-score">0 / 5 proof gates</strong></div><ul id="validation-evidence-gates"></ul><p id="validation-verdict" aria-live="polite"></p></div><label for="validation-notes">Interview and experiment notes</label><textarea id="validation-notes" rows="7" placeholder="Capture exact user language, current workarounds, frequency, cost and behavioral evidence..."></textarea><div class="workspace-actions"><button class="button button-primary" type="button" data-copy-outreach>Copy interview outreach</button><button class="button button-secondary" type="button" data-add-calendar disabled>Add action to calendar</button><button class="button button-secondary" type="button" data-copy-notes>Copy notes</button><button class="workspace-reset" type="button" data-reset-progress>Reset progress</button><span class="workspace-saved" aria-live="polite"></span></div>`;
   workspace.querySelector('.validation-plan').insertAdjacentHTML('beforeend', `<label for="validation-interviews">User interviews<input id="validation-interviews" type="number" min="0" max="20" inputmode="numeric" aria-describedby="validation-readiness"></label><label for="validation-commitments">Behavioral commitments<input id="validation-commitments" type="number" min="0" max="20" inputmode="numeric" aria-describedby="validation-readiness"></label>`);
   workspace.querySelector('[for="validation-notes"]').insertAdjacentHTML('beforebegin', `<div class="readiness-guidance" id="validation-readiness" aria-live="polite"></div>`);
   workspace.querySelector('#validation-notes').insertAdjacentHTML('afterend', `<section class="interview-log" aria-labelledby="interview-log-title"><div class="interview-log-heading"><div><span class="analysis-label">STRUCTURED INTERVIEW EVIDENCE</span><h3 id="interview-log-title">Record what happened—not who said it</h3><p>Use roles instead of names. A complete record needs a recent incident and the current workaround or cost.</p></div><button class="button button-secondary" type="button" data-add-interview>Add interview record</button></div><div id="interview-log-status" class="interview-log-status" aria-live="polite"></div><div id="interview-log-list" class="interview-log-list"></div></section>`);

@@ -55,7 +55,7 @@ module.exports = async function handler(req, res) {
       .replace('<section class="pros-limits">', `<section class="comparison-demand-grid">${demandPanel(first, demandA)}${demandPanel(second, demandB)}</section><section class="pros-limits">`);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=3600');
-    return res.status(200).send(enrichedHtml.replace('</body>', '<script src="/analytics.js"></script></body>'));
+    return res.status(200).send(enrichedHtml.replace('<a href="/workspace">Workspace</a>', '').replace('<a href="/login">Sign in</a>', '').replace('<a href="/workspace">Workspace</a><span>·</span>', '').replace('</body>', '<script src="/analytics.js"></script></body>'));
   } catch (error) {
     console.error('Comparison failed:', { name: error?.name, message: error?.message });
     return res.status(500).send('Unable to render comparison');

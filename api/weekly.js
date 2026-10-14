@@ -117,10 +117,6 @@ module.exports = async function handler(req, res) {
       .status(200)
       .send(
         html
-          .replace(
-            "</nav></header>",
-            '<a href="/login">Sign in</a></nav></header>',
-          )
           .replace('</body>', '<script src="/analytics.js"></script></body>'),
       );
   } catch (error) {

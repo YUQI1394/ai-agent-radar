@@ -71,7 +71,7 @@ module.exports = async function handler(req, res) {
     if (selectedSlug) res.setHeader('X-Robots-Tag', 'noindex, follow');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=1800');
-    return res.status(200).send(renderReader(entries, selectedSlug));
+    return res.status(200).send(renderReader(entries, selectedSlug).replace('<a href="/workspace">Workspace</a>', ''));
   }
 
   const items = entries.map((entry) => `<item>

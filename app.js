@@ -3,7 +3,7 @@
 
   const CATEGORIES = ['All', 'Research', 'Security', 'Finance', 'Marketing', 'Coding', 'Design', 'Productivity', 'Agent Infrastructure'];
   const LEGACY_SAVED_KEY = 'ai-agent-radar-saved';
-  const savedStorageKey = () => window.RadarAuth?.user ? window.RadarAuth.savedKey() : LEGACY_SAVED_KEY;
+  const savedStorageKey = () => LEGACY_SAVED_KEY;
 
   function readSavedAgents() {
     try {
@@ -226,44 +226,14 @@
   elements.search.addEventListener('input', (event) => { state.search = event.target.value; syncSearchUrl(); render(); });
   elements.filters.forEach((button) => button.addEventListener('click', () => { state.filter = button.dataset.filter; elements.filters.forEach((item) => item.classList.toggle('active', item === button)); render(); }));
   elements.sorts.forEach((button) => button.addEventListener('click', () => { state.sort = button.dataset.sort; elements.sorts.forEach((item) => item.classList.toggle('active', item === button)); render(); }));
-  elements.grid.addEventListener('click', async (event) => {
+  elements.grid.addEventListener('click', (event) => {
     const saveButton = event.target.closest('[data-save-id]');
     if (saveButton) {
-      if (!window.RadarAuth) {
-        location.assign(`/login?next=${encodeURIComponent(location.pathname + location.search)}`);
-        return;
-      }
-      const auth = await window.RadarAuth.ready;
-      if (!auth.user) {
-        location.assign(`/login?next=${encodeURIComponent(location.pathname + location.search)}`);
-        return;
-      }
       const key = saveButton.dataset.saveId;
       state.saved.has(key) ? state.saved.delete(key) : state.saved.add(key);
       localStorage.setItem(savedStorageKey(), JSON.stringify([...state.saved]));
-      window.RadarCloud.ready.then((cloud) => {
-        if (cloud.available) cloud.set('saved', 'agents', { ids: [...state.saved] }).catch(() => {});
-      });
       render(); return;
     }
   });
-  async function syncAccountState() {
-    const auth = await window.RadarAuth.ready;
-    if (auth.user) state.saved = readSavedAgents();
-    if (window.RadarCloud) window.RadarCloud.ready.then(async (cloud) => {
-      if (auth.user && cloud.available) {
-        try {
-          const remote = await cloud.get('saved', 'agents');
-          if (Array.isArray(remote?.ids)) {
-            state.saved = new Set(remote.ids.map(String));
-            localStorage.setItem(savedStorageKey(), JSON.stringify([...state.saved]));
-          } else if (state.saved.size) await cloud.set('saved', 'agents', { ids: [...state.saved] });
-        } catch (_) { /* Keep local saved agents available offline. */ }
-      }
-      render();
-    });
-  }
   loadAgents();
-  if (window.RadarAuth) syncAccountState();
-  else document.addEventListener('radar:auth-ready', syncAccountState, { once: true });
 })();

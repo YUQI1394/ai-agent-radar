@@ -41,7 +41,8 @@ test('unknown routes recover into discovery and execution paths', () => {
   assert.match(html, /noindex, follow/);
   assert.match(html, /SIGNAL LOST/);
   assert.match(html, /href="\/opportunities"/);
-  assert.match(html, /href="\/workspace"/);
+  assert.match(html, /href="\/patterns"/);
+  assert.doesNotMatch(html, /href="\/workspace"/);
   const { sendGone, sendNotFound } = require('../lib/http-pages');
   const response = { headers: {}, setHeader(key, value) { this.headers[key] = value; }, status(code) { this.statusCode = code; return this; }, send(body) { this.body = body; return this; } };
   sendNotFound(response, { headline: 'Missing test signal' });
@@ -68,11 +69,11 @@ test('unknown routes recover into discovery and execution paths', () => {
   }
 });
 
-test('public feed starts independently while account-gated pages load authentication first', () => {
+test('public feed has no authentication dependency while legacy account pages stay ordered', () => {
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const workspace = fs.readFileSync(path.join(root, 'workspace.html'), 'utf8');
-  assert.ok(home.indexOf('/app.js') < home.indexOf('/auth.js'));
-  assert.ok(home.indexOf('/auth.js') < home.indexOf('/cloud-storage.js'));
+  assert.match(home, /\/app\.js/);
+  assert.doesNotMatch(home, /\/auth\.js|\/cloud-storage\.js|supabase\.min\.js/);
   assert.ok(workspace.indexOf('/auth.js') < workspace.indexOf('/workspace.js'));
   assert.ok(workspace.indexOf('/cloud-storage.js') < workspace.indexOf('/workspace.js'));
 });
@@ -107,7 +108,8 @@ test('production security headers and third-party authentication integrity stay 
   assert.match(csp, /connect-src[^;]+supabase\.co/);
   assert.match(csp, /script-src-attr 'none'/);
   assert.doesNotMatch(scriptDirective, /'unsafe-inline'/);
-  for (const file of ['index.html', 'login.html', 'workspace.html', 'account.html']) {
+  assert.doesNotMatch(fs.readFileSync(path.join(root, 'index.html'), 'utf8'), /supabase\.min\.js/);
+  for (const file of ['login.html', 'workspace.html', 'account.html']) {
     const html = fs.readFileSync(path.join(root, file), 'utf8');
     assert.match(html, /supabase\.min\.js" integrity="sha384-[A-Za-z0-9+/=]+" crossorigin="anonymous"/);
   }
@@ -173,10 +175,11 @@ test('homepage presents the full discovery-to-action path with live project evid
   assert.match(home, /01 \/ DISCOVER/);
   assert.match(home, /02 \/ UNDERSTAND/);
   assert.match(home, /03 \/ EXECUTE/);
-  assert.match(home, /Create my free demand radar/);
-  assert.match(home, /\/login\?next=%2Fworkspace/);
-  assert.match(home, /Live GitHub intelligence · refreshed every 6 hours/);
-  assert.match(home, /Follow the free RSS feed/);
+  assert.match(home, /Find a problem to test/);
+  assert.match(home, /without creating an account/);
+  assert.doesNotMatch(home, /\/login\?next=%2Fworkspace/);
+  assert.match(home, /Public GitHub evidence · refreshed every 6 hours/);
+  assert.match(home, /Follow the RSS feed/);
   assert.match(home, /href="\/rss"/);
   assert.match(home, /data-radar-node="0"/);
   assert.match(home, /Qualified unmet needs/);
@@ -199,8 +202,9 @@ test('homepage presents the full discovery-to-action path with live project evid
   const share = fs.readFileSync(path.join(root, 'share.js'), 'utf8');
   assert.match(share, /navigator\.share/);
   assert.match(share, /navigator\.clipboard\.writeText/);
-  assert.ok(home.indexOf('/app.js') < home.indexOf('@supabase/supabase-js'), 'public feed must start before the optional auth library');
-  assert.match(app, /loadAgents\(\);[\s\S]*radar:auth-ready/);
+  assert.doesNotMatch(home, /@supabase\/supabase-js|\/auth\.js|\/cloud-storage\.js/);
+  assert.match(app, /loadAgents\(\);/);
+  assert.doesNotMatch(app, /radar:auth-ready|RadarAuth|RadarCloud/);
   assert.doesNotMatch(app, /document\.title\s*=/, 'runtime scripts must not replace the descriptive SEO title');
   const auth = fs.readFileSync(path.join(root, 'auth.js'), 'utf8');
   assert.match(auth, /radar:auth-ready/);
@@ -231,7 +235,7 @@ test('comparisons use current projects and compare traceable unmet needs', () =>
   assert.match(compare, /\[slugA, slugB\]\.sort\(\)/);
   assert.match(compare, /FROM COMPARISON TO ACTION/);
   assert.match(compare, /#validation-start/);
-  assert.match(compare, /href="\/workspace"/);
+  assert.match(compare, /replace\('<a href="\/workspace">Workspace<\/a>', ''\)/);
   assert.match(compare, /Free, independent open-source intelligence/);
   assert.doesNotMatch(compare, /supported by ads/);
 });
@@ -257,16 +261,19 @@ test('opportunities lead directly into the free guided execution sprint', () => 
   assert.match(listing, /X-Robots-Tag', 'noindex, follow/);
   assert.match(listing, /html\.replace\('<meta name="robots" content="index, follow">', '<meta name="robots" content="noindex, follow">'\)/);
   assert.match(ingestion, /excerpt: issueExcerpt\(issue\.body\)/);
-  assert.match(detail, /Start free validation sprint/);
+  assert.match(detail, /Start the no-account validation tool/);
   assert.match(detail, /DEMAND CONFIDENCE/);
   assert.match(detail, /Project strength and demand confidence are measured separately/);
   assert.match(detail, /Reporter context/);
   assert.match(detail, /href="#validation-start"/);
-  assert.match(validation, /gate\.id = 'validation-start'/);
+  assert.match(validation, /historicalSignal/);
   assert.match(validation, /workspace\.id = 'validation-start'/);
-  assert.match(validation, /location\.pathname}#validation-start/);
-  assert.match(validation, /FREE 7-DAY VALIDATION SPRINT/);
-  assert.match(validation, /Build, Narrow or Stop/);
+  assert.match(validation, /ai-agent-radar:validation:/);
+  assert.match(validation, /NO-ACCOUNT VALIDATION TOOL/);
+  assert.doesNotMatch(validation, /RadarAuth|RadarCloud|\/login\?next=/);
+  assert.match(validation, /<option value="build">Build<\/option>/);
+  assert.match(validation, /<option value="narrow">Narrow<\/option>/);
+  assert.match(validation, /<option value="stop">Stop<\/option>/);
   assert.match(detail, /data-next-action=/);
   assert.match(detail, /Share this brief/);
   assert.match(detail, /\/share\.js/);
@@ -457,8 +464,9 @@ test('privacy-preserving page analytics covers discovery and conversion routes',
   assert.match(auth, /script\[src="\/analytics\.js"\]/);
   assert.match(privacy, /does not use cookies/);
   assert.match(privacy, /does not receive account email addresses/);
-  assert.match(privacy, /optional structured interview evidence/);
-  assert.match(privacy, /not to enter interviewee names or contact details/);
+  assert.match(privacy, /stored only in your browser/);
+  assert.match(privacy, /They are not sent to AI Agent Radar/);
+  assert.doesNotMatch(privacy, /href="\/login"/);
   for (const file of ['agent.js', 'category.js', 'weekly.js', 'opportunities.js', 'opportunity.js', 'patterns.js', 'compare.js']) {
     const source = fs.readFileSync(path.join(root, 'api', file), 'utf8');
     assert.match(source, /\/analytics\.js/, `${file} must load page analytics`);
@@ -520,8 +528,8 @@ test('all professional fields have discoverable structured reports', () => {
   assert.match(category, /#demand/);
   assert.match(category, /Start guided sprint/);
   assert.match(category, /opportunities\?domain=/);
-  assert.match(category, /Track \$\{escapeHtml\(domain\.name\)\} needs free/);
-  assert.match(category, /login\?domain=\$\{encodeURIComponent\(domain\.name\)\}&amp;next=%2Fworkspace/);
+  assert.match(category, /PUBLIC RESEARCH PATH/);
+  assert.match(category, /complete no-account validation tool/);
   assert.match(category, /agents\.length \? 'index, follow' : 'noindex, follow'/);
   const sitemap = fs.readFileSync(path.join(root, 'api', 'sitemap.js'), 'utf8');
   assert.match(sitemap, /agents\.some\(\(agent\) => category\(agent\) === CATEGORY_NAMES\[slug\]\)/);

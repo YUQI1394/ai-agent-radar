@@ -99,7 +99,7 @@ async function main() {
   assert.equal(detail.status, 200, `${opportunityHref} returned ${detail.status}`);
   const detailHtml = await detail.text();
   assert.match(detailHtml, /Reporter context:/i, 'opportunity detail lacks reporter evidence');
-  assert.match(detailHtml, /Start free validation sprint/i, 'opportunity detail lacks execution path');
+  assert.match(detailHtml, /Start the no-account validation tool/i, 'opportunity detail lacks public execution path');
   assert.match(detailHtml, /Share this brief/i, 'opportunity detail lacks sharing');
   assert.match(detailHtml, /VALIDATION LENS/i, 'opportunity detail lacks a professional coaching lens');
   assert.match(detailHtml, /Professional constraint/i, 'opportunity detail lacks a domain-specific guardrail');
@@ -283,7 +283,7 @@ async function main() {
   const missingHtml = await missing.text();
   assert.match(missingHtml, /SIGNAL LOST/i, 'custom 404 recovery page is missing');
   assert.match(missingHtml, /Discover unmet needs/i, 'custom 404 lacks a demand-discovery path');
-  assert.match(missingHtml, /Continue in workspace/i, 'custom 404 lacks an execution path');
+  assert.match(missingHtml, /Browse recurring problems/i, 'custom 404 lacks an execution path');
   console.log('PASS branded 404 recovery');
 
   const staleOpportunity = await fetch(`${origin}/opportunity/not-a-valid-id`, { redirect: 'manual' });
@@ -291,7 +291,7 @@ async function main() {
   assert.match(staleOpportunity.headers.get('x-robots-tag') || '', /noindex/i, 'stale opportunity is indexable');
   const staleOpportunityHtml = await staleOpportunity.text();
   assert.match(staleOpportunityHtml, /AI Agent Radar/i, 'dynamic 404 is not branded');
-  assert.match(staleOpportunityHtml, /Continue in workspace/i, 'dynamic 404 lacks an execution recovery path');
+  assert.match(staleOpportunityHtml, /Browse recurring problems/i, 'dynamic 404 lacks an execution recovery path');
   console.log('PASS dynamic 404 recovery');
 
   const retiredProductHunt = await fetch(`${origin}/agent/lottie-creator-2-0`, { redirect: 'manual' });
