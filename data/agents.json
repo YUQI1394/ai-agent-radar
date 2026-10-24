@@ -3,7 +3,7 @@
   "count": 36,
   "source": "github",
   "ingestion": {
-    "deploymentCommit": "ab748c767668774947ed10f47a390303fc94b092",
+    "deploymentCommit": "ec64e7aaef7f3f606e9c878c598d28de9135880c",
     "searchesSucceeded": 30,
     "searchesFailed": 0,
     "issuesSucceeded": 10,
