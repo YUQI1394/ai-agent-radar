@@ -3,12 +3,16 @@
   "count": 36,
   "source": "github",
   "ingestion": {
-    "deploymentCommit": "5333c0dfea77a50ce62dbb4d50aecc0936cf36ae",
+    "deploymentCommit": "9fbf10398555367e05b5e9804cec8f9668eb97c4",
     "searchesSucceeded": 30,
     "searchesFailed": 0,
-    "issuesSucceeded": 48,
+    "issuesSucceeded": 10,
     "issuesFailed": 0,
-    "degraded": false
+    "degraded": false,
+    "preserved": true,
+    "preservationReason": [
+      "professionalBreadth"
+    ]
   },
   "agents": [
     {
